@@ -17,7 +17,7 @@ Packet is not only chat. It combines:
 ## Installation
 
 ```bash
-npm install xpkt
+npm install xpkt-sdk
 ```
 
 Peer/runtime stack used by the SDK:
