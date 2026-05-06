@@ -1,0 +1,54 @@
+{
+  "name": "xpkt",
+  "version": "0.0.1",
+  "description": "TypeScript SDK for Packet protocol",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "npm run clean && tsc -p tsconfig.json && rollup -c rollup.dts.config.mjs && rm -rf .types",
+    "dev": "tsc -p tsconfig.json --watch",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test:debug": "tsx tests/index.ts",
+    "test:full": "tsx tests/full.ts",
+    "test:archive": "tsx tests/archive.ts",
+    "test:crypto": "tsx tests/crypto.ts"
+  },
+  "keywords": ["solana", "packet", "communication", "decentralized", "payment"],
+  "author": "@packetchat",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.31.1",
+    "@lightprotocol/compressed-token": "^0.23.3",
+    "@lightprotocol/stateless.js": "^0.23.3",
+    "@solana/web3.js": "^1.98.4",
+    "axios": "^1.15.2",
+    "bn.js": "^5.1.2",
+    "hash-wasm": "^4.12.0",
+    "tweetnacl": "^1.0.3"
+  },
+  "devDependencies": {
+    "@types/bn.js": "^5.1.2",
+    "@types/node": "^24.0.0",
+    "rollup": "^4.60.3",
+    "rollup-plugin-dts": "^6.4.1",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}
