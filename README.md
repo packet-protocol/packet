@@ -40,7 +40,7 @@ npm install @solana/wallet-adapter-react @solana/wallet-adapter-base
 
 ```ts
 import { Connection } from "@solana/web3.js";
-import { PacketClient, PacketWallet } from "xpkt";
+import { PacketClient, PacketWallet } from "xpkt-sdk";
 
 const connection = new Connection("https://api.devnet.solana.com", "confirmed");
 
@@ -66,7 +66,7 @@ await client.loadLookupTables();
 
 ```ts
 import { Connection, Keypair } from "@solana/web3.js";
-import { PacketClient, PacketWallet } from "xpkt";
+import { PacketClient, PacketWallet } from "xpkt-sdk";
 
 const wallet = Keypair.generate();
 const connection = new Connection("http://127.0.0.1:8899", "confirmed");
@@ -122,7 +122,7 @@ If no key is declared on-chain, apps may fall back to `SOLANA-ED25519-X25519` wa
 An inbox is a sovereign endpoint. It can be free, paid, escrow-paid, standard, or ephemeral.
 
 ```ts
-import { BN, InboxKind } from "xpkt";
+import { BN, InboxKind } from "xpkt-sdk";
 import { PublicKey } from "@solana/web3.js";
 
 const inboxRes = await client.createInbox({
@@ -191,7 +191,7 @@ Recommended flow:
 4. Send the uploaded URL or content ID on-chain with `MessageType.Irys`, `MessageType.Arweave`, `MessageType.Ipfs`, or `MessageType.Url`.
 
 ```ts
-import { MessageType } from "xpkt";
+import { MessageType } from "xpkt-sdk";
 
 const recipientKey = await client.loadKey(recipientWallet);
 
@@ -341,7 +341,7 @@ A simple app usually keeps one `PacketClient` in context:
 import { createContext, useContext, useMemo } from "react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Connection } from "@solana/web3.js";
-import { PacketClient, PacketWallet } from "xpkt";
+import { PacketClient, PacketWallet } from "xpkt-sdk";
 
 const PacketContext = createContext<PacketClient | null>(null);
 
@@ -405,25 +405,6 @@ Localnet wallet warnings are common when signing custom Light/Packet transaction
 
 ---
 
-## Package exports
-
-```ts
-import {
-  PacketClient,
-  PacketWallet,
-  PacketEncryptionClient,
-  MessageType,
-  InboxKind,
-  PacketKeyType,
-  BN,
-} from "xpkt";
-
-import { encryptPacketMessage, decryptPacketMessage } from "xpkt/crypto";
-import { InboxClient, ThreadClient, ActivityClient } from "xpkt/entities";
-```
-
----
-
 ## Status
 
 `xpkt` is experimental and actively evolving. APIs may change quickly while Packet’s agent/order protocol and SDK surface are being finalized.
@@ -432,4 +413,4 @@ import { InboxClient, ThreadClient, ActivityClient } from "xpkt/entities";
 
 ## License
 
-ISC
+MIT
