@@ -1,14 +1,14 @@
 import {
-    ComputeBudgetProgram,
     Connection,
     PublicKey,
-    Transaction,
 } from "@solana/web3.js";
 import type { Rpc } from "@lightprotocol/stateless.js";
 
 import type { PacketProgram } from "../../../providers/program";
-import { EditKeyIx } from "../instructions/edit";
 import type { EditUserKeyParams } from "../types";
+import { EditKeyPipeline } from "../pipeline/edit";
+import { HandleTxPipeline } from "../../../utils";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
 
 export async function EditKeyTx(
     connection: Connection,
@@ -16,28 +16,28 @@ export async function EditKeyTx(
     signer: PublicKey,
     program: PacketProgram,
     params: EditUserKeyParams = {},
-    priorityFee = 1000,
-): Promise<Transaction> {
-    const tx = new Transaction();
+    options?: PacketIxOptions & PacketTxOptions
+) {
 
-    tx.add(
-        ComputeBudgetProgram.setComputeUnitLimit({
-            units: 500_000,
-        }),
+    let computeUnits = 200_000;
+
+    // pipeline
+    const { pipeline } = await EditKeyPipeline(
+        rpc,
+        signer,
+        program,
+        params,
+        options
     );
 
-    if (priorityFee) {
-        tx.add(
-            ComputeBudgetProgram.setComputeUnitPrice({
-                microLamports: priorityFee,
-            }),
-        );
-    }
+    // main tx
+    const txs = await HandleTxPipeline(pipeline, {
+        connection,
+        payer: signer,
+        computeUnits,
+        priorityFee: options?.priorityFee,
+        lookupTables: options?.lookupTables
+    });
 
-    tx.add(await EditKeyIx(rpc, signer, program, params));
-
-    tx.feePayer = signer;
-    tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-
-    return tx;
+    return txs;
 }

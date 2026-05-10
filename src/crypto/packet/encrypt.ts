@@ -116,6 +116,7 @@ export async function encryptPacketMessage(
         content: {
             ...encryptedContent,
             key_hash: hashLabel("sha256", contentKey),
+            content_hash: hashLabel("sha256", utf8(plaintext)),
         },
         readers: readerEntries,
     };

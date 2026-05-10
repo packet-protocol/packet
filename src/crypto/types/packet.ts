@@ -15,6 +15,7 @@ export type EncryptedContent<
     TEncrypted extends Encrypted = A256GCMEncrypted,
 > = TEncrypted & {
     key_hash: HashValue;
+    content_hash: HashValue;
 };
 
 export type PacketReaderInput = {

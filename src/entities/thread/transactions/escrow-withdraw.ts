@@ -3,25 +3,31 @@ import type { PacketProgram } from "../../../providers/program";
 import { HandleTxPipeline } from "../../../utils/pipeline";
 import { CreateEscrowWithdrawPipeline } from "../pipeline/escrow-withdraw";
 import type { Thread } from "../types";
+import type { Rpc } from "@lightprotocol/stateless.js";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
 
 export const EscrowWithdrawTx = async (
+    rpc: Rpc,
     connection: Connection,
-    sender: PublicKey,
+    signer: PublicKey,
     program: PacketProgram,
-    thread: Thread,
-    receiverTokenAccount?: PublicKey,
-    priorityFee: number = 1000,
+    params: {
+        thread: Thread,
+        receiverTokenAccount?: PublicKey,
+    },
+    options?: PacketIxOptions & PacketTxOptions,
 ) => {
+    const sender = options?.owner ?? signer;
 
-    if (!thread.escrowPayment) {
+    if (!params.thread.escrowPayment) {
         throw new Error("No escrow payment found for this thread");
     }
 
-    if (thread.escrowPayment.released) {
+    if (params.thread.escrowPayment.released) {
         throw new Error("Escrow payment already released");
     }
 
-    if (!thread.to.equals(sender)) {
+    if (!params.thread.to.equals(sender)) {
         throw new Error("Only the receiver can withdraw from escrow");
     }
 
@@ -29,19 +35,20 @@ export const EscrowWithdrawTx = async (
 
     // pipeline
     const { pipeline } = await CreateEscrowWithdrawPipeline(
+        rpc,
         connection,
-        sender,
+        signer,
         program,
-        thread,
-        receiverTokenAccount
+        params,
+        options,
     );
 
     // main tx
     const txs = await HandleTxPipeline(pipeline, {
-        connection,
+        connection: connection,
         payer: sender,
         computeUnits,
-        priorityFee,
+        priorityFee: options?.priorityFee,
     });
 
     return txs;

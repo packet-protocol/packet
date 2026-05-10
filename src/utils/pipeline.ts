@@ -107,6 +107,7 @@ export const HandleTxPipeline = async (
         priorityFee,
         lookupTables = [],
         forceV0 = lookupTables.length > 0,
+        recentBlockhash,
     }: {
         connection: Connection;
         payer: PublicKey;
@@ -114,6 +115,7 @@ export const HandleTxPipeline = async (
         priorityFee?: number;
         lookupTables?: AddressLookupTableAccount[];
         forceV0?: boolean;
+        recentBlockhash?: string;
     },
 ): Promise<(Transaction | VersionedTransaction)[]> => {
     let mainComputeUnits = computeUnits || 0;
@@ -123,7 +125,7 @@ export const HandleTxPipeline = async (
      // pre instructions that are not in their own transaction group and should be added to the main transaction
     const mainPreIxs: TransactionInstruction[] = [];
 
-    const recentBlockhash = (
+    var recentBlockhash = recentBlockhash ?? (
         await connection.getLatestBlockhash("confirmed")
     ).blockhash;
 

@@ -9,11 +9,7 @@ export type PacketUser = {
 };
 
 export type CreateUserParams = {
-    /**
-     * Logical user owner. Defaults to current wallet.
-     */
-    owner?: PublicKey;
-
+   
     /**
      * Display name.
      *
@@ -39,10 +35,7 @@ export type CreateUserParams = {
 };
 
 export type EditUserParams = {
-    /**
-     * Logical user owner. Defaults to current wallet.
-     */
-    owner?: PublicKey;
+   
 
     /**
      * Display name.

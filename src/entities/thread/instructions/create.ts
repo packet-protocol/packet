@@ -1,5 +1,12 @@
-import { Connection, PublicKey } from "@solana/web3.js";
-import { PackedAccounts, type Rpc } from "@lightprotocol/stateless.js";
+import {
+    Connection,
+    PublicKey,
+    SystemProgram,
+} from "@solana/web3.js";
+import {
+    PackedAccounts,
+    type Rpc,
+} from "@lightprotocol/stateless.js";
 
 import type { PacketProgram } from "../../../providers/program";
 import * as Pda from "../../../pda";
@@ -12,26 +19,29 @@ import {
 import {
     getCreateThreadAtomicProof,
 } from "../../../providers/light/proof/create-thread";
-
+import type { PacketIxOptions } from "../../transaction/types";
 
 export const CreateThreadIx = async (
     connection: Connection,
     rpc: Rpc,
-    sender: PublicKey,
+    signer: PublicKey,
     program: PacketProgram,
     params: CreateMessageInputAndAccountsParams,
+    options?: PacketIxOptions,
 ) => {
-    const thread = Pda.threadPda(params.threadInfo.id);
+
+    const sender = options?.owner ?? signer;
+    
+    const receiver = params.threadInfo.to;
 
     const {
         createAccountsProof,
-        packedAccounts,
+        metas
     } = await getCreateThreadAtomicProof({
         rpc,
         programId: program.programId,
-        threadPda: thread,
         threadId: params.threadInfo.id,
-        messageSeq: params.messageSeq,
+        messageSeq: 1,
     });
 
     const {
@@ -40,24 +50,15 @@ export const CreateThreadIx = async (
         payment,
     } = await ResolveMessageInputAndAccounts(
         connection,
+        signer,
         sender,
         params,
         true,
     );
 
-    const metas = packedAccounts.toAccountMetas() as ReturnType<
-        PackedAccounts["toAccountMetas"]
-    > & {
-        systemAccountsOffset?: number;
-    };
-
-    // Keep the final offset exactly aligned with final account metas.
-    createAccountsProof.systemAccountsOffset = metas.systemAccountsOffset ?? 0;
-
     const emptyOptionalInboxAccounts = {
         targetInbox: null,
         targetInboxBody: null,
-        permit: null,
     };
 
     const emptyOptionalPaymentAccounts = {
@@ -70,17 +71,18 @@ export const CreateThreadIx = async (
     };
 
     const ix = await program.methods
-        .createThread({
-            createAccountsProof,
-            threadId: params.threadInfo.id,
-            to: params.threadInfo.to,
-            message,
-        })
+        .createThread(
+            receiver,
+            {
+                createAccountsProof,
+                threadId: params.threadInfo.id,
+                message,
+            },
+        )
         .accounts({
-            feePayer: sender,
+            signer,
             sender,
-            compressionConfig: Pda.compressionConfigPda,
-            pdaRentSponsor: Pda.rentSponsorPda,
+            permit: options?.permit ?? null,
 
             ...emptyOptionalInboxAccounts,
             ...(accounts.targetInboxAccounts ?? {}),
@@ -90,7 +92,6 @@ export const CreateThreadIx = async (
         })
         .remainingAccounts(metas.remainingAccounts)
         .instruction();
-
 
     return [...payment.instructions, ix];
 };

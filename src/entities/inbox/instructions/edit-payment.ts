@@ -5,14 +5,18 @@ import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } 
 import { CheckIfAssociatedTokenAccountExists } from "../../../providers/token/helpers";
 import { CreateAssociatedTokenAccountIx, CreateTokenAccountIx } from "../../../providers/token/instructions";
 import * as Pda from "../../../pda";
+import type { PacketIxOptions } from "../../transaction/types";
 
 export const EditInboxPaymentIx = async (
     connection: Connection,
-    owner: PublicKey,
+    signer: PublicKey,
     program: PacketProgram,
     inboxPda: PublicKey,
-    payment: InboxPaymentParams | null
+    payment: InboxPaymentParams | null,
+    options?: PacketIxOptions,
 ) => {
+
+    const owner = options?.owner ?? signer;
 
     const vaultPda = Pda.vaultPda();
 
@@ -69,7 +73,7 @@ export const EditInboxPaymentIx = async (
             let ataExists = await CheckIfAssociatedTokenAccountExists(connection, ataOwner, mint, tokenProgram);
             if (!ataExists) {
                 preInstructions.push(
-                    CreateAssociatedTokenAccountIx(owner, ataOwner, mint, tokenProgram)
+                    CreateAssociatedTokenAccountIx(signer, ataOwner, mint, tokenProgram)
                 );
             }
         }
@@ -85,6 +89,7 @@ export const EditInboxPaymentIx = async (
                 preInstructions.push(
                     ...(await CreateTokenAccountIx(
                         connection,
+                        signer,
                         payment.to.owner ?? owner,
                         mint,
                         payment.to.keypair,
@@ -122,9 +127,9 @@ export const EditInboxPaymentIx = async (
             escrowEnabled: payment.escrowEnabled,
         } : null,
     }).accounts({
-        signer: owner,
-        owner: owner,
-        permit: null,
+        signer,
+        owner,
+        permit: options?.permit ?? null,
         targetInbox: inboxPda,
         ...paymentAccounts,
     }).instruction();

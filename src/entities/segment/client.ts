@@ -3,21 +3,18 @@ import type { Segment } from "./types";
 import { parseSegment } from "./parse";
 import type { ThreadClient } from "../thread/client/thread";
 import * as anchor from "@coral-xyz/anchor";
-import { getLightPdaStatusMultiple } from "../../providers/light/light-pda/status";
 import type { PacketIDL } from "../../idl/packet.idl";
 import type { Inbox } from "../inbox/types";
 import type { InboxClient } from "../inbox/client/inbox";
 import { NO_INBOX } from "../../constants";
+import { GetThreadAccounts } from "../thread/account/get";
 
 export type LoadThreadsOptions = {
     inbox?: Inbox | InboxClient;
 
-    /**
-     * Activity-only style hook.
-     * Used when each thread may belong to a different inbox.
-     */
+    
     resolveInbox?: (params: {
-        account: anchor.IdlAccounts<PacketIDL>["thread"];
+        account: anchor.IdlEvents<PacketIDL>["thread"];
         handle: ThreadClient;
     }) => Promise<Inbox | InboxClient | undefined> | Inbox | InboxClient | undefined;
 
@@ -100,7 +97,7 @@ export abstract class SegmentPageClient {
         return this.Segment.ids
             .slice(offset, offset + limit)
             .map((threadId) =>
-                this.client.threadHandle(threadId),
+                this.client.thread(threadId),
             );
     }
 
@@ -122,47 +119,33 @@ export abstract class SegmentPageClient {
 
         const pdas = handles.map((handle) => handle.address);
 
-        const accounts = await getLightPdaStatusMultiple({
-            connection: this.client.connection,
-            rpc: this.client.lightRpc,
-            programId: this.client.program.programId,
-            pdas,
-            accountBatchSize: options.concurrentFetchLimit,
-        });
 
-        const coder = new anchor.BorshCoder(this.client.program.idl);
+        const accounts = await GetThreadAccounts(
+            this.client.lightRpc,
+            this.client.program,
+            pdas,
+            options.concurrentFetchLimit,
+        );
 
         await Promise.all(
             handles.map(async (handle) => {
-                const account = accounts[handle.address.toBase58()];
+                const account = accounts.find((acc) => acc.address.equals(handle.address));
 
-                if (!account || account.status === "missing") {
+                if (!account) {
                     return;
                 }
-
-                var decoded: anchor.IdlAccounts<PacketIDL>["thread"];
-
-                if (account.status === "hot") {
-                    let data = Uint8Array.from(account.hotAccount!.data);
-                    decoded = coder.types.decode("thread", Buffer.from(data.slice(8)));
-                } else {
-                    decoded = coder.types.decode(
-                        "thread",
-                        account.compressedAccount.data.data,
-                    ) as anchor.IdlAccounts<PacketIDL>["thread"];
-                }
-
+               
                 var inbox: Inbox | InboxClient | undefined;
 
-                if (!decoded.inboxId.eq(NO_INBOX)) {
+                if (!account.data.inboxId.eq(NO_INBOX)) {
                     inbox = options.inbox ?? await options.resolveInbox?.({
-                        account: decoded,
+                        account: account.data,
                         handle,
                     });
                 }
 
                 await handle.loadFromAccount({
-                    account: decoded,
+                    account: account.data,
                     inbox,
                 });
             }),

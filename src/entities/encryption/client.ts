@@ -14,8 +14,9 @@ import {
     type PacketDerivedCryptoIdentity,
 } from "../../crypto/packet";
 
-import type { PacketEncryptedBody, PacketKeyPair, PacketReaderInput } from "../../crypto";
+import { AsymmetricEncryptionAlgorithm, type PacketEncryptedBody, type PacketKeyPair, type PacketReaderInput } from "../../crypto";
 import { PACKET_ENCRYPTED_BODY_PREFIX, type PacketCryptoIdentityInput, type PacketDecryptParams, type PacketEncryptionReader, type PacketEncryptParams, type PacketMaybeDecryptResult } from "./types";
+import type { PacketClient } from "../..";
 
 function normalizeIdentity(input: PacketCryptoIdentityInput): PacketCryptoIdentity {
     if ("keyPair" in input) {
@@ -67,13 +68,13 @@ export class PacketEncryptionClient {
         return this.identity !== undefined;
     }
 
-     /**
-     * Set the active encryption identity.
-     *
-     * The active identity is used for:
-     * - auto-including self as a reader during encryption
-     * - decrypting when no explicit identity is passed
-     */
+    /**
+    * Set the active encryption identity.
+    *
+    * The active identity is used for:
+    * - auto-including self as a reader during encryption
+    * - decrypting when no explicit identity is passed
+    */
     use(identity: PacketCryptoIdentityInput): this {
         this.identity = normalizeIdentity(identity);
 
@@ -94,11 +95,11 @@ export class PacketEncryptionClient {
         return this.use(solanaIdentityFromKeypair(wallet));
     }
 
-     /**
-     * Deterministic X25519 helper.
-     *
-     * Useful when you already have a 32-byte seed from password/wallet signing.
-     */
+    /**
+    * Deterministic X25519 helper.
+    *
+    * Useful when you already have a 32-byte seed from password/wallet signing.
+    */
     useX25519Seed(input: {
         ownerWallet: PublicKey | string;
         seed: Uint8Array;
@@ -140,12 +141,12 @@ export class PacketEncryptionClient {
         return this.identity;
     }
 
-     /**
-     * Return this client's public reader entry.
-     *
-     * Add this to another user's reader list if you want this identity
-     * to be able to decrypt the message.
-     */
+    /**
+    * Return this client's public reader entry.
+    *
+    * Add this to another user's reader list if you want this identity
+    * to be able to decrypt the message.
+    */
     selfReader(): PacketReaderInput {
         return packetReaderFromIdentity(this.requireIdentity());
     }
@@ -266,11 +267,11 @@ export class PacketEncryptionClient {
         return this.toJson(body);
     }
 
-      /**
-     * Convert encrypted body to inline message content.
-     *
-     * Store/send this string as normal Packet message content.
-     */
+    /**
+   * Convert encrypted body to inline message content.
+   *
+   * Store/send this string as normal Packet message content.
+   */
     async encryptToContent(params: PacketEncryptParams): Promise<string> {
         const body = await this.encrypt(params);
         const content = this.toContent(body);
@@ -325,11 +326,11 @@ export class PacketEncryptionClient {
         });
     }
 
-     /**
-     * Try to decrypt if content is encrypted.
-     *
-     * If content is plain text, it returns plaintext unchanged.
-     */
+    /**
+    * Try to decrypt if content is encrypted.
+    *
+    * If content is plain text, it returns plaintext unchanged.
+    */
     async maybeDecrypt(
         content: string,
         identity?: PacketCryptoIdentityInput,
@@ -352,6 +353,53 @@ export class PacketEncryptionClient {
             encrypted: true,
             plaintext,
             body,
+        };
+    }
+
+    static async LoadReaderForOwner(
+        client: PacketClient,
+        {
+            ownerWallet,
+            fallbackToWalletDerived = true
+        }: {
+            ownerWallet: PublicKey | string,
+            fallbackToWalletDerived?: boolean,
+        },
+    ): Promise<PacketReaderInput> {
+        var wallet = typeof ownerWallet === "string"
+            ? new PublicKey(ownerWallet)
+            : ownerWallet;
+        try {
+            const key = await client.key(wallet).loadNullable();
+            if (key) {
+                return key.Reader;
+            } else if (!fallbackToWalletDerived) {
+                throw new Error("Key not found for owner wallet: " + wallet.toBase58());
+            }
+        } catch (err) {
+            if (!fallbackToWalletDerived) {
+                throw err;
+            }
+        }
+
+        const reader = client.crypto.reader({
+            ownerWallet: wallet,
+            keyAlg: AsymmetricEncryptionAlgorithm.SOLANA_ED25519_X25519,
+            publicKey: wallet.toBytes(),
+        });
+
+        return reader;
+    }
+
+    static LoadWalletDerivedReader(ownerWallet: PublicKey | string): PacketReaderInput {
+        var wallet = typeof ownerWallet === "string"
+            ? new PublicKey(ownerWallet)
+            : ownerWallet;
+
+        return {
+            ownerWallet: wallet.toBase58(),
+            keyAlg: AsymmetricEncryptionAlgorithm.SOLANA_ED25519_X25519,
+            publicKey: wallet.toBytes(),
         };
     }
 }

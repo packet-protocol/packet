@@ -1,35 +1,34 @@
-import { Rpc } from "@lightprotocol/stateless.js";
 import { Connection, PublicKey } from "@solana/web3.js";
 import type { PacketProgram } from "../../../providers/program";
 import { HandleTxPipeline } from "../../../utils/pipeline";
 import { EscrowApprovePipeline } from "../pipeline/escrow-approve";
 import type { Thread } from "../types";
+import type { Rpc } from "@lightprotocol/stateless.js";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
 
 export const EscrowApproveTx = async (
-    connection: Connection,
     rpc: Rpc,
-    sender: PublicKey,
+    connection: Connection,
+    signer: PublicKey,
     program: PacketProgram,
     thread: Thread,
-    params: { skipActivityCreation?: boolean } = {},
-    priorityFee: number = 1000,
+    options?: PacketIxOptions & PacketTxOptions,
 ) => {
 
     // pipeline
     const { pipeline } = await EscrowApprovePipeline(
-        connection,
         rpc,
-        sender,
+        signer,
         program,
         thread,
-        params
+        options,
     );
 
     // main tx
     const txs = await HandleTxPipeline(pipeline, {
         connection,
-        payer: sender,
-        priorityFee,
+        payer: signer,
+        priorityFee: options?.priorityFee,
     });
 
     return txs;

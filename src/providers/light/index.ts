@@ -2,7 +2,6 @@ import * as anchor from "@coral-xyz/anchor";
 import { createRpc, Rpc } from "@lightprotocol/stateless.js";
 import type { PacketClientConfig } from "../../types/client";
 
-export * from "./light-pda"
 export * from "./proof"
 
 export function makeLightRpc(connection: anchor.web3.Connection | string, config?: PacketClientConfig["photonRpc"]): Rpc {

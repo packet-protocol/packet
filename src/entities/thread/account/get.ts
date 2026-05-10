@@ -1,53 +1,142 @@
 import * as anchor from "@coral-xyz/anchor";
-import type { Rpc } from "@lightprotocol/stateless.js";
+import { bn, type Rpc } from "@lightprotocol/stateless.js";
 import type { PacketProgram } from "../../../providers/program";
-import type { Connection, PublicKey } from "@solana/web3.js";
-import { getLightPdaStatus, LightPdaStatus } from "../../../providers/light/light-pda/status";
+import { PublicKey } from "@solana/web3.js";
 import type { PacketIDL } from "../../../idl/packet.idl";
-import type { Thread } from "../types";
+import type { Thread, ThreadAccountData } from "../types";
 import { ParseThreadEscrowInfoOption } from "../../payment/parse";
+import {
+    getMultipleCompressedAccountsByAddressChunked,
+} from "../../../providers/light/compressed";
+import * as Pda from "../../../pda";
 
-export const GetThreadAccount = async (
-    connection: Connection,
-    rpc: Rpc,
+
+
+export type DecodedThreadAccount = {
+    address: PublicKey;
+    compressedAccount: any;
+    data: ThreadAccountData;
+};
+
+
+
+export function DecodeThreadAccountData(
     program: PacketProgram,
-    address: PublicKey
-) => {
-
-    const account = await getLightPdaStatus({
-        connection,
-        rpc,
-        programId: program.programId,
-        pda: address,
-    });
-
-    if (account.status === LightPdaStatus.Missing) {
-        return null;
-    }
+    data: Uint8Array | Buffer | string,
+): ThreadAccountData {
+    const raw =
+        typeof data === "string"
+            ? Buffer.from(data, "base64")
+            : Buffer.from(data);
 
     const coder = new anchor.BorshCoder(program.idl);
 
-    let decoded: anchor.IdlAccounts<PacketIDL>["thread"];
-
-    if (account.status === LightPdaStatus.Hot) {
-        let data = Uint8Array.from(account.hotAccount!.data);
-        decoded = coder.types.decode("thread", Buffer.from(data.slice(8)));
-    } else {
-        decoded = coder.types.decode("thread", account.compressedAccount!.data.data);
-    }
-
-    return {
-        status: account.status,
-        address: account.pda,
-        compressedAddress: account.compressedAddress,
-        data: decoded,
-    }
-
+    return coder.types.decode(
+        "thread",
+        raw,
+    ) as ThreadAccountData;
 }
 
-export const ThreadAccountToThread = (account: anchor.IdlAccounts<PacketIDL>["thread"], address: PublicKey): Thread => {
+export function DecodeThreadOwnerAccountItem(params: {
+    program: PacketProgram;
+    item: {
+        address?: string | PublicKey | null;
+        data?: {
+            data?: string | Uint8Array | Buffer;
+        } | null;
+        [key: string]: any;
+    };
+}): DecodedThreadAccount | null {
+    if (!params.item.data?.data) {
+        return null;
+    }
+
+    const decoded = DecodeThreadAccountData(
+        params.program,
+        params.item.data.data,
+    );
+
+    const threadId = decoded.id;
+
     return {
-        address: address,
+        address: params.item.address
+            ? new PublicKey(params.item.address)
+            : Pda.threadPda(threadId),
+        compressedAccount: params.item,
+        data: decoded,
+    };
+}
+
+export const GetThreadAccount = async (
+    rpc: Rpc,
+    program: PacketProgram,
+    address: PublicKey,
+) => {
+    const account = await rpc.getCompressedAccount(bn(address.toBytes()));
+
+    if (!account?.data) {
+        return null;
+    }
+
+    const decoded = DecodeThreadAccountData(
+        program,
+        account.data.data,
+    );
+
+    return {
+        address,
+        compressedAccount: account,
+        data: decoded,
+    };
+};
+
+export const GetThreadAccounts = async (
+    rpc: Rpc,
+    program: PacketProgram,
+    addresses: PublicKey[],
+    accountBatchSize?: number,
+) => {
+    const uniqueAddresses = Array.from(
+        new Map(addresses.map((pda) => [pda.toBase58(), pda])).values(),
+    );
+
+    const compressedAccounts = await getMultipleCompressedAccountsByAddressChunked(
+        rpc,
+        uniqueAddresses,
+        accountBatchSize || 10,
+    );
+
+    const results: DecodedThreadAccount[] = [];
+
+    for (let i = 0; i < compressedAccounts.length; i++) {
+        const account = compressedAccounts[i];
+
+        if (!account?.data) {
+            continue;
+        }
+
+        const decoded = DecodeThreadAccountData(
+            program,
+            account.data.data,
+        );
+
+        results.push({
+            address: uniqueAddresses[i],
+            compressedAccount: account,
+            data: decoded,
+        });
+    }
+
+    return results;
+};
+
+export const ThreadAccountToThread = (
+    account: ThreadAccountData,
+    address: PublicKey,
+): Thread => {
+    return {
+        address,
+        version: account.version,
         id: account.id,
         from: account.from,
         to: account.to,
@@ -58,6 +147,6 @@ export const ThreadAccountToThread = (account: anchor.IdlAccounts<PacketIDL>["th
         lastSenderSide: account.lastSenderSide,
         lastReadSeqFrom: account.lastReadSeqFrom,
         lastReadSeqTo: account.lastReadSeqTo,
-        escrowPayment: ParseThreadEscrowInfoOption(account.escrowPayment)
-    }
-}
+        escrowPayment: ParseThreadEscrowInfoOption(account.escrowPayment),
+    };
+};

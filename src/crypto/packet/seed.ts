@@ -4,6 +4,7 @@ import { hkdf } from "@noble/hashes/hkdf";
 import { PublicKey } from "@solana/web3.js";
 
 import type { Bytes } from "../../types/common";
+import { bytesToHex, concatBytes, utf8 } from "../../utils";
 
 const DEFAULT_ARGON2_MEMORY_KIB = 19 * 1024;
 
@@ -128,28 +129,4 @@ export function buildPacketSeedSigningMessage(input: {
         `tag: ${input.pwTag}`,
         "purpose: derive encryption key",
     ].join("\n");
-}
-
-function utf8(value: string): Uint8Array {
-    return new TextEncoder().encode(value);
-}
-
-function concatBytes(...arrays: Uint8Array[]): Uint8Array {
-    const len = arrays.reduce((acc, arr) => acc + arr.length, 0);
-    const out = new Uint8Array(len);
-
-    let offset = 0;
-
-    for (const arr of arrays) {
-        out.set(arr, offset);
-        offset += arr.length;
-    }
-
-    return out;
-}
-
-function bytesToHex(bytes: Uint8Array): string {
-    return [...bytes]
-        .map((b) => b.toString(16).padStart(2, "0"))
-        .join("");
 }

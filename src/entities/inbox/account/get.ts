@@ -1,6 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import type { PacketProgram } from "../../../providers/program";
-import { Connection, PublicKey } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 import type { Inbox, InboxArchive, InboxBody, InboxMetadata } from "../types";
 import type { PacketIDL } from "../../../idl/packet.idl";
 import { NumberToInboxKind } from "../utils/helpers";

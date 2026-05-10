@@ -32,6 +32,7 @@ export const CreateAssociatedTokenAccountIx = (
 
 export const CreateTokenAccountIx = async (
     connection: Connection,
+    signer: PublicKey,
     owner: PublicKey,
     mint: PublicKey,
     keypair: Keypair,
@@ -42,7 +43,7 @@ export const CreateTokenAccountIx = async (
     const lamports = await connection.getMinimumBalanceForRentExemption(165); // size of token account
 
     const createAccountIx = anchor.web3.SystemProgram.createAccount({
-        fromPubkey: owner,
+        fromPubkey: signer,
         newAccountPubkey: keypair.publicKey,
         space: 165, // size of token account
         lamports: lamports,
@@ -69,6 +70,7 @@ export const CreateTokenAccountIx = async (
 
 export const EnsureWrappedSolAmountForAtaIx = async (
     connection: Connection,
+    signer: PublicKey,
     owner: PublicKey,
     /**
      * Amount to have in the wrapped SOL account. (lamports)
@@ -93,7 +95,7 @@ export const EnsureWrappedSolAmountForAtaIx = async (
         }
     }catch (err) {
         if (err instanceof SolanaJSONRPCError) {
-            createAccountIx = CreateAssociatedTokenAccountIx(owner, owner, WSOL_ID);
+            createAccountIx = CreateAssociatedTokenAccountIx(signer, owner, WSOL_ID);
         }else {
             throw err;
         }
@@ -120,6 +122,7 @@ export const EnsureWrappedSolAmountForAtaIx = async (
 }
 
 export const WSolCloseAccountIx = (
+    signer: PublicKey,
     owner: PublicKey,
     ata: PublicKey,
 ): TransactionInstruction => {
@@ -127,7 +130,7 @@ export const WSolCloseAccountIx = (
         keys: [
             { pubkey: ata, isSigner: false, isWritable: true },
             { pubkey: owner, isSigner: false, isWritable: true },
-            { pubkey: owner, isSigner: true, isWritable: false },
+            { pubkey: signer, isSigner: true, isWritable: false },
         ],
         programId: TOKEN_PROGRAM_ID,
         data: Buffer.from([9, 0, 0, 0]), // CloseAccount instruction

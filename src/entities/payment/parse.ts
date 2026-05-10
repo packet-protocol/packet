@@ -1,33 +1,40 @@
 import type { ThreadEscrowInfo } from "../thread/types";
 import { ParsePaymentRuleTokenProgram } from "./helpers";
-import type { Escrow, Payment, PaymentRule} from "./types";
+import type { Escrow, Payment, PaymentRule } from "./types";
 
 export const ParsePaymentRuleOption = (payment: any): PaymentRule | null => {
-    if (payment.inner.tag[0] === 0) return null;
+    if (!payment) return null;
+    if (payment.inner?.tag?.[0] === 0) return null;
+
+    const value = payment.inner?.value ?? payment;
 
     return {
-        inner: payment.inner.value.inner as Payment,
-        escrow: ParseEscrowOption(payment.inner.value.escrow),
-        tokenProgram: ParsePaymentRuleTokenProgram(payment.inner.value.tokenProgram)
-    }
-}
+        inner: value.inner as Payment,
+        escrow: ParseEscrowOption(value.escrow),
+        tokenProgram: ParsePaymentRuleTokenProgram(value.tokenProgram),
+    };
+};
 
 export const ParseEscrowOption = (escrow: any): Escrow | null => {
-    if (escrow.inner.tag[0] === 0) return null;
+    if (!escrow) return null;
+    if (escrow.inner?.tag?.[0] === 0) return null;
+    return (escrow.inner?.value ?? escrow) as Escrow;
+};
 
-    return escrow.inner.value as Escrow;
-}
+export const ParseThreadEscrowInfoOption = (escrow: any): ThreadEscrowInfo | null => {
+    if (!escrow) return null;
+    if (escrow.inner?.tag?.[0] === 0) return null;
 
-export const ParseThreadEscrowInfoOption = (escrow: any) : ThreadEscrowInfo | null => {
-    if (escrow.inner.tag[0] === 0) return null;
+    const value = escrow.inner?.value ?? escrow;
+
     return {
-        senderApproval: escrow.inner.value.senderApproval === 1,
-        receiverApproval: escrow.inner.value.receiverApproval === 1,
-        releaseTime: escrow.inner.value.releaseTime,
-        released: escrow.inner.value.released === 1,
-        amount: escrow.inner.value.amount,
-        mint: escrow.inner.value.mint,
-        tokenProgram: ParsePaymentRuleTokenProgram(escrow.inner.value.tokenProgram),
-        escrow: escrow.inner.value.escrow as Escrow
-    }
-}
+        senderApproval: value.senderApproval === 1,
+        receiverApproval: value.receiverApproval === 1,
+        releaseTime: value.releaseTime,
+        released: value.released === 1,
+        amount: value.amount,
+        mint: value.mint,
+        tokenProgram: ParsePaymentRuleTokenProgram(value.tokenProgram),
+        escrow: value.escrow as Escrow,
+    };
+};

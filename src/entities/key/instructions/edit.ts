@@ -10,14 +10,17 @@ import type { PacketProgram } from "../../../providers/program";
 import { keyTypeToAnchor } from "../utils";
 import type { EditUserKeyParams } from "../types";
 import { GetUserKeyAccount } from "../account/get";
+import { getCompressedPdaProofExistingFinalized } from "../../../providers/light/proof/helpers";
+import type { PacketIxOptions } from "../../transaction/types";
 
 export async function EditKeyIx(
     rpc: Rpc,
     signer: PublicKey,
     program: PacketProgram,
     params: EditUserKeyParams = {},
+    options?: PacketIxOptions 
 ): Promise<TransactionInstruction> {
-    const owner = params.owner ?? signer;
+    const owner = options?.owner ?? signer;
 
     if (params.key && !params.keyType) {
         throw new Error("keyType is required when key is provided");
@@ -38,60 +41,16 @@ export async function EditKeyIx(
     }
 
     const compressedAccount = current.compressedAccount;
-
-    const proofRpcResult = await rpc.getValidityProofV0(
-        [
-            {
-                hash: compressedAccount.hash,
-                tree: compressedAccount.treeInfo.tree,
-                queue: compressedAccount.treeInfo.queue,
-            },
-        ],
-        [],
-    );
-
-    const packedAccounts = new PackedAccounts();
-    packedAccounts.addSystemAccounts(SystemAccountMetaConfig.new(program.programId));
-
-    const merkleTreePubkeyIndex = packedAccounts.insertOrGet(
-        compressedAccount.treeInfo.tree,
-    );
-
-    const queuePubkeyIndex = packedAccounts.insertOrGet(
-        compressedAccount.treeInfo.queue,
-    );
-
-    /**
-     * For a simple update, use the current account's output queue.
-     * This keeps the account in the same state-tree family.
-     */
-    const outputStateTreeIndex = packedAccounts.insertOrGet(
-        compressedAccount.treeInfo.queue,
-    );
-
-    const leafIndex =
-        proofRpcResult.leafIndices?.[0] ?? compressedAccount.leafIndex;
-
-    const accountMeta = {
-        treeInfo: {
-            merkleTreePubkeyIndex,
-            queuePubkeyIndex,
-            leafIndex,
-            proveByIndex: compressedAccount.proveByIndex ?? true,
-            rootIndex: proofRpcResult.rootIndices[0],
-        },
-        outputStateTreeIndex,
-        address: compressedAccount.address,
-    };
-
-    const metas = packedAccounts.toAccountMetas();
+    const { proof, metas, accountMetaPacket } = await getCompressedPdaProofExistingFinalized({
+        rpc,
+        programId: program.programId,
+        compressedAccount,
+    });
 
     return program.methods
         .editKey({
-            proof: {
-                0: proofRpcResult.compressedProof,
-            },
-            accountMeta,
+            createAccountsProof: proof,
+            accountMeta: accountMetaPacket,
 
             currentKeyType: keyTypeToAnchor(current.data.keyType),
             currentKey: Buffer.from(current.data.key),
@@ -102,7 +61,7 @@ export async function EditKeyIx(
         .accounts({
             signer,
             owner,
-            permit: null,
+            permit: options?.permit ?? null,
         })
         .remainingAccounts(metas.remainingAccounts)
         .instruction();

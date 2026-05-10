@@ -1,23 +1,37 @@
 import { PublicKey } from "@solana/web3.js";
 import type { PacketProgram } from "../../../providers/program";
 import type { Thread } from "../types";
-import * as Pda from "../../../pda";
+import { getThreadMutationProof } from "../../../providers/light/proof/thread";
+import type { Rpc } from "@lightprotocol/stateless.js";
+import type { PacketIxOptions } from "../../transaction/types";
 
 export const EscrowApproveIx = async (
-    sender: PublicKey,
+    rpc: Rpc,
+    signer: PublicKey,
     program: PacketProgram,
     thread: Thread,
+    options?: PacketIxOptions,
 ) => {
 
-    const ix = await program.methods.approveEscrow({
+    const sender = options?.owner ?? signer;
+
+    const proof = await getThreadMutationProof({
+        rpc,
+        program,
         threadId: thread.id,
+    });
+
+    const ix = await program.methods.approveEscrow({
+        proof: proof.createAccountsProof,
+        threadAccountMeta: proof.threadAccountMetaPacket,
+        currentThread: proof.currentThread,
     }).accounts({
-        signer: sender,
-        sender: sender,
-        fromActivity: Pda.activityPda(thread.from),
-        toActivity: Pda.activityPda(thread.to),
-        permit: null,
-    }).instruction();
+        signer,
+        owner: sender,
+        permit: options?.permit ?? null,
+    })
+    .remainingAccounts(proof.metas.remainingAccounts)
+    .instruction();
 
     return ix;
 

@@ -6,6 +6,7 @@ import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } 
 import { CheckIfAssociatedTokenAccountExists } from "../../../providers/token/helpers";
 import { CreateAssociatedTokenAccountIx, CreateTokenAccountIx } from "../../../providers/token/instructions";
 import BN from "bn.js";
+import type { PacketIxOptions } from "../../transaction/types";
 
 export type CreateInboxParams = {
     inboxId: BN | number,
@@ -34,10 +35,12 @@ export type InboxPaymentParams = {
 
 export const CreateInboxIx = async (
     connection: Connection,
-    owner: PublicKey,
+    signer: PublicKey,
     program: PacketProgram,
-    params: CreateInboxParams
+    params: CreateInboxParams,
+    options?: PacketIxOptions,
 ) => {
+    const owner = options?.owner ?? signer;
 
     const inboxId = new BN(params.inboxId);
 
@@ -100,7 +103,7 @@ export const CreateInboxIx = async (
             let ataExists = await CheckIfAssociatedTokenAccountExists(connection, ataOwner, mint, tokenProgram);
             if (!ataExists) {
                 preInstructions.push(
-                    CreateAssociatedTokenAccountIx(owner, ataOwner, mint, tokenProgram)
+                    CreateAssociatedTokenAccountIx(signer, ataOwner, mint, tokenProgram)
                 );
             }
         }
@@ -116,6 +119,7 @@ export const CreateInboxIx = async (
                 preInstructions.push(
                     ...(await CreateTokenAccountIx(
                         connection,
+                        signer,
                         params.payment.to.owner ?? owner,
                         mint,
                         params.payment.to.keypair,
@@ -160,9 +164,9 @@ export const CreateInboxIx = async (
                 escrowEnabled: params.payment.escrowEnabled,
             } : null,
         }).accounts({
-            signer: owner,
-            owner: owner,
-            permit: null,
+            signer,
+            owner,
+            permit: options?.permit ?? null,
             ...inboxMetadata,
             ...paymentAccounts,
         })
@@ -183,9 +187,9 @@ export const CreateInboxIx = async (
                 escrowEnabled: params.payment.escrowEnabled,
             } : null,
         }).accounts({
-            signer: owner,
-            owner: owner,
-            permit: null,
+            signer,
+            owner,
+            permit: options?.permit ?? null,
             ...inboxMetadata,
             ...paymentAccounts,
         })

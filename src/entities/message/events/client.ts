@@ -92,7 +92,7 @@ export class MessageEventsClient {
                         msgSeq: event.msgSeq,
                         thread: ThreadClient.Handle({
                             client: this.client,
-                            threadId: event.threadId,
+                            id: event.threadId,
                         }),
                     });
                     

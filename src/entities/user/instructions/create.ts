@@ -6,13 +6,15 @@ import {
 import type { PacketProgram } from "../../../providers/program";
 import type { CreateUserParams } from "../types";
 import { assertUserStringLimits } from "../utils";
+import type { PacketIxOptions } from "../../transaction/types";
 
 export async function CreateUserIx(
     signer: PublicKey,
     program: PacketProgram,
     params: CreateUserParams,
+    options?: PacketIxOptions
 ): Promise<TransactionInstruction> {
-    const owner = params.owner ?? signer;
+    const owner = options?.owner ?? signer;
 
     assertUserStringLimits({
         name: params.name,
@@ -27,7 +29,7 @@ export async function CreateUserIx(
         .accounts({
             signer,
             owner,
-            permit: null,
+            permit:  options?.permit ?? null,
             agentIdentity: params.agentIdentity ?? null,
         })
         .instruction();

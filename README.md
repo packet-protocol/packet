@@ -42,7 +42,7 @@ npm install @solana/wallet-adapter-react @solana/wallet-adapter-base
 import { Connection } from "@solana/web3.js";
 import { PacketClient, PacketWallet } from "xpkt-sdk";
 
-const connection = new Connection("https://api.devnet.solana.com", "confirmed");
+const connection = new Connection("photon-or-helius-rpc", "confirmed");
 
 const packetWallet = PacketWallet.fromAdapter({
   publicKey: wallet.publicKey,
@@ -242,22 +242,6 @@ await thread.sendMessage({
 
 ---
 
-## Loading activity, inboxes, threads, and messages
-
-### Activity
-
-Activity is a compressed segment of recent thread IDs for a wallet.
-
-```ts
-const activity = client.activity(client.walletPublicKey);
-await activity.load();
-
-const threads = await activity.loadThreads({
-  limit: 20,
-  includeLastMessage: true,
-});
-```
-
 ### Inbox threads
 
 Standard inboxes use segmented pages. You can load the latest body, previous bodies, or search across body pages.
@@ -321,15 +305,7 @@ Apps should display escrow state near the thread header: amount, mint, approval 
 
 Packet emits message events from the program. Use event listeners for live UI updates, but do not rely on websocket events as your only indexer. Always backfill by loading activity/inbox/thread state.
 
-Recommended app pattern:
-
-```ts
-// On app load
-await client.activity().loadThreads({ includeLastMessage: true, limit: 20 });
-
-// On new event
-// refresh current thread or activity
-```
+Recommended app 
 
 ---
 
@@ -359,7 +335,7 @@ export function PacketProvider({ children }: { children: React.ReactNode }) {
         signTransaction: wallet.signTransaction,
         signAllTransactions: wallet.signAllTransactions,
       }),
-      connection: new Connection("https://api.devnet.solana.com", "confirmed"),
+      connection: new Connection("photon-or-helius-rpc", "confirmed"),
       photonRpc: {
         compressionApiEndpoint: "https://your-photon-endpoint",
         proverEndpoint: "https://your-prover-endpoint",
@@ -381,12 +357,9 @@ export function usePacket() {
 
 Typical local setup needs:
 
-- Solana local validator
+- Light test validator validator
 - Packet program deployed
-- Light Protocol programs/accounts
-- Photon/compression API
-- Prover endpoint
-- funded wallet and rent sponsor PDA
+- funded wallet 
 
 Example client config:
 
@@ -402,6 +375,11 @@ const client = new PacketClient({
 ```
 
 Localnet wallet warnings are common when signing custom Light/Packet transactions. Wallet security scanners may be unable to verify local/custom programs or lookup tables.
+
+--
+## Programs
+
+`A3YNvikE96zn2PYrbqRa8hheH99ks7qt22zQiUF8Ttao` - Packet main program (inboxes, threads, messages, keys, users) (`mainnet` and `devnet`)
 
 ---
 

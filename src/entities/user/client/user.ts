@@ -11,6 +11,7 @@ import type {
     PacketUser,
 } from "../types";
 import type { TxReceiptWithClient } from "../../../types/client";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
 
 export class UserClient {
     private loadedUser?: PacketUser;
@@ -18,7 +19,7 @@ export class UserClient {
     constructor(
         private readonly client: PacketClient,
         readonly owner: PublicKey = client.walletPublicKey,
-    ) {}
+    ) { }
 
     get Loaded(): boolean {
         return this.loadedUser !== undefined;
@@ -101,25 +102,24 @@ export class UserClient {
     static async Create(params: {
         client: PacketClient;
         params: CreateUserParams;
+        options?: PacketIxOptions & PacketTxOptions
     }): Promise<TxReceiptWithClient<UserClient>> {
-        const owner = params.params.owner ?? params.client.walletPublicKey;
+        const optionsOverride = params.options ?? params.client.defaultTxOptions ?? {};
 
         const tx = await CreateUserTx(
             params.client.connection,
             params.client.walletPublicKey,
             params.client.program,
-            {
-                ...params.params,
-                owner,
-            },
+            params.params,
+            optionsOverride,
         );
 
         const txClient = new PacketTransactionClient(params.client.connection);
-        txClient.addTransaction(tx);
+        txClient.addTransaction(...tx);
 
-        const signatures = await txClient.submitAndConfirm(params.client.wallet);
+        const signatures = await txClient.submitAndConfirm(params.client.wallet, optionsOverride?.options);
 
-        const userClient = new UserClient(params.client, owner);
+        const userClient = new UserClient(params.client, params.options?.owner ?? params.client.walletPublicKey);
         await userClient.load();
 
         return {
@@ -130,21 +130,22 @@ export class UserClient {
 
     async edit(
         params: Omit<EditUserParams, "owner">,
+        options?: PacketIxOptions & PacketTxOptions
     ): Promise<TxReceiptWithClient<UserClient>> {
+        const optionsOverride = options ?? this.client.defaultTxOptions ?? {};
+
         const tx = await EditUserTx(
             this.client.connection,
             this.client.walletPublicKey,
             this.client.program,
-            {
-                ...params,
-                owner: this.owner,
-            },
+            params,
+            optionsOverride,
         );
 
         const txClient = new PacketTransactionClient(this.client.connection);
-        txClient.addTransaction(tx);
+        txClient.addTransaction(...tx);
 
-        const signatures = await txClient.submitAndConfirm(this.client.wallet);
+        const signatures = await txClient.submitAndConfirm(this.client.wallet, optionsOverride?.options);
 
         await this.refresh();
 

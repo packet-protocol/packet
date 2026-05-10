@@ -4,15 +4,15 @@ import type { PacketProgram } from "../../../providers/program";
 import { CreateThreadPipeline } from "../pipeline/create";
 import type { CreateMessageInputAndAccountsParams } from "../../message/instructions/resolve";
 import { HandleTxPipeline } from "../../../utils/pipeline";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
 
 export const CreateThreadTx = async (
     connection: Connection,
     rpc: Rpc,
-    sender: PublicKey,
+    signer: PublicKey,
     program: PacketProgram,
     params: CreateMessageInputAndAccountsParams,
-    lookupTables: AddressLookupTableAccount[] | undefined = [],
-    priorityFee: number = 1000,
+    options?: PacketIxOptions & PacketTxOptions,
 ) => {
 
     let computeUnits = 500_000;
@@ -21,18 +21,19 @@ export const CreateThreadTx = async (
     const { pipeline } = await CreateThreadPipeline(
         connection,
         rpc,
-        sender,
+        signer,
         program,
-        params
+        params,
+        options
     );
 
     // main tx
     const txs = await HandleTxPipeline(pipeline, {
         connection,
-        payer: sender,
+        payer: signer,
         computeUnits,
-        priorityFee,
-        lookupTables
+        priorityFee: options?.priorityFee,
+        lookupTables: options?.lookupTables
     });
 
     return txs;

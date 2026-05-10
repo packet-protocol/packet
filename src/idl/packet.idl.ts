@@ -1,4 +1,9 @@
-
+/**
+ * Program IDL in camelCase format in order to be used in JS/TS.
+ *
+ * Note that this is only a type helper and is not the actual IDL. The original
+ * IDL can be found at `target/idl/packet.json`.
+ */
 export type PacketIDL = {
   "address": "A3YNvikE96zn2PYrbqRa8hheH99ks7qt22zQiUF8Ttao",
   "metadata": {
@@ -10,10 +15,6 @@ export type PacketIDL = {
   "instructions": [
     {
       "name": "adminCreateVault",
-      "docs": [
-        "--- ADMIN INSTRUCTIONS ---",
-        "Admin Create vault ix"
-      ],
       "discriminator": [
         78,
         229,
@@ -28,7 +29,8 @@ export type PacketIDL = {
         {
           "name": "signer",
           "writable": true,
-          "signer": true
+          "signer": true,
+          "address": "8xp7jKKGPwQCZmX4yhCJZscJkotoqQAJXn1XHKJRytGn"
         },
         {
           "name": "vault",
@@ -73,9 +75,6 @@ export type PacketIDL = {
     },
     {
       "name": "adminUpdateVaultAuthority",
-      "docs": [
-        "Admin Update vault authority ix"
-      ],
       "discriminator": [
         228,
         173,
@@ -131,9 +130,6 @@ export type PacketIDL = {
     },
     {
       "name": "adminUpdateVaultPaymentWallFee",
-      "docs": [
-        "Admin Update vault payment wall fee ix"
-      ],
       "discriminator": [
         103,
         203,
@@ -189,9 +185,6 @@ export type PacketIDL = {
     },
     {
       "name": "adminWithdrawFromVault",
-      "docs": [
-        "Admin Withdraw from vault ix"
-      ],
       "discriminator": [
         215,
         36,
@@ -322,9 +315,6 @@ export type PacketIDL = {
     },
     {
       "name": "approveEscrow",
-      "docs": [
-        "Approve escrow ix"
-      ],
       "discriminator": [
         79,
         143,
@@ -342,38 +332,7 @@ export type PacketIDL = {
           "signer": true
         },
         {
-          "name": "sender",
-          "writable": true
-        },
-        {
-          "name": "thread",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  116,
-                  104,
-                  114,
-                  101,
-                  97,
-                  100
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "params.thread_id"
-              }
-            ]
-          }
-        },
-        {
-          "name": "fromActivity",
-          "writable": true
-        },
-        {
-          "name": "toActivity",
+          "name": "owner",
           "writable": true
         },
         {
@@ -381,8 +340,36 @@ export type PacketIDL = {
           "optional": true
         },
         {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
+          "name": "eventAuthority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
         }
       ],
       "args": [
@@ -413,14 +400,6 @@ export type PacketIDL = {
           "name": "signer",
           "writable": true,
           "signer": true
-        },
-        {
-          "name": "owner",
-          "writable": true
-        },
-        {
-          "name": "permit",
-          "optional": true
         },
         {
           "name": "inbox",
@@ -470,106 +449,7 @@ export type PacketIDL = {
       ]
     },
     {
-      "name": "compressAccountsIdempotent",
-      "discriminator": [
-        70,
-        236,
-        171,
-        120,
-        164,
-        93,
-        113,
-        181
-      ],
-      "accounts": [],
-      "args": [
-        {
-          "name": "params",
-          "type": {
-            "defined": {
-              "name": "compressAndCloseParams"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "createActivity",
-      "docs": [
-        "Create Activity ix"
-      ],
-      "discriminator": [
-        185,
-        108,
-        147,
-        27,
-        45,
-        183,
-        236,
-        153
-      ],
-      "accounts": [
-        {
-          "name": "feePayer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "owner"
-        },
-        {
-          "name": "compressionConfig"
-        },
-        {
-          "name": "pdaRentSponsor",
-          "writable": true
-        },
-        {
-          "name": "activity",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  97,
-                  99,
-                  116,
-                  105,
-                  118,
-                  105,
-                  116,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "owner"
-              }
-            ]
-          }
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "params",
-          "type": {
-            "defined": {
-              "name": "createActivityParams"
-            }
-          }
-        }
-      ]
-    },
-    {
       "name": "createEphemeralInbox",
-      "docs": [
-        "Create ephemeral inbox ix"
-      ],
       "discriminator": [
         78,
         186,
@@ -828,10 +708,6 @@ export type PacketIDL = {
     },
     {
       "name": "createInbox",
-      "docs": [
-        "--- INBOX INSTRUCTIONS ---",
-        "Create inbox ix"
-      ],
       "discriminator": [
         217,
         134,
@@ -1117,10 +993,6 @@ export type PacketIDL = {
     },
     {
       "name": "createInboxMetadata",
-      "docs": [
-        "-- INBOX METADATA INSTRUCTIONS ---",
-        "Create inbox metadata ix"
-      ],
       "discriminator": [
         73,
         222,
@@ -1198,9 +1070,6 @@ export type PacketIDL = {
     },
     {
       "name": "createKey",
-      "docs": [
-        "Create key ix"
-      ],
       "discriminator": [
         176,
         81,
@@ -1243,10 +1112,6 @@ export type PacketIDL = {
     },
     {
       "name": "createPermit",
-      "docs": [
-        "-- PERMIT INSTRUCTIONS ---",
-        "Create permit ix"
-      ],
       "discriminator": [
         115,
         112,
@@ -1308,9 +1173,6 @@ export type PacketIDL = {
     },
     {
       "name": "createPermitWithEd25519Permit",
-      "docs": [
-        "Create permit with ed25519 permit ix"
-      ],
       "discriminator": [
         11,
         211,
@@ -1376,10 +1238,6 @@ export type PacketIDL = {
     },
     {
       "name": "createThread",
-      "docs": [
-        "--- MESSAGE INSTRUCTIONS ---",
-        "Create thread ix"
-      ],
       "discriminator": [
         182,
         223,
@@ -1392,93 +1250,13 @@ export type PacketIDL = {
       ],
       "accounts": [
         {
-          "name": "feePayer",
+          "name": "signer",
           "writable": true,
           "signer": true
         },
         {
           "name": "sender",
           "writable": true
-        },
-        {
-          "name": "compressionConfig"
-        },
-        {
-          "name": "pdaRentSponsor",
-          "writable": true
-        },
-        {
-          "name": "thread",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  116,
-                  104,
-                  114,
-                  101,
-                  97,
-                  100
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "params.thread_id"
-              }
-            ]
-          }
-        },
-        {
-          "name": "fromActivity",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  97,
-                  99,
-                  116,
-                  105,
-                  118,
-                  105,
-                  116,
-                  121
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "sender"
-              }
-            ]
-          }
-        },
-        {
-          "name": "toActivity",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  97,
-                  99,
-                  116,
-                  105,
-                  118,
-                  105,
-                  116,
-                  121
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "params.to"
-              }
-            ]
-          }
         },
         {
           "name": "targetInbox",
@@ -1492,25 +1270,6 @@ export type PacketIDL = {
         },
         {
           "name": "permit",
-          "optional": true
-        },
-        {
-          "name": "fromTokenAccount",
-          "writable": true,
-          "optional": true
-        },
-        {
-          "name": "toTokenAccount",
-          "writable": true,
-          "optional": true
-        },
-        {
-          "name": "vaultTokenAccount",
-          "writable": true,
-          "optional": true
-        },
-        {
-          "name": "paymentMint",
           "optional": true
         },
         {
@@ -1536,6 +1295,25 @@ export type PacketIDL = {
               }
             ]
           }
+        },
+        {
+          "name": "fromTokenAccount",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "toTokenAccount",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "vaultTokenAccount",
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "paymentMint",
+          "optional": true
         },
         {
           "name": "tokenProgram",
@@ -1585,6 +1363,10 @@ export type PacketIDL = {
       ],
       "args": [
         {
+          "name": "to",
+          "type": "pubkey"
+        },
+        {
           "name": "params",
           "type": {
             "defined": {
@@ -1596,10 +1378,6 @@ export type PacketIDL = {
     },
     {
       "name": "createUser",
-      "docs": [
-        "--- USER INSTRUCTIONS ---",
-        "Create user ix"
-      ],
       "discriminator": [
         108,
         227,
@@ -1666,44 +1444,7 @@ export type PacketIDL = {
       ]
     },
     {
-      "name": "decompressAccountsIdempotent",
-      "discriminator": [
-        114,
-        67,
-        61,
-        123,
-        234,
-        31,
-        1,
-        112
-      ],
-      "accounts": [],
-      "args": [
-        {
-          "name": "params",
-          "type": {
-            "defined": {
-              "name": "decompressIdempotentParams",
-              "generics": [
-                {
-                  "kind": "type",
-                  "type": {
-                    "defined": {
-                      "name": "packedLightAccountVariant"
-                    }
-                  }
-                }
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
       "name": "deleteInboxMetadata",
-      "docs": [
-        "Delete inbox metadata ix"
-      ],
       "discriminator": [
         32,
         243,
@@ -1768,9 +1509,6 @@ export type PacketIDL = {
     },
     {
       "name": "editInboxPayment",
-      "docs": [
-        "Edit inbox payment ix"
-      ],
       "discriminator": [
         163,
         144,
@@ -1975,9 +1713,6 @@ export type PacketIDL = {
     },
     {
       "name": "editKey",
-      "docs": [
-        "Edit key ix"
-      ],
       "discriminator": [
         98,
         44,
@@ -2016,9 +1751,6 @@ export type PacketIDL = {
     },
     {
       "name": "editUser",
-      "docs": [
-        "Edit user ix"
-      ],
       "discriminator": [
         154,
         159,
@@ -2086,9 +1818,6 @@ export type PacketIDL = {
     },
     {
       "name": "extendPermit",
-      "docs": [
-        "Extend permit ix"
-      ],
       "discriminator": [
         142,
         226,
@@ -2149,9 +1878,6 @@ export type PacketIDL = {
     },
     {
       "name": "extendPermitWithEd25519Permit",
-      "docs": [
-        "Extend permit with ed25519 permit ix"
-      ],
       "discriminator": [
         233,
         88,
@@ -2212,55 +1938,7 @@ export type PacketIDL = {
       ]
     },
     {
-      "name": "initializeCompressionConfig",
-      "discriminator": [
-        133,
-        228,
-        12,
-        169,
-        56,
-        76,
-        222,
-        61
-      ],
-      "accounts": [
-        {
-          "name": "payer",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "config",
-          "writable": true
-        },
-        {
-          "name": "programData"
-        },
-        {
-          "name": "authority",
-          "signer": true
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": [
-        {
-          "name": "params",
-          "type": {
-            "defined": {
-              "name": "initConfigParams"
-            }
-          }
-        }
-      ]
-    },
-    {
       "name": "revokePermit",
-      "docs": [
-        "Revoke permit ix"
-      ],
       "discriminator": [
         1,
         245,
@@ -2317,9 +1995,6 @@ export type PacketIDL = {
     },
     {
       "name": "revokePermitWithEd25519Permit",
-      "docs": [
-        "Revoke permit with ed25519 permit ix"
-      ],
       "discriminator": [
         50,
         150,
@@ -2381,9 +2056,6 @@ export type PacketIDL = {
     },
     {
       "name": "sendMsg",
-      "docs": [
-        "Send message ix"
-      ],
       "discriminator": [
         78,
         190,
@@ -2405,37 +2077,6 @@ export type PacketIDL = {
           "writable": true
         },
         {
-          "name": "thread",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  116,
-                  104,
-                  114,
-                  101,
-                  97,
-                  100
-                ]
-              },
-              {
-                "kind": "arg",
-                "path": "params.thread_id"
-              }
-            ]
-          }
-        },
-        {
-          "name": "fromActivity",
-          "writable": true
-        },
-        {
-          "name": "toActivity",
-          "writable": true
-        },
-        {
           "name": "targetInbox",
           "writable": true,
           "optional": true
@@ -2448,6 +2089,30 @@ export type PacketIDL = {
         {
           "name": "permit",
           "optional": true
+        },
+        {
+          "name": "vault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  99,
+                  107,
+                  101,
+                  116,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              }
+            ]
+          }
         },
         {
           "name": "fromTokenAccount",
@@ -2511,6 +2176,10 @@ export type PacketIDL = {
       ],
       "args": [
         {
+          "name": "receiver",
+          "type": "pubkey"
+        },
+        {
           "name": "params",
           "type": {
             "defined": {
@@ -2521,39 +2190,7 @@ export type PacketIDL = {
       ]
     },
     {
-      "name": "updateCompressionConfig",
-      "discriminator": [
-        135,
-        215,
-        243,
-        81,
-        163,
-        146,
-        33,
-        70
-      ],
-      "accounts": [
-        {
-          "name": "config",
-          "writable": true
-        },
-        {
-          "name": "updateAuthority",
-          "signer": true
-        }
-      ],
-      "args": [
-        {
-          "name": "instructionData",
-          "type": "bytes"
-        }
-      ]
-    },
-    {
       "name": "updateInboxMetadata",
-      "docs": [
-        "Update inbox metadata ix"
-      ],
       "discriminator": [
         79,
         191,
@@ -2627,9 +2264,6 @@ export type PacketIDL = {
     },
     {
       "name": "withdrawEscrowPayment",
-      "docs": [
-        "Withdraw escrow payment ix"
-      ],
       "discriminator": [
         51,
         26,
@@ -2651,6 +2285,10 @@ export type PacketIDL = {
           "writable": true
         },
         {
+          "name": "permit",
+          "optional": true
+        },
+        {
           "name": "inbox",
           "writable": true,
           "pda": {
@@ -2667,44 +2305,17 @@ export type PacketIDL = {
               },
               {
                 "kind": "arg",
-                "path": "params.inbox_id"
-              },
-              {
-                "kind": "account",
-                "path": "owner"
-              }
-            ]
-          }
-        },
-        {
-          "name": "thread",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  116,
-                  104,
-                  114,
-                  101,
-                  97,
-                  100
-                ]
+                "path": "params.current_thread.inbox_id"
               },
               {
                 "kind": "arg",
-                "path": "params.thread_id"
+                "path": "params.current_thread.to"
               }
             ]
           }
         },
         {
-          "name": "paymentMint",
-          "writable": true
-        },
-        {
-          "name": "paymentEscrowTokenAccount",
+          "name": "escrowTokenAccount",
           "writable": true,
           "pda": {
             "seeds": [
@@ -2761,104 +2372,46 @@ export type PacketIDL = {
           }
         },
         {
-          "name": "receiverTokenAccount",
+          "name": "toTokenAccount",
           "writable": true
         },
         {
-          "name": "vaultTokenAccount",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "path": "vault"
-              },
-              {
-                "kind": "account",
-                "path": "tokenProgram"
-              },
-              {
-                "kind": "account",
-                "path": "paymentMint"
-              }
-            ],
-            "program": {
-              "kind": "const",
-              "value": [
-                140,
-                151,
-                37,
-                143,
-                78,
-                36,
-                137,
-                241,
-                187,
-                61,
-                16,
-                41,
-                20,
-                142,
-                13,
-                131,
-                11,
-                90,
-                19,
-                153,
-                218,
-                255,
-                16,
-                132,
-                4,
-                142,
-                123,
-                216,
-                219,
-                233,
-                248,
-                89
-              ]
-            }
-          }
+          "name": "paymentMint"
         },
         {
-          "name": "vault",
+          "name": "tokenProgram"
+        },
+        {
+          "name": "eventAuthority",
           "pda": {
             "seeds": [
               {
                 "kind": "const",
                 "value": [
-                  112,
-                  97,
-                  99,
-                  107,
+                  95,
+                  95,
                   101,
+                  118,
+                  101,
+                  110,
                   116,
                   95,
-                  118,
                   97,
                   117,
-                  108,
-                  116
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
                 ]
               }
             ]
           }
         },
         {
-          "name": "permit",
-          "optional": true
-        },
-        {
-          "name": "tokenProgram"
-        },
-        {
-          "name": "associatedTokenProgram",
-          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
+          "name": "program"
         }
       ],
       "args": [
@@ -2874,19 +2427,6 @@ export type PacketIDL = {
     }
   ],
   "accounts": [
-    {
-      "name": "activity",
-      "discriminator": [
-        159,
-        236,
-        145,
-        113,
-        221,
-        192,
-        137,
-        112
-      ]
-    },
     {
       "name": "agentAccount",
       "discriminator": [
@@ -2966,19 +2506,6 @@ export type PacketIDL = {
       ]
     },
     {
-      "name": "thread",
-      "discriminator": [
-        186,
-        27,
-        154,
-        111,
-        51,
-        36,
-        159,
-        90
-      ]
-    },
-    {
       "name": "user",
       "discriminator": [
         159,
@@ -2993,6 +2520,32 @@ export type PacketIDL = {
     }
   ],
   "events": [
+    {
+      "name": "escrowApproved",
+      "discriminator": [
+        87,
+        181,
+        230,
+        68,
+        208,
+        43,
+        121,
+        31
+      ]
+    },
+    {
+      "name": "escrowWithdrawn",
+      "discriminator": [
+        43,
+        206,
+        174,
+        47,
+        105,
+        219,
+        216,
+        239
+      ]
+    },
     {
       "name": "inboxArchive",
       "discriminator": [
@@ -3033,6 +2586,19 @@ export type PacketIDL = {
       ]
     },
     {
+      "name": "thread",
+      "discriminator": [
+        53,
+        2,
+        66,
+        100,
+        119,
+        114,
+        186,
+        12
+      ]
+    },
+    {
       "name": "userDecryptionKey",
       "discriminator": [
         165,
@@ -3049,96 +2615,231 @@ export type PacketIDL = {
   "errors": [
     {
       "code": 6000,
-      "name": "invalidRentSponsor",
-      "msg": "Rent sponsor mismatch"
+      "name": "unauthorized",
+      "msg": "unauthorized"
     },
     {
       "code": 6001,
-      "name": "missingSeedAccount",
-      "msg": "Missing seed account"
+      "name": "invalidKey",
+      "msg": "Invalid key"
     },
     {
       "code": 6002,
-      "name": "seedMismatch",
-      "msg": "Seed value does not match account data"
+      "name": "invalidInstruction",
+      "msg": "Invalid instruction"
     },
     {
       "code": 6003,
-      "name": "cTokenDecompressionNotImplemented",
-      "msg": "Not implemented"
+      "name": "permitRequired",
+      "msg": "Permit required"
     },
     {
       "code": 6004,
-      "name": "pdaDecompressionNotImplemented",
-      "msg": "Not implemented"
+      "name": "invalidPermit",
+      "msg": "Invalid permit"
     },
     {
       "code": 6005,
-      "name": "tokenCompressionNotImplemented",
-      "msg": "Not implemented"
+      "name": "permitExpired",
+      "msg": "Permit expired"
     },
     {
       "code": 6006,
-      "name": "pdaCompressionNotImplemented",
-      "msg": "Not implemented"
+      "name": "invalidOperator",
+      "msg": "Invalid operator"
+    },
+    {
+      "code": 6007,
+      "name": "invalidOwner",
+      "msg": "Invalid owner"
+    },
+    {
+      "code": 6008,
+      "name": "invalidReceiver",
+      "msg": "Invalid receiver"
+    },
+    {
+      "code": 6009,
+      "name": "missingEd25519Instruction",
+      "msg": "Missing Ed25519 instruction"
+    },
+    {
+      "code": 6010,
+      "name": "invalidEd25519Instruction",
+      "msg": "Invalid Ed25519 instruction"
+    },
+    {
+      "code": 6011,
+      "name": "invalidPermitSigner",
+      "msg": "Invalid permit signer"
+    },
+    {
+      "code": 6012,
+      "name": "invalidPermitMessage",
+      "msg": "Invalid permit message"
+    },
+    {
+      "code": 6013,
+      "name": "paymentRequired",
+      "msg": "Payment required"
+    },
+    {
+      "code": 6014,
+      "name": "paymentMintRequired",
+      "msg": "Payment mint required"
+    },
+    {
+      "code": 6015,
+      "name": "invalidPayment",
+      "msg": "Invalid payment"
+    },
+    {
+      "code": 6016,
+      "name": "invalidPaymentAmount",
+      "msg": "Invalid payment amount"
+    },
+    {
+      "code": 6017,
+      "name": "invalidPaymentMint",
+      "msg": "Invalid payment mint"
+    },
+    {
+      "code": 6018,
+      "name": "invalidPaymentDestination",
+      "msg": "Invalid payment destination"
+    },
+    {
+      "code": 6019,
+      "name": "paymentAccountsMissing",
+      "msg": "Payment accounts missing"
+    },
+    {
+      "code": 6020,
+      "name": "invalidPaymentAccounts",
+      "msg": "Invalid payment accounts"
+    },
+    {
+      "code": 6021,
+      "name": "invalidPaymentWallFee",
+      "msg": "Invalid payment wall fee bps"
+    },
+    {
+      "code": 6022,
+      "name": "escrowNotFound",
+      "msg": "Escrow not found"
+    },
+    {
+      "code": 6023,
+      "name": "escrowAlreadyReleased",
+      "msg": "Escrow already released"
+    },
+    {
+      "code": 6024,
+      "name": "escrowNotApproved",
+      "msg": "Escrow not approved"
+    },
+    {
+      "code": 6025,
+      "name": "escrowNotReleasable",
+      "msg": "Escrow not releasable"
+    },
+    {
+      "code": 6026,
+      "name": "inboxCorrupted",
+      "msg": "Inbox corrupted"
+    },
+    {
+      "code": 6027,
+      "name": "invalidInboxKind",
+      "msg": "Invalid inbox kind"
+    },
+    {
+      "code": 6028,
+      "name": "invalidInboxId",
+      "msg": "Invalid inbox id"
+    },
+    {
+      "code": 6029,
+      "name": "invalidTargetInboxOwner",
+      "msg": "Invalid target inbox owner"
+    },
+    {
+      "code": 6030,
+      "name": "invalidTargetInbox",
+      "msg": "Invalid target inbox"
+    },
+    {
+      "code": 6031,
+      "name": "targetInboxRequired",
+      "msg": "Target inbox required"
+    },
+    {
+      "code": 6032,
+      "name": "targetInboxNotAllowedForSelfThread",
+      "msg": "Target inbox not allowed for self-thread"
+    },
+    {
+      "code": 6033,
+      "name": "inboxNotFull",
+      "msg": "Inbox body not full"
+    },
+    {
+      "code": 6034,
+      "name": "inboxNeedsArchival",
+      "msg": "Inbox needs archival"
+    },
+    {
+      "code": 6035,
+      "name": "msgPlusArchiveParamsRequired",
+      "msg": "Msg plus archive params required or do separate archive inbox instruction"
+    },
+    {
+      "code": 6036,
+      "name": "invalidThreadId",
+      "msg": "Invalid thread id"
+    },
+    {
+      "code": 6037,
+      "name": "invalidThread",
+      "msg": "Invalid thread"
+    },
+    {
+      "code": 6038,
+      "name": "invalidActivityMint",
+      "msg": "Invalid activity mint"
+    },
+    {
+      "code": 6039,
+      "name": "invalidActivitySegmentMetadata",
+      "msg": "Invalid activity segment metadata"
+    },
+    {
+      "code": 6040,
+      "name": "duplicateActivitySegmentMetadata",
+      "msg": "Duplicate activity segment metadata"
+    },
+    {
+      "code": 6041,
+      "name": "missingActivitySegmentMetadata",
+      "msg": "Missing activity segment metadata"
+    },
+    {
+      "code": 6042,
+      "name": "missingActivityUpdateProof",
+      "msg": "Missing activity update proof"
+    },
+    {
+      "code": 6043,
+      "name": "agentIdentityNotLinkedToOwner",
+      "msg": "Agent identity account needs to have `agent_wallet` field set to owner wallet to be used as agent"
+    },
+    {
+      "code": 6044,
+      "name": "invalidAgentIdentity",
+      "msg": "Invalid agent identity"
     }
   ],
   "types": [
-    {
-      "name": "activity",
-      "docs": [
-        "`Activity` struct represents a box that holds recent thread activities for a user.",
-        "PDA derivation : `[\"activity\", owner]`"
-      ],
-      "serialization": "bytemuck",
-      "repr": {
-        "kind": "c"
-      },
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "compressionInfo",
-            "type": {
-              "defined": {
-                "name": "compressionInfo"
-              }
-            }
-          },
-          {
-            "name": "version",
-            "type": "u16"
-          },
-          {
-            "name": "len",
-            "type": "u8"
-          },
-          {
-            "name": "padding",
-            "type": {
-              "array": [
-                "u8",
-                5
-              ]
-            }
-          },
-          {
-            "name": "raw",
-            "type": {
-              "defined": {
-                "name": "segment",
-                "generics": [
-                  {
-                    "kind": "const",
-                    "value": "120"
-                  }
-                ]
-              }
-            }
-          }
-        ]
-      }
-    },
     {
       "name": "agentAccount",
       "type": {
@@ -3289,8 +2990,31 @@ export type PacketIDL = {
         "kind": "struct",
         "fields": [
           {
-            "name": "threadId",
-            "type": "u32"
+            "name": "proof",
+            "docs": [
+              "Proof for the current compressed Thread input and updated Thread output."
+            ],
+            "type": {
+              "defined": {
+                "name": "createAccountsProof"
+              }
+            }
+          },
+          {
+            "name": "threadAccountMeta",
+            "type": {
+              "defined": {
+                "name": "compressedAccountMetaPacket"
+              }
+            }
+          },
+          {
+            "name": "currentThread",
+            "type": {
+              "defined": {
+                "name": "thread"
+              }
+            }
           }
         ]
       }
@@ -3310,6 +3034,9 @@ export type PacketIDL = {
           },
           {
             "name": "optional",
+            "docs": [
+              "If optional, returns Ok(()) when the inbox body is not full."
+            ],
             "type": {
               "option": "bool"
             }
@@ -3402,81 +3129,7 @@ export type PacketIDL = {
       }
     },
     {
-      "name": "compressAndCloseParams",
-      "docs": [
-        "Parameters for compress_and_close instruction.",
-        "Matches SDK's SaveAccountsData field order for compatibility."
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "proof",
-            "docs": [
-              "Validity proof for compressed account verification"
-            ],
-            "type": {
-              "defined": {
-                "name": "validityProof"
-              }
-            }
-          },
-          {
-            "name": "compressedAccounts",
-            "docs": [
-              "Accounts to compress (meta only - data read from PDA)"
-            ],
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "compressedAccountMetaNoLamportsNoAddress"
-                }
-              }
-            }
-          },
-          {
-            "name": "systemAccountsOffset",
-            "docs": [
-              "Offset into remaining_accounts where Light system accounts begin"
-            ],
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "compressedAccountData",
-      "docs": [
-        "Compressed account data used when decompressing."
-      ],
-      "generics": [
-        {
-          "kind": "type",
-          "name": "t"
-        }
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "treeInfo",
-            "type": {
-              "defined": {
-                "name": "packedStateTreeInfo"
-              }
-            }
-          },
-          {
-            "name": "data",
-            "type": {
-              "generic": "t"
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "compressedAccountMeta",
+      "name": "compressedAccountMetaPacket",
       "type": {
         "kind": "struct",
         "fields": [
@@ -3492,42 +3145,10 @@ export type PacketIDL = {
             }
           },
           {
-            "name": "address",
-            "docs": [
-              "Address."
-            ],
-            "type": {
-              "array": [
-                "u8",
-                32
-              ]
-            }
-          },
-          {
             "name": "outputStateTreeIndex",
             "docs": [
               "Output merkle tree index."
             ],
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
-      "name": "compressedAccountMetaNoLamportsNoAddress",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "treeInfo",
-            "type": {
-              "defined": {
-                "name": "packedStateTreeInfo"
-              }
-            }
-          },
-          {
-            "name": "outputStateTreeIndex",
             "type": "u8"
           }
         ]
@@ -3567,108 +3188,6 @@ export type PacketIDL = {
                 32
               ]
             }
-          }
-        ]
-      }
-    },
-    {
-      "name": "compressionInfo",
-      "docs": [
-        "SDK CompressionInfo - a compact 24-byte struct for custom zero-copy PDAs.",
-        "",
-        "This is the lightweight version of compression info used in the SDK.",
-        "CToken has its own compression handling via `light_compressible::CompressionInfo`.",
-        "",
-        "# Memory Layout (24 bytes with #[repr(C)])",
-        "- `last_claimed_slot`: u64 @ offset 0 (8 bytes, 8-byte aligned)",
-        "- `lamports_per_write`: u32 @ offset 8 (4 bytes)",
-        "- `config_version`: u16 @ offset 12 (2 bytes)",
-        "- `state`: CompressionState @ offset 14 (1 byte)",
-        "- `_padding`: u8 @ offset 15 (1 byte)",
-        "- `rent_config`: RentConfig @ offset 16 (8 bytes, 2-byte aligned)",
-        "",
-        "Fields are ordered for optimal alignment to achieve exactly 24 bytes."
-      ],
-      "repr": {
-        "kind": "c"
-      },
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "lastClaimedSlot",
-            "docs": [
-              "Slot when rent was last claimed (epoch boundary accounting)."
-            ],
-            "type": "u64"
-          },
-          {
-            "name": "lamportsPerWrite",
-            "docs": [
-              "Lamports to top up on each write (from config, stored per-account to avoid passing config on every write)"
-            ],
-            "type": "u32"
-          },
-          {
-            "name": "configVersion",
-            "docs": [
-              "Version of the compressible config used to initialize this account."
-            ],
-            "type": "u16"
-          },
-          {
-            "name": "state",
-            "docs": [
-              "Account compression state."
-            ],
-            "type": {
-              "defined": {
-                "name": "compressionState"
-              }
-            }
-          },
-          {
-            "name": "padding",
-            "type": "u8"
-          },
-          {
-            "name": "rentConfig",
-            "docs": [
-              "Rent function parameters for determining compressibility/claims."
-            ],
-            "type": {
-              "defined": {
-                "name": "rentConfig"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "compressionState",
-      "docs": [
-        "Compression state for SDK CompressionInfo.",
-        "",
-        "This enum uses #[repr(u8)] for Pod compatibility:",
-        "- Uninitialized = 0 (default, account not yet set up)",
-        "- Decompressed = 1 (account is decompressed/active on Solana)",
-        "- Compressed = 2 (account is compressed in Merkle tree)"
-      ],
-      "repr": {
-        "kind": "rust"
-      },
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "uninitialized"
-          },
-          {
-            "name": "decompressed"
-          },
-          {
-            "name": "compressed"
           }
         ]
       }
@@ -3733,22 +3252,6 @@ export type PacketIDL = {
       }
     },
     {
-      "name": "createActivityParams",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "createAccountsProof",
-            "type": {
-              "defined": {
-                "name": "createAccountsProof"
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "createInboxParams",
       "type": {
         "kind": "struct",
@@ -3786,24 +3289,12 @@ export type PacketIDL = {
         "kind": "struct",
         "fields": [
           {
-            "name": "proof",
+            "name": "createAccountsProof",
             "type": {
               "defined": {
-                "name": "validityProof"
+                "name": "createAccountsProof"
               }
             }
-          },
-          {
-            "name": "addressTreeInfo",
-            "type": {
-              "defined": {
-                "name": "packedAddressTreeInfo"
-              }
-            }
-          },
-          {
-            "name": "outputStateTreeIndex",
-            "type": "u8"
           },
           {
             "name": "keyType",
@@ -3866,9 +3357,7 @@ export type PacketIDL = {
           {
             "name": "createAccountsProof",
             "docs": [
-              "Combined proof for:",
-              "assigned address 0 = Thread Light-PDA",
-              "assigned address 1 = Message compressed account"
+              "Proof for new compressed Thread at assigned address 0 and Message at assigned address 1."
             ],
             "type": {
               "defined": {
@@ -3879,10 +3368,6 @@ export type PacketIDL = {
           {
             "name": "threadId",
             "type": "u32"
-          },
-          {
-            "name": "to",
-            "type": "pubkey"
           },
           {
             "name": "message",
@@ -3919,80 +3404,6 @@ export type PacketIDL = {
           {
             "name": "paymentWallFeeBps",
             "type": "u16"
-          }
-        ]
-      }
-    },
-    {
-      "name": "decompressIdempotentParams",
-      "docs": [
-        "Parameters for decompress_idempotent instruction.",
-        "Generic over the variant type - each program defines its own `PackedProgramAccountVariant`.",
-        "",
-        "Field order matches `LoadAccountsData` from light-client for compatibility."
-      ],
-      "generics": [
-        {
-          "kind": "type",
-          "name": "v"
-        }
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "systemAccountsOffset",
-            "docs": [
-              "Offset into remaining_accounts where Light system accounts begin"
-            ],
-            "type": "u8"
-          },
-          {
-            "name": "tokenAccountsOffset",
-            "docs": [
-              "Accounts before this offset are PDA accounts, at and after are token accounts.",
-              "Set to accounts.len() if no token accounts."
-            ],
-            "type": "u8"
-          },
-          {
-            "name": "outputQueueIndex",
-            "docs": [
-              "Packed index of the output queue in remaining_accounts."
-            ],
-            "type": "u8"
-          },
-          {
-            "name": "proof",
-            "docs": [
-              "Validity proof for compressed account verification"
-            ],
-            "type": {
-              "defined": {
-                "name": "validityProof"
-              }
-            }
-          },
-          {
-            "name": "accounts",
-            "docs": [
-              "Accounts to decompress - wrapped in CompressedAccountData for metadata"
-            ],
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "compressedAccountData",
-                  "generics": [
-                    {
-                      "kind": "type",
-                      "type": {
-                        "generic": "v"
-                      }
-                    }
-                  ]
-                }
-              }
-            }
           }
         ]
       }
@@ -4047,10 +3458,10 @@ export type PacketIDL = {
         "kind": "struct",
         "fields": [
           {
-            "name": "proof",
+            "name": "createAccountsProof",
             "type": {
               "defined": {
-                "name": "validityProof"
+                "name": "createAccountsProof"
               }
             }
           },
@@ -4058,7 +3469,7 @@ export type PacketIDL = {
             "name": "accountMeta",
             "type": {
               "defined": {
-                "name": "compressedAccountMeta"
+                "name": "compressedAccountMetaPacket"
               }
             }
           },
@@ -4120,6 +3531,46 @@ export type PacketIDL = {
           {
             "name": "releaseSeconds",
             "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "escrowApproved",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "threadId",
+            "type": "u32"
+          },
+          {
+            "name": "approver",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "escrowWithdrawn",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "threadId",
+            "type": "u32"
+          },
+          {
+            "name": "receiver",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "mint",
+            "type": "pubkey"
           }
         ]
       }
@@ -4368,44 +3819,6 @@ export type PacketIDL = {
       }
     },
     {
-      "name": "initConfigParams",
-      "docs": [
-        "Configuration parameters for initializing compression config.",
-        "Field order matches SDK client's `InitializeCompressionConfigAnchorData`."
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "writeTopUp",
-            "type": "u32"
-          },
-          {
-            "name": "rentSponsor",
-            "type": "pubkey"
-          },
-          {
-            "name": "compressionAuthority",
-            "type": "pubkey"
-          },
-          {
-            "name": "rentConfig",
-            "type": {
-              "defined": {
-                "name": "rentConfig"
-              }
-            }
-          },
-          {
-            "name": "addressSpace",
-            "type": {
-              "vec": "pubkey"
-            }
-          }
-        ]
-      }
-    },
-    {
       "name": "keyType",
       "repr": {
         "kind": "rust"
@@ -4434,19 +3847,15 @@ export type PacketIDL = {
     {
       "name": "message",
       "docs": [
-        "`Message` struct represents a message sent from one party to another.",
-        "associated with [`Thread`].",
+        "Message content pointer/payload stored as a compressed account.",
         "",
-        "PDA derivation : `[\"msg\", thread_id, msg_seq]`"
+        "Address derivation: `[\"msg\", thread_id, msg_seq]`."
       ],
       "type": {
         "kind": "struct",
         "fields": [
           {
             "name": "discriminator",
-            "docs": [
-              "Unique identifier for the [`Message`] compressed account to be able to queried from Photon RPC"
-            ],
             "type": {
               "array": [
                 "u8",
@@ -4456,44 +3865,29 @@ export type PacketIDL = {
           },
           {
             "name": "version",
-            "docs": [
-              "Version of the account."
-            ],
             "type": "u16"
           },
           {
             "name": "threadId",
-            "docs": [
-              "Thread id associated with the message."
-            ],
             "type": "u32"
           },
           {
             "name": "msgSeq",
-            "docs": [
-              "Message sequence number in the thread, starting from 1."
-            ],
             "type": "u32"
           },
           {
             "name": "senderSide",
             "docs": [
-              "sender side"
+              "0 = thread.from, 1 = thread.to."
             ],
             "type": "u8"
           },
           {
             "name": "timestamp",
-            "docs": [
-              "Timestamp of when the message was sent"
-            ],
             "type": "i64"
           },
           {
             "name": "payment",
-            "docs": [
-              "Optional payment information associated with the message."
-            ],
             "type": {
               "option": {
                 "defined": {
@@ -4504,9 +3898,6 @@ export type PacketIDL = {
           },
           {
             "name": "messageType",
-            "docs": [
-              "Type of the message content"
-            ],
             "type": {
               "defined": {
                 "name": "messageType"
@@ -4515,10 +3906,6 @@ export type PacketIDL = {
           },
           {
             "name": "content",
-            "docs": [
-              "Actual content of the message, stored as a byte vector.",
-              "Client should be able to deserialize the content based on the message type."
-            ],
             "type": "bytes"
           }
         ]
@@ -4543,12 +3930,12 @@ export type PacketIDL = {
           },
           {
             "name": "payment",
+            "docs": [
+              "amount input only.",
+              "mint and to token accounts derived from accounts"
+            ],
             "type": {
-              "option": {
-                "defined": {
-                  "name": "payment"
-                }
-              }
+              "option": "u64"
             }
           }
         ]
@@ -4611,64 +3998,6 @@ export type PacketIDL = {
       }
     },
     {
-      "name": "packedActivity",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "version",
-            "type": "u16"
-          },
-          {
-            "name": "len",
-            "type": "u8"
-          },
-          {
-            "name": "padding",
-            "type": {
-              "array": [
-                "u8",
-                5
-              ]
-            }
-          },
-          {
-            "name": "raw",
-            "type": {
-              "defined": {
-                "name": "segment",
-                "generics": [
-                  {
-                    "kind": "const",
-                    "value": "120"
-                  }
-                ]
-              }
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "packedActivitySeeds",
-      "docs": [
-        "Packed seeds with u8 indices for Activity PDA."
-      ],
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "ownerIdx",
-            "type": "u8"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
-          }
-        ]
-      }
-    },
-    {
       "name": "packedAddressTreeInfo",
       "docs": [
         "Packed address tree info for instruction data.",
@@ -4691,38 +4020,6 @@ export type PacketIDL = {
           {
             "name": "rootIndex",
             "type": "u16"
-          }
-        ]
-      }
-    },
-    {
-      "name": "packedLightAccountVariant",
-      "docs": [
-        "Program-wide packed variant enum for efficient serialization."
-      ],
-      "type": {
-        "kind": "enum",
-        "variants": [
-          {
-            "name": "activity",
-            "fields": [
-              {
-                "name": "seeds",
-                "type": {
-                  "defined": {
-                    "name": "packedActivitySeeds"
-                  }
-                }
-              },
-              {
-                "name": "data",
-                "type": {
-                  "defined": {
-                    "name": "packedActivity"
-                  }
-                }
-              }
-            ]
           }
         ]
       }
@@ -4834,6 +4131,9 @@ export type PacketIDL = {
           },
           {
             "name": "tokenProgram",
+            "docs": [
+              "0 = SPL Token Program, 1 = Token-2022."
+            ],
             "type": "u8"
           },
           {
@@ -4886,48 +4186,6 @@ export type PacketIDL = {
             "type": {
               "option": "i64"
             }
-          }
-        ]
-      }
-    },
-    {
-      "name": "rentConfig",
-      "docs": [
-        "Rent function parameters,",
-        "used to calculate whether the account is compressible."
-      ],
-      "repr": {
-        "kind": "c"
-      },
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "baseRent",
-            "docs": [
-              "Base rent constant: rent = base_rent + num_bytes * lamports_per_byte_per_epoch"
-            ],
-            "type": "u16"
-          },
-          {
-            "name": "compressionCost",
-            "type": "u16"
-          },
-          {
-            "name": "lamportsPerBytePerEpoch",
-            "type": "u8"
-          },
-          {
-            "name": "maxFundedEpochs",
-            "type": "u8"
-          },
-          {
-            "name": "maxTopUp",
-            "docs": [
-              "Maximum lamports that can be charged per top-up operation.",
-              "Protects against griefing by accounts with high lamports_per_write."
-            ],
-            "type": "u16"
           }
         ]
       }
@@ -4996,8 +4254,7 @@ export type PacketIDL = {
           {
             "name": "createAccountsProof",
             "docs": [
-              "Single proof for:",
-              "assigned address 0 = Message compressed account"
+              "Proof for current compressed Thread input, updated Thread output, and new Message."
             ],
             "type": {
               "defined": {
@@ -5006,23 +4263,20 @@ export type PacketIDL = {
             }
           },
           {
-            "name": "createAccountsProofWithArchive",
-            "docs": [
-              "Combined proof for:",
-              "assigned address 0 = Message compressed account",
-              "assigned address 1 = InboxArchive compressed account"
-            ],
+            "name": "threadAccountMeta",
             "type": {
-              "option": {
-                "defined": {
-                  "name": "createAccountsProof"
-                }
+              "defined": {
+                "name": "compressedAccountMetaPacket"
               }
             }
           },
           {
-            "name": "threadId",
-            "type": "u32"
+            "name": "currentThread",
+            "type": {
+              "defined": {
+                "name": "thread"
+              }
+            }
           },
           {
             "name": "message",
@@ -5038,132 +4292,70 @@ export type PacketIDL = {
     {
       "name": "thread",
       "docs": [
-        "`Thread` struct represents a conversation thread between two parties.",
+        "Conversation state between two parties.",
         "",
-        "- PDA derivation : `[\"thread\", thread_id]`"
+        "Compressed account derivation: `[\"thread\", thread_id]`."
       ],
-      "serialization": "bytemuck",
-      "repr": {
-        "kind": "c"
-      },
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "compressionInfo",
-            "type": {
-              "defined": {
-                "name": "compressionInfo"
-              }
-            }
-          },
-          {
             "name": "version",
-            "docs": [
-              "Version of the account."
-            ],
             "type": "u16"
           },
           {
             "name": "lastSenderSide",
             "docs": [
-              "Indicates which party sent the last message in the thread.",
-              "0 = from, 1 = to"
+              "0 = from, 1 = to."
             ],
             "type": "u8"
           },
           {
-            "name": "padding",
-            "type": {
-              "array": [
-                "u8",
-                1
-              ]
-            }
-          },
-          {
             "name": "id",
-            "docs": [
-              "Global unique thread id"
-            ],
             "type": "u32"
           },
           {
             "name": "from",
-            "docs": [
-              "Wallet address of the first party in the conversation thread."
-            ],
             "type": "pubkey"
           },
           {
             "name": "to",
-            "docs": [
-              "Wallet address of the second party in the conversation thread."
-            ],
             "type": "pubkey"
           },
           {
             "name": "inboxId",
             "docs": [
-              "Optional inbox id.",
-              "",
-              "If the [`Thread`] is associated with an [`Inbox`], this field will be inbox_id, otherwise u64::MAX."
+              "`NO_INBOX_ID` when the thread is not associated with an inbox."
             ],
             "type": "u64"
           },
           {
             "name": "totalMsgs",
-            "docs": [
-              "Message count for the `from` and `to` wallet addresses"
-            ],
             "type": "u32"
           },
           {
             "name": "lastMsgSeq",
-            "docs": [
-              "Sequence number of the last message in the thread"
-            ],
             "type": "u32"
           },
           {
             "name": "lastUpdated",
-            "docs": [
-              "Timestamp of the last message in the thread"
-            ],
             "type": "i64"
           },
           {
             "name": "lastReadSeqFrom",
-            "docs": [
-              "Last read message sequence number for the `from` wallet address."
-            ],
             "type": "u32"
           },
           {
             "name": "lastReadSeqTo",
-            "docs": [
-              "Last read message sequence number for the `to` wallet address."
-            ],
             "type": "u32"
           },
           {
             "name": "escrowPayment",
-            "docs": [
-              "Optional escrow payment info for the thread"
-            ],
             "type": {
-              "defined": {
-                "name": "cOption",
-                "generics": [
-                  {
-                    "kind": "type",
-                    "type": {
-                      "defined": {
-                        "name": "threadEscrowInfo"
-                      }
-                    }
-                  }
-                ]
+              "option": {
+                "defined": {
+                  "name": "threadEscrowInfo"
+                }
               }
             }
           }
@@ -5172,9 +4364,6 @@ export type PacketIDL = {
     },
     {
       "name": "threadEscrowInfo",
-      "repr": {
-        "kind": "c"
-      },
       "type": {
         "kind": "struct",
         "fields": [
@@ -5192,16 +4381,10 @@ export type PacketIDL = {
           },
           {
             "name": "tokenProgram",
+            "docs": [
+              "0 = SPL Token Program, 1 = Token-2022."
+            ],
             "type": "u8"
-          },
-          {
-            "name": "padding",
-            "type": {
-              "array": [
-                "u8",
-                4
-              ]
-            }
           },
           {
             "name": "releaseTime",
@@ -5321,12 +4504,31 @@ export type PacketIDL = {
         "kind": "struct",
         "fields": [
           {
-            "name": "inboxId",
-            "type": "u64"
+            "name": "proof",
+            "docs": [
+              "Proof for the current compressed Thread input and updated Thread output."
+            ],
+            "type": {
+              "defined": {
+                "name": "createAccountsProof"
+              }
+            }
           },
           {
-            "name": "threadId",
-            "type": "u32"
+            "name": "threadAccountMeta",
+            "type": {
+              "defined": {
+                "name": "compressedAccountMetaPacket"
+              }
+            }
+          },
+          {
+            "name": "currentThread",
+            "type": {
+              "defined": {
+                "name": "thread"
+              }
+            }
           }
         ]
       }

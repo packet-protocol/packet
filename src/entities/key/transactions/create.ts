@@ -1,14 +1,14 @@
 import {
-    ComputeBudgetProgram,
     Connection,
     PublicKey,
-    Transaction,
 } from "@solana/web3.js";
 import type { Rpc } from "@lightprotocol/stateless.js";
 
 import type { PacketProgram } from "../../../providers/program";
-import { CreateKeyIx } from "../instructions/create";
 import type { CreateUserKeyParams } from "../types";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
+import { HandleTxPipeline } from "../../..";
+import { CreateKeyPipeline } from "../pipeline/create";
 
 export async function CreateKeyTx(
     connection: Connection,
@@ -16,28 +16,28 @@ export async function CreateKeyTx(
     signer: PublicKey,
     program: PacketProgram,
     params: CreateUserKeyParams = {},
-    priorityFee = 1000,
-): Promise<Transaction> {
-    const tx = new Transaction();
+    options?: PacketIxOptions & PacketTxOptions
+) {
 
-    tx.add(
-        ComputeBudgetProgram.setComputeUnitLimit({
-            units: 500_000,
-        }),
+    let computeUnits = 200_000;
+
+    // pipeline
+    const { pipeline } = await CreateKeyPipeline(
+        rpc,
+        signer,
+        program,
+        params,
+        options
     );
 
-    if (priorityFee) {
-        tx.add(
-            ComputeBudgetProgram.setComputeUnitPrice({
-                microLamports: priorityFee,
-            }),
-        );
-    }
+    // main tx
+    const txs = await HandleTxPipeline(pipeline, {
+        connection,
+        payer: signer,
+        computeUnits,
+        priorityFee: options?.priorityFee,
+        lookupTables: options?.lookupTables
+    });
 
-    tx.add(await CreateKeyIx(rpc, signer, program, params));
-
-    tx.feePayer = signer;
-    tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-
-    return tx;
+    return txs;
 }

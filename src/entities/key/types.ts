@@ -25,10 +25,6 @@ export type UserDecryptionKey = {
 };
 
 export type CreateUserKeyParams = {
-    /**
-     * Logical key owner. Defaults to current wallet.
-     */
-    owner?: PublicKey;
 
     /**
      * Public encryption key bytes.
@@ -45,7 +41,6 @@ export type CreateUserKeyParams = {
 };
 
 export type EditUserKeyParams = {
-    owner?: PublicKey;
 
     /**
      * New public encryption key bytes.

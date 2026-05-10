@@ -2,7 +2,6 @@ import { Connection, PublicKey, TransactionInstruction } from "@solana/web3.js";
 import BN from "bn.js";
 
 import type { MessageType } from "../types";
-import type { Payment } from "../../payment/types";
 import type { ThreadInfo } from "../../thread/types";
 
 import {
@@ -32,12 +31,7 @@ export type CreateMessageInputAndAccountsParams = {
     payment?: SendMsgPaymentParams | DisabledPayment;
     targetInbox?: Inbox;
     threadInfo: ThreadInfo;
-    skipActivityCreation?: boolean;
     skipInboxArchivalIx?: boolean;
-    /**
-     * only valid for already existing threads.
-     */
-    skipThreadLoad?: boolean;
 };
 
 export type SendMsgPaymentParams = {
@@ -45,8 +39,8 @@ export type SendMsgPaymentParams = {
     mint: PublicKey;
     fromTokenAccount?: PublicKey;
     to?:
-    | { type: "ata"; owner?: PublicKey; skipCheck?: boolean }
-    | { type: "raw"; address: PublicKey };
+        | { type: "ata"; owner?: PublicKey; skipCheck?: boolean }
+        | { type: "raw"; address: PublicKey };
     tokenProgram?: PublicKey;
 };
 
@@ -58,7 +52,9 @@ export type ResolvedMessageInputAndAccounts = {
     message: {
         messageType: ReturnType<typeof MessageTypeToAnchorEnum>;
         content: Buffer;
-        payment: Payment | null;
+
+        // Rust: Option<u64>
+        payment: BN | null;
     };
     accounts: {
         signer: PublicKey;
@@ -71,7 +67,7 @@ export type ResolvedMessageInputAndAccounts = {
             paymentMint: PublicKey;
             fromTokenAccount: PublicKey;
             toTokenAccount: PublicKey;
-            vaultTokenAccount?: PublicKey;
+            vaultTokenAccount: PublicKey | null;
             tokenProgram: PublicKey;
             associatedTokenProgram: PublicKey;
         } | null;
@@ -82,12 +78,34 @@ export type ResolvedMessageInputAndAccounts = {
     };
 };
 
+export function resolveThreadReceiver(
+    sender: PublicKey,
+    thread: ThreadInfo,
+): PublicKey {
+    if (sender.equals(thread.from)) return thread.to;
+    if (sender.equals(thread.to)) return thread.from;
+
+    throw new Error("Sender is not a party of this thread");
+}
+
 export const ResolveMessageInputAndAccounts = async (
     connection: Connection,
+    signer: PublicKey,
     sender: PublicKey,
     params: CreateMessageInputAndAccountsParams,
     creatingThread: boolean = false,
 ): Promise<ResolvedMessageInputAndAccounts> => {
+
+    if (params.content.length > 128) {
+        console.warn(
+            `xpk-sdk: Content length (${params.content.length}) exceeds 128 bytes, which transaction may fail due to transaction size limits.`,
+        );
+    }
+
+    const receiver = creatingThread
+        ? params.threadInfo.to
+        : resolveThreadReceiver(sender, params.threadInfo);
+
     let targetInboxAccounts: {
         targetInbox: PublicKey;
         targetInboxBody?: PublicKey;
@@ -111,7 +129,7 @@ export const ResolveMessageInputAndAccounts = async (
     let paymentAccounts: ResolvedMessageInputAndAccounts["accounts"]["paymentAccounts"] =
         null;
 
-    let messagePayment: Payment | null = null;
+    let messagePayment: BN | null = null;
 
     const inferTokenProgramFromMint = async (
         mint: PublicKey,
@@ -150,7 +168,7 @@ export const ResolveMessageInputAndAccounts = async (
         if (!ataExists) {
             tokenAccountInstructions.push(
                 CreateAssociatedTokenAccountIx(
-                    sender,
+                    signer,
                     owner,
                     mint,
                     tokenProgramId,
@@ -172,7 +190,7 @@ export const ResolveMessageInputAndAccounts = async (
         ) {
             tokenProgram =
                 TokenProgramTypeToProgramId[
-                params.targetInbox.paymentRule.tokenProgram
+                    params.targetInbox.paymentRule.tokenProgram
                 ];
         } else {
             tokenProgram = await inferTokenProgramFromMint(mint);
@@ -184,10 +202,6 @@ export const ResolveMessageInputAndAccounts = async (
 
         let toTokenAccount: PublicKey | null = null;
 
-        //
-        // If target inbox has a non-escrow payment rule and the requested destination
-        // matches the rule destination, use it without an ATA existence check.
-        //
         if (
             params.targetInbox?.paymentRule &&
             params.targetInbox.paymentRule.escrow === null &&
@@ -195,7 +209,7 @@ export const ResolveMessageInputAndAccounts = async (
         ) {
             if (params.payment.to) {
                 if (params.payment.to.type === "ata") {
-                    const owner = params.payment.to.owner ?? params.threadInfo.to;
+                    const owner = params.payment.to.owner ?? receiver;
                     const ata = Pda.associatedTokenAddress(
                         mint,
                         owner,
@@ -205,7 +219,7 @@ export const ResolveMessageInputAndAccounts = async (
                     if (ata.equals(params.targetInbox.paymentRule.inner.to)) {
                         toTokenAccount = ata;
                     }
-                } else if (params.payment.to.type === "raw") {
+                } else {
                     if (
                         params.payment.to.address.equals(
                             params.targetInbox.paymentRule.inner.to,
@@ -217,7 +231,7 @@ export const ResolveMessageInputAndAccounts = async (
             } else {
                 const ata = Pda.associatedTokenAddress(
                     mint,
-                    params.threadInfo.to,
+                    receiver,
                     tokenProgram,
                 );
 
@@ -227,14 +241,10 @@ export const ResolveMessageInputAndAccounts = async (
             }
         }
 
-        //
-        // Normal recipient account resolution.
-        //
         if (toTokenAccount === null) {
             if (params.payment.to) {
                 if (params.payment.to.type === "ata") {
-                    const recipientOwner =
-                        params.payment.to.owner ?? params.threadInfo.to;
+                    const recipientOwner = params.payment.to.owner ?? receiver;
 
                     toTokenAccount = Pda.associatedTokenAddress(
                         mint,
@@ -249,20 +259,27 @@ export const ResolveMessageInputAndAccounts = async (
                             tokenProgram,
                         );
                     }
-                } else if (params.payment.to.type === "raw") {
-                    toTokenAccount = params.payment.to.address;
                 } else {
-                    throw new Error("Invalid payment recipient type");
+                    toTokenAccount = params.payment.to.address;
                 }
             } else {
-                if (!(creatingThread && params.targetInbox && params.targetInbox.paymentRule && params.targetInbox.paymentRule.escrow !== null)) {
+                // Escrow create-thread can derive/use destination from accounts/rule.
+                if (
+                    !(
+                        creatingThread &&
+                        params.targetInbox &&
+                        params.targetInbox.paymentRule &&
+                        params.targetInbox.paymentRule.escrow !== null
+                    )
+                ) {
                     toTokenAccount = Pda.associatedTokenAddress(
                         mint,
-                        params.threadInfo.to,
+                        receiver,
                         tokenProgram,
                     );
+
                     await ensureAtaExists(
-                        params.threadInfo.to,
+                        receiver,
                         mint,
                         tokenProgram,
                     );
@@ -270,19 +287,36 @@ export const ResolveMessageInputAndAccounts = async (
             }
         }
 
-        // If mint is WSOL, make sure sender has enough wrapped SOL in their ATA
-        // for manual payment-attached messages too.
-        if (mint.equals(WSOL_ID)) {
+        if (!toTokenAccount) {
+            if (
+                creatingThread &&
+                params.targetInbox?.paymentRule?.escrow !== null &&
+                params.targetInbox?.paymentRule
+            ) {
+                toTokenAccount = params.targetInbox.paymentRule.inner.to;
+            } else {
+                throw new Error("Unable to resolve payment destination account");
+            }
+        }
 
-            if (params.threadInfo.from.equals(params.threadInfo.to)) {
-                if (toTokenAccount.equals(fromTokenAccount)) {
-                    if (tokenAccountInstructions.length > 0) {
-                        tokenAccountInstructions.splice(0, tokenAccountInstructions.length);
-                    }
-                }
+        if (mint.equals(WSOL_ID)) {
+            if (
+                sender.equals(receiver) &&
+                toTokenAccount.equals(fromTokenAccount)
+            ) {
+                tokenAccountInstructions.splice(
+                    0,
+                    tokenAccountInstructions.length,
+                );
             }
 
-            const ix = await EnsureWrappedSolAmountForAtaIx(connection, sender, params.payment.amount);
+            const ix = await EnsureWrappedSolAmountForAtaIx(
+                connection,
+                signer,
+                sender,
+                params.payment.amount,
+            );
+
             tokenAccountInstructions.push(...ix);
         }
 
@@ -290,13 +324,11 @@ export const ResolveMessageInputAndAccounts = async (
             paymentMint: mint,
             fromTokenAccount,
             toTokenAccount,
+            vaultTokenAccount: null,
             tokenProgram,
             associatedTokenProgram,
         };
 
-        //
-        // Validate against target inbox payment rule when creating a thread.
-        //
         if (
             creatingThread &&
             params.targetInbox &&
@@ -327,11 +359,7 @@ export const ResolveMessageInputAndAccounts = async (
             );
 
             if (paymentRule.escrow !== null) {
-                const expected = Pda.associatedTokenAddress(
-                    mint,
-                    params.threadInfo.to,
-                    tokenProgram,
-                );
+                const expected = paymentRule.inner.to;
 
                 if (!expected.equals(toTokenAccount)) {
                     throw new Error(
@@ -345,20 +373,14 @@ export const ResolveMessageInputAndAccounts = async (
             }
         }
 
-        messagePayment = {
-            amount: params.payment.amount,
-            mint,
-            to: toTokenAccount,
-        };
+        // Rust MessageInput.payment = Option<u64>
+        messagePayment = params.payment.amount;
     } else if (
         creatingThread &&
         params.targetInbox &&
         params.targetInbox.paymentRule &&
         (params.payment === undefined || !("disable" in params.payment))
     ) {
-        //
-        // Auto-fill payment accounts from target inbox payment rule.
-        //
         const paymentRule = params.targetInbox.paymentRule;
         const mint = paymentRule.inner.mint;
         const associatedTokenProgram = ASSOCIATED_TOKEN_PROGRAM_ID;
@@ -375,24 +397,30 @@ export const ResolveMessageInputAndAccounts = async (
 
         if (paymentRule.escrow === null) {
             await ensureAtaExists(
-                params.threadInfo.to,
+                receiver,
                 mint,
                 tokenProgram,
             );
         }
 
-        // If mint is WSOL, ensure the sender has enough lamports in their WSOL account.
-        // Which creates three possible ixs: create WSOL ata, transfer lamports to it, sync it.
         if (mint.equals(WSOL_ID)) {
-            if (params.threadInfo.from.equals(params.threadInfo.to)) {
-                if (toTokenAccount.equals(fromTokenAccount)) {
-                    if (tokenAccountInstructions.length > 0) {
-                        tokenAccountInstructions.splice(0, tokenAccountInstructions.length);
-                    }
-                }
+            if (
+                sender.equals(receiver) &&
+                toTokenAccount.equals(fromTokenAccount)
+            ) {
+                tokenAccountInstructions.splice(
+                    0,
+                    tokenAccountInstructions.length,
+                );
             }
 
-            const ix = await EnsureWrappedSolAmountForAtaIx(connection, sender, paymentRule.inner.amount);
+            const ix = await EnsureWrappedSolAmountForAtaIx(
+                connection,
+                signer,
+                sender,
+                paymentRule.inner.amount,
+            );
+
             tokenAccountInstructions.push(...ix);
         }
 
@@ -409,11 +437,8 @@ export const ResolveMessageInputAndAccounts = async (
             ),
         };
 
-        messagePayment = {
-            amount: paymentRule.inner.amount,
-            mint,
-            to: toTokenAccount,
-        };
+        // Rust MessageInput.payment = Option<u64>
+        messagePayment = paymentRule.inner.amount;
     }
 
     return {
@@ -423,7 +448,7 @@ export const ResolveMessageInputAndAccounts = async (
             payment: messagePayment,
         },
         accounts: {
-            signer: sender,
+            signer,
             sender,
             targetInboxAccounts,
             paymentAccounts,

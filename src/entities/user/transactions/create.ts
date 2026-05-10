@@ -1,41 +1,39 @@
 import {
-    ComputeBudgetProgram,
     Connection,
     PublicKey,
-    Transaction,
 } from "@solana/web3.js";
 
 import type { PacketProgram } from "../../../providers/program";
-import { CreateUserIx } from "../instructions/create";
 import type { CreateUserParams } from "../types";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
+import { CreateUserPipeline } from "../pipeline/create";
+import { HandleTxPipeline } from "../../..";
 
 export async function CreateUserTx(
     connection: Connection,
     signer: PublicKey,
     program: PacketProgram,
     params: CreateUserParams,
-    priorityFee = 1000,
-): Promise<Transaction> {
-    const tx = new Transaction();
+    options?: PacketIxOptions & PacketTxOptions
+) {
+    let computeUnits = 200_000;
 
-    tx.add(
-        ComputeBudgetProgram.setComputeUnitLimit({
-            units: 200_000,
-        }),
+    // pipeline
+    const { pipeline } = await CreateUserPipeline(
+        signer,
+        program,
+        params,
+        options
     );
 
-    if (priorityFee) {
-        tx.add(
-            ComputeBudgetProgram.setComputeUnitPrice({
-                microLamports: priorityFee,
-            }),
-        );
-    }
+    // main tx
+    const txs = await HandleTxPipeline(pipeline, {
+        connection,
+        payer: signer,
+        computeUnits,
+        priorityFee: options?.priorityFee,
+        lookupTables: options?.lookupTables
+    });
 
-    tx.add(await CreateUserIx(signer, program, params));
-
-    tx.feePayer = signer;
-    tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-
-    return tx;
+    return txs;
 }

@@ -48,3 +48,9 @@ export function randomThreadId(): number {
   if (x === 0) x = 1;
   return x;
 }
+
+export function bytesToHex(bytes: Uint8Array): string {
+    return [...bytes]
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+}

@@ -1,4 +1,3 @@
-import * as anchor from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
 import { bn, type Rpc } from "@lightprotocol/stateless.js";
 

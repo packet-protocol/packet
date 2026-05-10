@@ -19,12 +19,12 @@ import { EscrowWithdrawTx } from "../transactions/escrow-withdraw";
 import { EscrowApproveTx } from "../transactions/escrow-approve";
 import BN from "bn.js";
 import { NO_INBOX } from "../../../constants";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
 export type SendMsgParams = {
     messageType: MessageType,
     content: string,
     msgSeq?: number;
     payment?: SendMsgPaymentParams,
-    skipActivityCreation?: boolean;
     skipInboxArchivalIx?: boolean;
 }
 
@@ -39,10 +39,9 @@ export type CreateThreadParams = SendFirstMsgParams & {
 
 export class ThreadClient {
     private thread?: Thread;
-    private inbox?: InboxClient;
+
     private initialized = false;
 
-    private lastMessage?: MessageClient;
 
     private constructor(
         private readonly client: PacketClient,
@@ -50,6 +49,8 @@ export class ThreadClient {
         readonly id: number,
         readonly from?: PublicKey,
         readonly to?: PublicKey,
+        private inbox?: InboxClient,
+        private lastMessage?: MessageClient,
     ) { }
 
     get Loaded(): boolean {
@@ -85,13 +86,17 @@ export class ThreadClient {
 
     static Create = async (params: {
         client: PacketClient,
-        params: CreateThreadParams
+        params: CreateThreadParams,
+        options?: PacketIxOptions & PacketTxOptions,
     }): Promise<TxReceiptWithClient<ThreadClient>> => {
         const { InboxClient: IC } = await import("../../inbox/client/inbox");
         const threadId = params.params.threadId ?? randomThreadId();
         const address = Pda.threadPda(threadId);
 
-        const lookupTables = await params.client.loadLookupTables();
+        const optionsOverride = params.options ?? params.client.defaultTxOptions ?? {};
+
+        if (!optionsOverride.lookupTables)
+            optionsOverride.lookupTables = await params.client.loadLookupTables();
 
         const tx = await CreateThreadTx(
             params.client.connection,
@@ -110,7 +115,7 @@ export class ThreadClient {
                     to: params.params.to,
                 }
             },
-            lookupTables
+            optionsOverride
         );
 
         const transactionClient = new PacketTransactionClient(params.client.connection);
@@ -118,81 +123,132 @@ export class ThreadClient {
 
         await transactionClient.sign(params.client.wallet);
 
-        const signatures = await transactionClient.submitAndConfirm(params.client.wallet);
+        const signatures = await transactionClient.submitAndConfirm(params.client.wallet, optionsOverride?.options);
 
         try {
             return {
                 receipt: signatures,
-                client: await ThreadClient.Load({
+                client: await ThreadClient.Handle({
                     client: params.client,
-                    id: address,
+                    id: threadId,
+                }).loadRetrying({
                     inbox: params.params.targetInbox instanceof IC ? params.params.targetInbox : undefined,
                 })
             };
         } catch (error) {
-            throw new Error(`Failed to load thread ${address.toBase58()} after creation: ${error instanceof Error ? error.message : String(error)}`);
+            throw new Error(`Failed to load thread ${address.toBase58()} after creation: ${error instanceof Error ? error.message : String(error)}, signatures: ${signatures.join(", ")}`);
         }
     }
 
     static Handle(params: {
         client: PacketClient;
-        threadId: number;
+        id: BN | number;
     }): ThreadClient {
-        const address = Pda.threadPda(params.threadId);
+        const address = Pda.threadPda(params.id instanceof BN ? params.id.toNumber() : params.id);
 
         return new ThreadClient(
             params.client,
             address,
-            params.threadId,
+            params.id instanceof BN ? params.id.toNumber() : params.id,
         );
     }
 
-    static async LoadById(params: {
+    static FromAddress = (params: {
         client: PacketClient;
-        threadId: number;
-    }): Promise<ThreadClient> {
-        const thread = ThreadClient.Handle(params);
-        await thread.load();
-        return thread;
+        address: PublicKey;
+        inbox?: Inbox | InboxClient;
+    }): Pick<ThreadClient, "load" | "loadRetrying"> => {
+
+        const thread = new ThreadClient(
+            params.client,
+            params.address,
+            0, // threadId is not known at this point, but it will be loaded in load()
+        );
+
+        return {
+            load: thread.load.bind(thread),
+            loadRetrying: thread.loadRetrying.bind(thread),
+        }
+    };
+
+    static FromThread(params: {
+        client: PacketClient;
+        thread: Thread | ThreadClient;
+    }): ThreadClient {
+        if (params.thread.id === 0) {
+            throw new Error("Thread ID cannot be 0");
+        }
+        const client = new ThreadClient(
+            params.client,
+            Pda.threadPda(params.thread.id),
+            params.thread.id,
+            params.thread.from,
+            params.thread.to,
+            params.thread instanceof ThreadClient ? params.thread.Inbox : undefined,
+            params.thread instanceof ThreadClient ? params.thread.LastMessage : undefined,
+        );
+
+        client.thread = params.thread instanceof ThreadClient ? params.thread.Thread : params.thread;
+
+        client.initialized = params.thread instanceof ThreadClient ? params.thread.Loaded :
+            params.thread.inboxId ? false : true; // if thread has inboxId, we need to load it to determine if it's loaded or not
+
+        return client;
     }
 
-    static async Load(params: {
-        client: PacketClient;
-        id: PublicKey | BN | number;
-        inbox?: Inbox | InboxClient;
-    }): Promise<ThreadClient> {
-        const threadAddress =
-            params.id instanceof PublicKey
-                ? params.id
-                : Pda.threadPda(params.id instanceof BN ? params.id.toNumber() : params.id);
+    async load({ force = false, inbox }: { force?: boolean, inbox?: Inbox | InboxClient } = {}): Promise<this> {
+        if (this.initialized && !force) {
+            return this;
+        }
 
         const account = await GetThreadAccount(
-            params.client.connection,
-            params.client.lightRpc,
-            params.client.program,
-            threadAddress,
+            this.client.lightRpc,
+            this.client.program,
+            this.address,
         );
 
         if (!account) {
             throw new Error("Thread does not exist");
         }
 
-        const thread = ThreadAccountToThread(account.data, account.address);
+        this.thread = ThreadAccountToThread(account.data, account.address);
+        await this.loadInbox({ inbox });
 
-        const client = new ThreadClient(
-            params.client,
-            account.address,
-            thread.id,
-            thread.from,
-            thread.to,
-        );
+        this.initialized = true;
 
-        client.thread = thread;
-        await client.loadInbox({ inbox: params.inbox });
+        return this;
+    }
 
-        client.initialized = true;
+    async loadFromAccount(params: {
+        account: anchor.IdlEvents<PacketIDL>["thread"],
+        inbox?: Inbox | InboxClient | undefined,
+    }): Promise<ThreadClient> {
+        const thread = ThreadAccountToThread(params.account, Pda.threadPda(params.account.id));
 
-        return client;
+        this.thread = thread;
+        await this.loadInbox({ inbox: params.inbox });
+
+        this.initialized = true;
+
+        return this;
+    }
+
+    async loadRetrying({ retries = 3, delay = 250, force, inbox }: { retries?: number, delay?: number, force?: boolean, inbox?: Inbox | InboxClient } = {}): Promise<this> {
+        for (let i = 0; i < retries; i++) {
+            try {
+                return await this.load({ force, inbox });
+            } catch (error) {
+                if (i === retries - 1) {
+                    throw error;
+                }
+                await new Promise((resolve) => setTimeout(resolve, delay));
+            }
+        }
+        return this;
+    }
+
+    async refresh(params?: Omit<Parameters<typeof this.loadRetrying>[0], "force">): Promise<this> {
+        return this.loadRetrying({ ...params, force: true });
     }
 
     private async loadInbox(params?: { inbox?: Inbox | InboxClient }) {
@@ -218,69 +274,6 @@ export class ThreadClient {
         }
 
         return this
-    }
-
-    static async LoadFromThread(params: {
-        client: PacketClient;
-        thread: Thread | ThreadClient;
-    }): Promise<ThreadClient> {
-        const client = new ThreadClient(
-            params.client,
-            Pda.threadPda(params.thread.id),
-            params.thread.id,
-            params.thread.from,
-            params.thread.to,
-        );
-
-        client.thread = params.thread instanceof ThreadClient ? params.thread.Thread : params.thread;
-        await client.loadInbox({ inbox: params.thread instanceof ThreadClient ? params.thread.Inbox : undefined });
-
-        
-        client.initialized = true;
-
-        return client;
-    }
-
-    async loadFromAccount(params: {
-        account: anchor.IdlAccounts<PacketIDL>["thread"],
-        inbox?: Inbox | InboxClient | undefined,
-    }): Promise<ThreadClient> {
-        const thread = ThreadAccountToThread(params.account, Pda.threadPda(params.account.id));
-
-        this.thread = thread;
-        await this.loadInbox({ inbox: params.inbox });
-
-        this.initialized = true;
-
-        return this;
-    }
-
-    async load(force = false): Promise<this> {
-        if (this.initialized && !force) {
-            return this;
-        }
-
-        const account = await GetThreadAccount(
-            this.client.connection,
-            this.client.lightRpc,
-            this.client.program,
-            this.address,
-        );
-
-        if (!account) {
-            throw new Error("Thread does not exist");
-        }
-
-        this.thread = ThreadAccountToThread(account.data, account.address);
-        await this.loadInbox();
-
-        this.initialized = true;
-
-        return this;
-    }
-
-    async refresh(): Promise<this> {
-        return this.load(true);
     }
 
     getMessage(seq: number): MessageClient {
@@ -321,6 +314,7 @@ export class ThreadClient {
         limit?: number;
         fromSeq?: number;
         direction?: "backward" | "forward";
+        limitConcurrentFetch?: number;
     } = {}): Promise<MessageClient[]> {
         await this.load();
 
@@ -344,16 +338,25 @@ export class ThreadClient {
 
         const messages = seqs.map((seq) => this.getMessage(seq));
 
-        await Promise.all(messages.map((message) => message.load()));
+        const limitConcurrentFetch = options.limitConcurrentFetch ?? 10;
+
+        for (let i = 0; i < messages.length; i += limitConcurrentFetch) {
+            await Promise.all(
+                messages.slice(i, i + limitConcurrentFetch).map((msg) => msg.load()),
+            );
+        }
 
         return messages;
     }
 
     // send message
-    async sendMessage(params: SendMsgParams): Promise<TxReceiptWithClient<MessageClient>> {
+    async sendMessage(params: SendMsgParams, options?: PacketIxOptions & PacketTxOptions): Promise<TxReceiptWithClient<MessageClient>> {
         const msgSeq = params.msgSeq ?? (await this.load()).Thread.lastMsgSeq + 1;
 
-        const lookupTables = await this.client.loadLookupTables();
+        const optionsOverride = options ?? this.client.defaultTxOptions ?? {};
+
+        if (!optionsOverride.lookupTables)
+            optionsOverride.lookupTables = await this.client.loadLookupTables();
 
         const tx = await SendMsgTx(
             this.client.connection,
@@ -367,16 +370,15 @@ export class ThreadClient {
                 payment: params.payment,
                 targetInbox: this.Inbox ? this.Inbox.Inbox : undefined,
                 threadInfo: this.ThreadInfo,
-                skipActivityCreation: params.skipActivityCreation,
                 skipInboxArchivalIx: params.skipInboxArchivalIx,
             },
-            lookupTables,
+            optionsOverride,
         )
 
         const transactionClient = new PacketTransactionClient(this.client.connection);
         transactionClient.addTransaction(...tx);
 
-        const signatures = await transactionClient.submitAndConfirm(this.client.wallet);
+        const signatures = await transactionClient.submitAndConfirm(this.client.wallet, optionsOverride?.options);
 
         try {
             return {
@@ -389,21 +391,25 @@ export class ThreadClient {
     }
 
     // approve escrow
-    async approveEscrow(params: { skipActivityCreation?: boolean } = {}): Promise<TxReceiptWithClient<ThreadClient>> {
+    async approveEscrow(params?: {
+        options?: PacketIxOptions & PacketTxOptions,
+    }): Promise<TxReceiptWithClient<ThreadClient>> {
+
+        const optionsOverride = params.options ?? this.client.defaultTxOptions ?? {};
 
         const tx = await EscrowApproveTx(
-            this.client.connection,
             this.client.lightRpc,
+            this.client.connection,
             this.client.walletPublicKey,
             this.client.program,
             this.Thread,
-            params,
+            optionsOverride
         );
 
         const transactionClient = new PacketTransactionClient(this.client.connection);
         transactionClient.addTransaction(...tx);
 
-        const signatures = await transactionClient.submitAndConfirm(this.client.wallet);
+        const signatures = await transactionClient.submitAndConfirm(this.client.wallet, optionsOverride?.options);
 
         await this.refresh();
 
@@ -414,23 +420,32 @@ export class ThreadClient {
     }
 
     // withdraw escrow
-    async withdrawEscrow(receiverTokenAccount?: PublicKey): Promise<TxReceiptWithClient<ThreadClient>> {
+    async withdrawEscrow(params?: {
+        receiverTokenAccount?: PublicKey,
+        options?: PacketIxOptions & PacketTxOptions,
+    }): Promise<TxReceiptWithClient<ThreadClient>> {
+
+        const optionsOverride = params?.options ?? this.client.defaultTxOptions ?? {};
 
         const tx = await EscrowWithdrawTx(
+            this.client.lightRpc,
             this.client.connection,
             this.client.walletPublicKey,
             this.client.program,
-            this.Thread,
-            receiverTokenAccount,
+            {
+                thread: this.Thread,
+                receiverTokenAccount: params?.receiverTokenAccount,
+            },
+            optionsOverride
         );
 
         const transactionClient = new PacketTransactionClient(this.client.connection);
         transactionClient.addTransaction(...tx);
 
-        const signatures = await transactionClient.submitAndConfirm(this.client.wallet);
+        const signatures = await transactionClient.submitAndConfirm(this.client.wallet, optionsOverride?.options);
 
         await this.refresh();
-        
+
         return {
             receipt: signatures,
             client: this,

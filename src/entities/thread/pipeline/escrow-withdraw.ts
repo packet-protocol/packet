@@ -8,18 +8,30 @@ import { CheckIfAssociatedTokenAccountExists } from "../../../providers/token/he
 import { CreateAssociatedTokenAccountIx, WSolCloseAccountIx } from "../../../providers/token/instructions";
 import { TokenProgramType } from "../../payment";
 import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, WSOL_ID } from "../../../constants";
+import type { Rpc } from "@lightprotocol/stateless.js";
+import type { PacketIxOptions } from "../../transaction/types";
 
 export type CreateEscrowWithdrawPipelineResult = {
     pipeline: PipelineBase
 }
 
 export const CreateEscrowWithdrawPipeline = async (
+    rpc: Rpc,
     connection: Connection,
-    sender: PublicKey,
+    signer: PublicKey,
     program: PacketProgram,
-    thread: Thread,
-    receiverTokenAccount?: PublicKey,
+    {
+        thread,
+        receiverTokenAccount,
+    }: {
+
+        thread: Thread,
+        receiverTokenAccount?: PublicKey,
+    },
+    options?: PacketIxOptions,
 ) => {
+    const sender = options?.owner ?? signer;
+
     let pipeline: Partial<PipelineBase> = {};
     let result: Partial<CreateEscrowWithdrawPipelineResult> = {};
 
@@ -40,7 +52,7 @@ export const CreateEscrowWithdrawPipeline = async (
 
         if (!exists) {
             let ix = CreateAssociatedTokenAccountIx(
-                sender,
+                signer,
                 sender,
                 thread.escrowPayment!.mint,
                 tokenProgram
@@ -51,8 +63,9 @@ export const CreateEscrowWithdrawPipeline = async (
             }]
         }
 
-        if (thread.escrowPayment!.mint.equals(WSOL_ID)){
+        if (thread.escrowPayment!.mint.equals(WSOL_ID)) {
             additionalIxs.push(WSolCloseAccountIx(
+                signer,
                 sender,
                 tokenAccount,
             ));
@@ -61,10 +74,12 @@ export const CreateEscrowWithdrawPipeline = async (
 
     // 2) withdraw
     const ix = await EscrowWithdrawIx(
-        sender,
+        rpc,
+        signer,
         program,
         thread,
         tokenAccount,
+        options,
     );
 
     pipeline.instruction = [ix, ...additionalIxs];

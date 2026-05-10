@@ -1,38 +1,37 @@
-import * as anchor from "@coral-xyz/anchor";
-import { ComputeBudgetProgram, type Connection, type PublicKey } from "@solana/web3.js";
+import { type Connection, type PublicKey } from "@solana/web3.js";
 import type { PacketProgram } from "../../../providers/program";
-import { CreateInboxIx, type CreateInboxParams } from "../instructions/create";
+import { type CreateInboxParams } from "../instructions/create";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
+import { CreateInboxPipeline } from "../pipeline/create";
+import { HandleTxPipeline } from "../../..";
 
 export const CreateInboxTx = async (
     connection: Connection,
-    sender: PublicKey,
+    signer: PublicKey,
     program: PacketProgram,
     params: CreateInboxParams,
-    priorityFee: number = 1000
+    options?: PacketIxOptions & PacketTxOptions,
 ) => {
 
     let computeUnits = 300_000;
 
-    const ixs = await CreateInboxIx(connection, sender, program, params);
-    const tx = new anchor.web3.Transaction();
+    // pipeline
+    const { pipeline } = await CreateInboxPipeline(
+        connection,
+        signer,
+        program,
+        params,
+        options
+    );
 
-    tx.add(
-        ComputeBudgetProgram.setComputeUnitLimit({
-            units: computeUnits,
-        })
-    )
+    // main tx
+    const txs = await HandleTxPipeline(pipeline, {
+        connection,
+        payer: signer,
+        computeUnits,
+        priorityFee: options?.priorityFee,
+        lookupTables: options?.lookupTables
+    });
 
-    if (priorityFee) {
-        tx.add(
-            ComputeBudgetProgram.setComputeUnitPrice({
-                microLamports: priorityFee,
-            })
-        )
-    }
-
-    tx.add(...ixs);
-    tx.feePayer = sender;
-    tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-
-    return tx;
+    return txs;
 }

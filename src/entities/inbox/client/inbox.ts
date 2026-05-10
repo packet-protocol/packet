@@ -15,6 +15,7 @@ import { ThreadClient, type SendFirstMsgParams } from "../../thread/client/threa
 import type { DisabledPayment, SendMsgPaymentParams } from "../../message/instructions/resolve";
 import type { TxReceiptWithClient } from "../../../types/client";
 import { EditInboxPaymentTx } from "../transactions/edit-payment";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
 
 export type CreateThreadForInboxParams = SendFirstMsgParams & {
     threadId?: number;
@@ -52,29 +53,37 @@ export class InboxClient {
     static async Create(params: {
         client: PacketClient;
         params: CreateInboxParams;
+        options?: PacketIxOptions & PacketTxOptions,
     }): Promise<TxReceiptWithClient<InboxClient>> {
         const inboxId = new BN(params.params.inboxId);
         const inboxPda = Pda.inboxPda(inboxId, params.client.walletPublicKey);
+
+        const optionsOverride = params.options ?? params.client.defaultTxOptions ?? {};
 
         const tx = await CreateInboxTx(
             params.client.connection,
             params.client.walletPublicKey,
             params.client.program,
             params.params,
+            optionsOverride,
         );
 
         const transactionClient = new PacketTransactionClient(params.client.connection);
-        transactionClient.addTransaction(tx);
+        transactionClient.addTransaction(...tx);
 
-        const signatures = await transactionClient.submitAndConfirm(params.client.wallet);
+        const signatures = await transactionClient.submitAndConfirm(params.client.wallet, optionsOverride?.options);
 
-        return {
-            receipt: signatures,
-            client: await InboxClient.Load({
-                client: params.client,
-                id: inboxPda,
-            }),
-        };
+        try {
+            return {
+                receipt: signatures,
+                client: await InboxClient.Load({
+                    client: params.client,
+                    id: inboxPda,
+                }),
+            };
+        } catch (error) {
+            throw new Error(`Failed to load inbox ${inboxPda.toBase58()} after creation: ${error instanceof Error ? error.message : String(error)}, signatures: ${signatures.join(", ")}`);
+        }
     }
 
     /**
@@ -203,6 +212,7 @@ export class InboxClient {
      * Static segment size for main inbox body page. Only for `standard` inboxes, as `ephemeral` inboxes dont have body.
      */
     public static readonly InboxSegmentSize = new BN(96);
+    public static readonly InboxArchiveThreshold = InboxClient.InboxSegmentSize.sub(new BN(5)); // 91
     /**
      * when to include archive in thread creation:
      * - if inbox is close to reaching max thread count per body page,
@@ -218,7 +228,7 @@ export class InboxClient {
             return false;
         }
 
-        const ArchivalThreshold = InboxClient.InboxSegmentSize.sub(new BN(5)); // 91
+        const ArchivalThreshold = InboxClient.InboxArchiveThreshold;
 
         if (inbox.len.lt(ArchivalThreshold)) {
             return false;
@@ -284,14 +294,14 @@ export class InboxClient {
         return this.getBody(index.sub(new BN(1)));
     }
 
-    async loadPreviousBody(fromIndex?: BN): Promise<InboxBodyPageClient | null> {
+    async loadPreviousBody(fromIndex?: BN, options: { force?: boolean } = {}): Promise<InboxBodyPageClient | null> {
         const page = this.getPreviousBody(fromIndex);
 
         if (!page) {
             return null;
         }
 
-        await page.load();
+        await page.load(options.force);
         return page;
     }
 
@@ -305,6 +315,7 @@ export class InboxClient {
     async loadBodies(options: {
         fromIndex?: BN;
         limit: number;
+        force?: boolean;
     }): Promise<InboxBodyPageClient[]> {
         const pages: InboxBodyPageClient[] = [];
 
@@ -315,7 +326,7 @@ export class InboxClient {
                 break;
             }
 
-            const page = await this.loadBody(index);
+            const page = await this.loadBody(index, { force: options.force });
             pages.push(page);
 
             if (index.eq(new BN(0))) {
@@ -338,8 +349,9 @@ export class InboxClient {
         includeLastMessage?: boolean;
         concurrentFetchLimit?: number;
         concurrentMessageFetchLimit?: number;
+        force?: boolean;
     } = {}): Promise<ThreadClient[]> {
-        const latest = await this.loadLatestBody();
+        const latest = await this.loadLatestBody({ force: options.force });
 
         return latest.loadThreads({
             offset: options?.offset,
@@ -360,6 +372,7 @@ export class InboxClient {
         includeLastMessage?: boolean;
         concurrentFetchLimit?: number;
         concurrentMessageFetchLimit?: number;
+        force?: boolean;
     }) {
         const threads: ThreadClient[] = [];
         const seen = new Set<number>();
@@ -369,7 +382,7 @@ export class InboxClient {
         for (let pageNo = 0; pageNo < maxPages; pageNo++) {
             if (threads.length >= options.limit) break;
 
-            const page = await this.loadBody(index);
+            const page = await this.loadBody(index, { force: options.force });
 
             // Load a full page because older archive pages can contain duplicates
             // of revived live threads. Deduping after a tiny `remaining` fetch can
@@ -402,8 +415,11 @@ export class InboxClient {
     // edit inbox payment
     async editPayment(params: {
         payment: InboxPaymentParams | null,
+        options?: PacketIxOptions & PacketTxOptions,
     }): Promise<TxReceiptWithClient<InboxClient>> {
         const inboxPda = this.address;
+
+        const optionsOverride = params.options ?? this.client.defaultTxOptions ?? {};
 
         const tx = await EditInboxPaymentTx(
             this.client.connection,
@@ -411,12 +427,13 @@ export class InboxClient {
             this.client.program,
             inboxPda,
             params.payment,
+            optionsOverride
         );
 
         const transactionClient = new PacketTransactionClient(this.client.connection);
-        transactionClient.addTransaction(tx);
+        transactionClient.addTransaction(...tx);
 
-        const signatures = await transactionClient.submitAndConfirm(this.client.wallet);
+        const signatures = await transactionClient.submitAndConfirm(this.client.wallet, optionsOverride?.options);
 
         // refresh inbox data after successful transaction
         await this.refresh();
@@ -428,7 +445,7 @@ export class InboxClient {
     }
 
     // create thread
-    createThread(params: CreateThreadForInboxParams): Promise<TxReceiptWithClient<ThreadClient>> {
+    createThread(params: CreateThreadForInboxParams, options?: PacketIxOptions & PacketTxOptions,): Promise<TxReceiptWithClient<ThreadClient>> {
         return ThreadClient.Create({
             client: this.client,
             params: {
@@ -436,6 +453,7 @@ export class InboxClient {
                 to: this.inbox.owner,
                 targetInbox: this,
             },
+            options
         });
     }
 }

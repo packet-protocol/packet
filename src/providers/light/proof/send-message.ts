@@ -1,91 +1,54 @@
 import { PublicKey } from "@solana/web3.js";
-import BN from "bn.js";
-import {
-    deriveAddressSeedV2,
-    deriveAddressV2,
-    type PackedAccounts,
-    type Rpc,
-} from "@lightprotocol/stateless.js";
+import { type PackedAccounts, type Rpc } from "@lightprotocol/stateless.js";
 
-import { u32Le } from "../../../utils/bytes";
+import type { PacketProgram } from "../../program";
+import * as Pda from "../../../pda";
+import { getExistingThreadProof } from "./thread";
 import {
-    createLightProofBase,
-    makeCreateAccountsProof,
-    type CreateAccountsProofTs,
+    finalizeLightProof,
+    type FinalizedLightProof,
+    type LightProofBase,
+    type LightProofBundleWithMeta,
 } from "./helpers";
-import { SEEDS } from "../../../constants";
+import type { CompressedAccountMetaPacket } from "./types";
+import type { ThreadAccountData } from "../../../entities/thread/types";
 
-export type SendMessageProofResult = {
-    createAccountsProof: CreateAccountsProofTs;
-    createAccountsProofWithArchive: CreateAccountsProofTs | null;
-    packedAccounts: PackedAccounts;
-    debug: {
-        messageAddress: PublicKey;
-        archiveAddress: PublicKey | null;
-    };
-};
+export type SendMessageProofResult = LightProofBundleWithMeta<{
+    threadAccountMeta: CompressedAccountMetaPacket;
+    currentThread: ThreadAccountData;
+
+    threadAddress: PublicKey;
+    messageAddress: PublicKey;
+    messageSeq: number;
+}>;
 
 export async function getSendMessageProof(args: {
     rpc: Rpc;
-    programId: PublicKey;
+    program: PacketProgram;
     threadId: number;
     messageSeq: number;
-    archive?: {
-        inbox: PublicKey;
-        index: BN;
-    } | null;
-}): Promise<SendMessageProofResult> {
-    const base = await createLightProofBase(args.rpc, args.programId, {cpiContext: false});
+}): Promise<FinalizedLightProof<SendMessageProofResult>> {
+    const expectedThreadAddress = Pda.threadPda(args.threadId);
+    const messageAddress = Pda.messagePda(args.threadId, args.messageSeq);
 
-    const messageSeed = deriveAddressSeedV2([
-        Buffer.from(SEEDS.message),
-        u32Le(args.threadId),
-        u32Le(args.messageSeq),
-    ]);
-
-    const messageAddress = deriveAddressV2(
-        messageSeed,
-        base.addressTree,
-        args.programId,
-    );
-
-    let archiveAddress: PublicKey | null = null;
-
-    if (args.archive) {
-        const archiveSeed = deriveAddressSeedV2([
-            Buffer.from(SEEDS.inboxArchive),
-            args.archive.inbox.toBytes(),
-            args.archive.index.toArrayLike(Buffer, "le", 8),
-        ]);
-
-        archiveAddress = deriveAddressV2(
-            archiveSeed,
-            base.addressTree,
-            args.programId,
-        );
-    }
-
-    const createAccountsProof = await makeCreateAccountsProof({
+    const proof = await getExistingThreadProof({
         rpc: args.rpc,
-        base,
-        addresses: [messageAddress],
+        program: args.program,
+        threadId: args.threadId,
+        newAddresses: [messageAddress],
     });
 
-    const createAccountsProofWithArchive = archiveAddress
-        ? await makeCreateAccountsProof({
-            rpc: args.rpc,
-            base,
-            addresses: [messageAddress, archiveAddress],
-        })
-        : null;
+    return finalizeLightProof({
+        proof: proof.createAccountsProof,
+        createAccountsProof: proof.createAccountsProof,
+        packedAccounts: proof.packedAccounts,
+        base: proof.base,
 
-    return {
-        createAccountsProof,
-        createAccountsProofWithArchive,
-        packedAccounts: base.packedAccounts,
-        debug: {
-            messageAddress,
-            archiveAddress,
-        },
-    };
+        currentThread: proof.currentThread,
+        threadAccountMeta: proof.threadAccountMetaPacket,
+
+        threadAddress: expectedThreadAddress,
+        messageAddress,
+        messageSeq: args.messageSeq,
+    });
 }

@@ -17,6 +17,7 @@ import {
     type UserKeyReader,
 } from "../types";
 import type { TxReceiptWithClient } from "../../../types/client";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
 
 export class KeyClient {
     private loadedKey?: UserDecryptionKey;
@@ -95,21 +96,28 @@ export class KeyClient {
     static async Create(params: {
         client: PacketClient;
         params?: CreateUserKeyParams;
+        options?: PacketIxOptions & PacketTxOptions,
     }): Promise<TxReceiptWithClient<KeyClient>> {
+        const optionsOverride = params.options ?? params.client.defaultTxOptions ?? {};
+
+        if (!optionsOverride.lookupTables)
+            optionsOverride.lookupTables = await params.client.loadLookupTables();
+
         const tx = await CreateKeyTx(
             params.client.connection,
             params.client.lightRpc,
             params.client.walletPublicKey,
             params.client.program,
             params.params ?? {},
+            optionsOverride,
         );
 
         const txClient = new PacketTransactionClient(params.client.connection);
-        txClient.addTransaction(tx);
+        txClient.addTransaction(...tx);
 
-        const signatures = await txClient.submitAndConfirm(params.client.wallet);
+        const signatures = await txClient.submitAndConfirm(params.client.wallet, optionsOverride?.options);
 
-        const owner = params.params?.owner ?? params.client.walletPublicKey;
+        const owner = params.options?.owner ?? params.client.walletPublicKey;
         const client = new KeyClient(params.client, owner);
 
         await client.load();
@@ -129,24 +137,35 @@ export class KeyClient {
      */
     static async CreateFromCrypto(params: {
         client: PacketClient;
-        owner?: PublicKey;
+        options?: PacketIxOptions & PacketTxOptions,
     }): Promise<TxReceiptWithClient<KeyClient>> {
+        const optionsOverride = params.options ?? params.client.defaultTxOptions ?? {};
+
+        if (!optionsOverride.lookupTables)
+            optionsOverride.lookupTables = await params.client.loadLookupTables();
+
         const identity = params.client.crypto.requireIdentity();
 
         return KeyClient.Create({
             client: params.client,
             params: {
-                owner: params.owner ?? params.client.walletPublicKey,
                 key: identity.keyPair.publicKey,
                 keyType:
                     identity.keyAlg === keyTypeToReaderAlgorithm(PacketKeyType.X25519)
                         ? PacketKeyType.X25519
                         : PacketKeyType.Ed25519WalletDerivedX25519,
             },
+            options: optionsOverride,
         });
     }
 
-    async edit(params: EditUserKeyParams = {}): Promise<TxReceiptWithClient<KeyClient>> {
+    async edit(params: EditUserKeyParams = {}, options?: PacketIxOptions & PacketTxOptions): Promise<TxReceiptWithClient<KeyClient>> {
+
+        const optionsOverride = options ?? this.client.defaultTxOptions ?? {};
+
+        if (!optionsOverride.lookupTables)
+            optionsOverride.lookupTables = await this.client.loadLookupTables();
+
         const tx = await EditKeyTx(
             this.client.connection,
             this.client.lightRpc,
@@ -154,14 +173,14 @@ export class KeyClient {
             this.client.program,
             {
                 ...params,
-                owner: params.owner ?? this.owner,
             },
+            optionsOverride,
         );
 
         const txClient = new PacketTransactionClient(this.client.connection);
-        txClient.addTransaction(tx);
+        txClient.addTransaction(...tx);
 
-        const signatures = await txClient.submitAndConfirm(this.client.wallet);
+        const signatures = await txClient.submitAndConfirm(this.client.wallet, optionsOverride?.options);
 
         await this.refresh();
 
@@ -174,7 +193,7 @@ export class KeyClient {
     /**
      * Easy mode: edit key from current PacketClient crypto identity.
      */
-    async editFromCrypto(): Promise<TxReceiptWithClient<KeyClient>> {
+    async editFromCrypto(options?: PacketIxOptions & PacketTxOptions): Promise<TxReceiptWithClient<KeyClient>> {
         const identity = this.client.crypto.requireIdentity();
 
         const keyType =
@@ -183,9 +202,8 @@ export class KeyClient {
                 : PacketKeyType.Ed25519WalletDerivedX25519;
 
         return this.edit({
-            owner: this.owner,
             key: identity.keyPair.publicKey,
             keyType,
-        });
+        }, options);
     }
 }

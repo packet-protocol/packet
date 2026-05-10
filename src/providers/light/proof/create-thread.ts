@@ -1,62 +1,47 @@
 import { PublicKey } from "@solana/web3.js";
-import {
-    deriveAddressSeedV2,
-    deriveAddressV2,
-    type PackedAccounts,
-    type Rpc,
-} from "@lightprotocol/stateless.js";
+import { type PackedAccounts, type Rpc } from "@lightprotocol/stateless.js";
 
-import { u32Le } from "../../../utils/bytes";
+import * as Pda from "../../../pda";
 import {
-    createLightProofBase,
-    makeCreateAccountsProof,
-    type CreateAccountsProofTs,
+    finalizeLightProof,
+    getNewAddressProof,
+    type FinalizedLightProof,
+    type LightProofBundleWithMeta,
 } from "./helpers";
-import { SEEDS } from "../../../constants";
 
-export type CreateThreadAtomicProofResult = {
-    createAccountsProof: CreateAccountsProofTs;
-    packedAccounts: PackedAccounts;
-};
+
+export type CreateThreadAtomicProofResult = LightProofBundleWithMeta<{
+    threadAddress: PublicKey;
+    messageAddress: PublicKey;
+}>;
 
 export async function getCreateThreadAtomicProof(args: {
     rpc: Rpc;
     programId: PublicKey;
-    threadPda: PublicKey;
     threadId: number;
-    messageSeq: number;
-}): Promise<CreateThreadAtomicProofResult> {
-    const base = await createLightProofBase(args.rpc, args.programId, {cpiContext: true});
+    messageSeq?: number;
+}): Promise<FinalizedLightProof<CreateThreadAtomicProofResult>> {
+    const messageSeq = args.messageSeq ?? 1;
 
-    const threadLightAddress = deriveAddressV2(
-        args.threadPda.toBytes(),
-        base.addressTree,
-        args.programId,
-    );
+    const threadAddress = Pda.threadPda(args.threadId);
+    const messageAddress = Pda.messagePda(args.threadId, messageSeq);
 
-    const messageSeed = deriveAddressSeedV2([
-        Buffer.from(SEEDS.message),
-        u32Le(args.threadId),
-        u32Le(args.messageSeq),
-    ]);
-
-    const messageAddress = deriveAddressV2(
-        messageSeed,
-        base.addressTree,
-        args.programId,
-    );
-
-    const createAccountsProof = await makeCreateAccountsProof({
+    const proof = await getNewAddressProof({
         rpc: args.rpc,
-        base,
+        programId: args.programId,
         addresses: [
-            threadLightAddress,
+            threadAddress,
             messageAddress,
         ],
     });
 
-    return {
-        createAccountsProof,
-        packedAccounts: base.packedAccounts,
-    };
+    return finalizeLightProof({
+        proof: proof.createAccountsProof,
+        createAccountsProof: proof.createAccountsProof,
+        packedAccounts: proof.packedAccounts,
+        base: proof.base,
+
+        threadAddress,
+        messageAddress,
+    });
 }

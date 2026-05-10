@@ -3,12 +3,12 @@ import type { PacketProgram } from "../../../providers/program";
 import * as Pda from "../../../pda";
 import { type Rpc } from "@lightprotocol/stateless.js";
 import type { Inbox } from "../types";
-import { getCompressedPdaProof } from "../../../providers/light";
+import { getInboxArchiveProof } from "../../../providers";
 
 
 export const ArchiveInboxIx = async (
     rpc: Rpc,
-    owner: PublicKey,
+    signer: PublicKey,
     program: PacketProgram,
     inbox: Inbox,
     skipIfArchived: boolean = true,
@@ -16,22 +16,19 @@ export const ArchiveInboxIx = async (
 
     const archive = Pda.inboxArchivePda(inbox.address, inbox.index);
 
-    const {proof, packedAccounts} = await getCompressedPdaProof({
+    const proofBundle = await getInboxArchiveProof({
         rpc,
         programId: program.programId,
-        pda: archive,
+        archive,
     });
 
-
     const ix = program.methods.archiveInbox({
-        createAccountsProof: proof,
+        createAccountsProof: proofBundle.createAccountsProof,
         optional: skipIfArchived,
     }).accounts({
-        signer: owner,
-        owner: owner,
-        permit: null,
+        signer: signer,
         inbox: inbox.address,
-    }).remainingAccounts(packedAccounts.toAccountMetas().remainingAccounts)
+    }).remainingAccounts(proofBundle.metas.remainingAccounts)
         .instruction();
 
     return ix;

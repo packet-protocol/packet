@@ -129,7 +129,7 @@ export class PacketTransactionClient {
             const signature = await this.#connection.sendRawTransaction(
                 tx.serialize(),
                 sendOptions ?? {
-                    skipPreflight: true,
+                    //skipPreflight: true,
                 },
             );
 

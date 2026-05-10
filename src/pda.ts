@@ -7,6 +7,7 @@ import { batchAddressTree, deriveAddressSeedV2, deriveAddressV2 } from "@lightpr
 export type PdaConfig = { programId?: PublicKey };
 
 const pid = (programId?: PublicKey) => programId ?? PACKET_PROGRAM_ID;
+const addressTree = () => new PublicKey(batchAddressTree);
 const s = (seed: string) => Buffer.from(seed);
 
 export function userPda(owner: PublicKey, programId?: PublicKey): PublicKey {
@@ -22,18 +23,13 @@ export function inboxBodyPda(inbox: PublicKey, programId?: PublicKey): PublicKey
 }
 
 export function inboxArchivePda(inbox: PublicKey, index: BN, programId?: PublicKey): PublicKey {
-  //return PublicKey.findProgramAddressSync([s(SEEDS.inboxArchive), inbox.toBuffer(), u64Le(index),], pid(programId))[0];
   const archiveSeed = deriveAddressSeedV2([
-    Buffer.from(SEEDS.inboxArchive),
+    s(SEEDS.inboxArchive),
     inbox.toBuffer(),
     u64Le(index),
   ]);
 
-  return deriveAddressV2(
-    archiveSeed,
-    new PublicKey(batchAddressTree),
-    pid(programId),
-  );
+  return deriveAddressV2(archiveSeed, addressTree(), pid(programId));
 }
 
 export function inboxMetadataPda(inbox: PublicKey, programId?: PublicKey): PublicKey {
@@ -41,26 +37,22 @@ export function inboxMetadataPda(inbox: PublicKey, programId?: PublicKey): Publi
 }
 
 export function threadPda(threadId: number, programId?: PublicKey): PublicKey {
-  return PublicKey.findProgramAddressSync([s(SEEDS.thread), u32Le(threadId)], pid(programId))[0];
+  const threadSeed = deriveAddressSeedV2([
+    s(SEEDS.thread),
+    u32Le(threadId),
+  ]);
+
+  return deriveAddressV2(threadSeed, addressTree(), pid(programId));
 }
 
 export function messagePda(threadId: number, msgSeq: number, programId?: PublicKey): PublicKey {
-  //return PublicKey.findProgramAddressSync([s(SEEDS.message), u32Le(threadId), u32Le(msgSeq)], pid(programId))[0];
   const messageSeed = deriveAddressSeedV2([
-    Buffer.from(SEEDS.message),
+    s(SEEDS.message),
     u32Le(threadId),
     u32Le(msgSeq),
   ]);
 
-  return deriveAddressV2(
-    messageSeed,
-    new PublicKey(batchAddressTree),
-    pid(programId),
-  );
-}
-
-export function activityPda(owner: PublicKey, programId?: PublicKey): PublicKey {
-  return PublicKey.findProgramAddressSync([s(SEEDS.activity), owner.toBuffer()], pid(programId))[0];
+  return deriveAddressV2(messageSeed, addressTree(), pid(programId));
 }
 
 export function vaultPda(programId?: PublicKey): PublicKey {
@@ -68,16 +60,12 @@ export function vaultPda(programId?: PublicKey): PublicKey {
 }
 
 export function keyPda(owner: PublicKey, programId?: PublicKey): PublicKey {
-   const seed = deriveAddressSeedV2([
-        Buffer.from(SEEDS.key),
-        owner.toBytes(),
-    ]);
+  const seed = deriveAddressSeedV2([
+    s(SEEDS.key),
+    owner.toBytes(),
+  ]);
 
-    return deriveAddressV2(
-        seed,
-        new PublicKey(batchAddressTree),
-        pid(programId),
-    );
+  return deriveAddressV2(seed, addressTree(), pid(programId));
 }
 
 export function associatedTokenAddress(mint: PublicKey, owner: PublicKey, tokenProgram = TOKEN_PROGRAM_ID): PublicKey {
@@ -90,14 +78,15 @@ export function associatedTokenAddress(mint: PublicKey, owner: PublicKey, tokenP
 export const rentSponsorPda = PublicKey.findProgramAddressSync([s("rent_sponsor")], pid())[0];
 export const compressionConfigPda = PublicKey.findProgramAddressSync([s("compressible_config"), Buffer.from([0x00, 0x00])], pid())[0];
 
+
 export const pdas = {
   user: userPda,
   inbox: inboxPda,
   inboxBody: inboxBodyPda,
+  inboxArchive: inboxArchivePda,
   inboxMetadata: inboxMetadataPda,
   thread: threadPda,
   message: messagePda,
-  activity: activityPda,
   vault: vaultPda,
   key: keyPda,
   ata: associatedTokenAddress,

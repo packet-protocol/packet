@@ -19,10 +19,11 @@ import { PACKET_LOOK_UP_TABLE } from "./constants";
 import type { Inbox } from "./entities/inbox";
 import type { Thread } from "./entities/thread";
 import { PacketEncryptionClient, type PacketCryptoIdentityInput } from "./entities/encryption";
-import type { DerivePacketSeedInput, PacketDerivedCryptoIdentity } from "./crypto";
+import type { DerivePacketSeedInput, PacketDerivedCryptoIdentity, PacketReaderInput } from "./crypto";
 import { KeyClient } from "./entities/key/client/key";
 import type { CreateUserKeyParams } from "./entities/key/types";
 import { MessageEventsClient, UserClient, type CreateUserParams } from "./entities";
+import type { PacketIxOptions, PacketTxOptions, WithTxOptions } from "./entities/transaction/types";
 
 /**
  * PacketClient is the main entry point for interacting with the Packet.
@@ -44,7 +45,8 @@ export class PacketClient {
     private cryptoIdentity: PacketEncryptionClient = new PacketEncryptionClient();
     private messageEventsClient?: MessageEventsClient;
 
-    
+    defaultTxOptions?: PacketTxOptions;
+
     constructor(config: PacketClientConfig) {
         this.#connection = typeof config.connection === "string" ? new anchor.web3.Connection(config.connection, { commitment: "confirmed" }) : config.connection;
         this.#wallet = config.wallet || PacketWallet.blank();
@@ -55,6 +57,15 @@ export class PacketClient {
             wallet: this.#wallet,
             photonRpc: this.#photonRpc,
         });
+
+        if (config.defaultTxOptions) {
+            this.defaultTxOptions = config.defaultTxOptions;
+            this.defaultTxOptions.priorityFee ??= 1000;
+        } else {
+            this.defaultTxOptions = config.defaultTxOptions ?? {
+                priorityFee: 1000,
+            }
+        }
     }
 
     get connection(): anchor.web3.Connection {
@@ -139,52 +150,58 @@ export class PacketClient {
     // --- Main Methods ---
 
     // -- Thread --
-    thread = async (id: PublicKey | BN | number | string | Thread | ThreadClient) => {
+    thread(id: PublicKey): Pick<ThreadClient, "load" | "loadRetrying">;
+    thread(id: string): Pick<ThreadClient, "load" | "loadRetrying"> | ThreadClient;
+    thread(id: BN | number | Thread | ThreadClient): ThreadClient;
+    thread(
+        id: PublicKey | BN | number | string | Thread | ThreadClient
+    ): ThreadClient | Pick<ThreadClient, "load" | "loadRetrying"> {
         if (id instanceof ThreadClient) {
-            return ThreadClient.LoadFromThread({
+            return ThreadClient.FromThread({
                 client: this,
                 thread: id,
             });
         }
 
         if (typeof id === "object" && "address" in id) {
-            return ThreadClient.LoadFromThread({
+            return ThreadClient.FromThread({
                 client: this,
                 thread: id,
             });
         }
 
-        const normalized =
-            id instanceof PublicKey
-                ? id
-                : BN.isBN(id)
-                    ? id
-                    : typeof id === "string" && /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(id)
-                        ? new PublicKey(id)
-                        : new BN(id);
+        if (
+            id instanceof PublicKey ||
+            (
+                typeof id === "string" &&
+                /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(id)
+            )
+        ) {
+            return ThreadClient.FromAddress({
+                client: this,
+                address: id instanceof PublicKey ? id : new PublicKey(id),
+            });
+        }
 
-        return ThreadClient.Load({
+        const normalized = BN.isBN(id)
+            ? id.toNumber()
+            : typeof id === "number"
+                ? id
+                : Number(id);
+
+        return ThreadClient.Handle({
             client: this,
             id: normalized,
         });
-    };
-    threadById = async (threadId: number) => {
-        return ThreadClient.LoadById({
-            client: this,
-            threadId,
-        });
-    };
-    createThread = async (params: CreateThreadParams) => {
+    }
+
+    createThread = async (params: WithTxOptions<CreateThreadParams>) => {
+        var { options, ...threadParams } = params;
         return ThreadClient.Create({
             client: this,
-            params,
+            params: threadParams,
+            options,
         });
-    }
-    threadHandle(threadId: number): ThreadClient {
-    return ThreadClient.Handle({
-        client: this,
-        threadId,
-    });
     }
 
     // -- Inbox --
@@ -210,10 +227,12 @@ export class PacketClient {
             id: normalized,
         });
     };
-    createInbox = async (params: CreateInboxParams) => {
+    createInbox = async (params: WithTxOptions<CreateInboxParams>) => {
+        var { options, ...inboxParams } = params;
         return InboxClient.Create({
             client: this,
-            params,
+            params: inboxParams,
+            options,
         });
     };
 
@@ -221,8 +240,8 @@ export class PacketClient {
     activity = (owner: PublicKey = this.walletPublicKey) => {
         return new ActivityClient(this, owner);
     };
-    createActivity = async (owner?: PublicKey) => {
-        return ActivityClient.Create({
+    createOrLoadActivity = async (owner?: PublicKey) => {
+        return ActivityClient.CreateOrLoad({
             client: this,
             owner: owner ?? this.walletPublicKey,
         });
@@ -304,24 +323,41 @@ export class PacketClient {
         return this.key(owner).load();
     };
 
-    createKey = async (params: CreateUserKeyParams = {}) => {
+    createKey = async (params: WithTxOptions<CreateUserKeyParams> = {}) => {
+        var { options, ...keyParams } = params;
         return KeyClient.Create({
             client: this,
-            params,
+            params: keyParams,
+            options,
         });
     };
 
+    /** Load decryption reader for a specific owner */
+    loadReaderForOwner = async (params: {
+        ownerWallet: PublicKey | string,
+        fallbackToWalletDerived?: boolean,
+    }): Promise<PacketReaderInput> => {
+        return PacketEncryptionClient.LoadReaderForOwner(
+            this,
+            params
+        );
+    }
+    
+    /** Load wallet-derived decryption reader */
+    loadWalletDerivedReader = (ownerWallet: PublicKey | string): PacketReaderInput =>
+        PacketEncryptionClient.LoadWalletDerivedReader(ownerWallet);
+    static LoadWalletDerivedReader = (ownerWallet: PublicKey | string): PacketReaderInput =>
+        PacketEncryptionClient.LoadWalletDerivedReader(ownerWallet);
+
+
     /**
-     * Create this wallet's public key account from the current crypto identity.
+     * Create this wallet's public `key` account from the current crypto identity.
      *
-     * Usually:
-     *   await client.useWalletPasswordCrypto(...)
-     *   await client.createKeyFromCrypto()
      */
-    createKeyFromCrypto = async (owner: PublicKey = this.walletPublicKey) => {
+    createKeyFromCrypto = async (options?: PacketIxOptions & PacketTxOptions) => {
         return KeyClient.CreateFromCrypto({
             client: this,
-            owner,
+            options,
         });
     };
 
@@ -337,13 +373,12 @@ export class PacketClient {
         });
     };
 
-    createUser = async (params: CreateUserParams) => {
+    createUser = async (params: WithTxOptions<CreateUserParams>) => {
+        var { options, ...userParams } = params;
         return UserClient.Create({
             client: this,
-            params: {
-                ...params,
-                owner: params.owner ?? this.walletPublicKey,
-            },
+            params: userParams,
+            options,
         });
     };
 

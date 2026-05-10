@@ -10,14 +10,14 @@ export const SEEDS = {
   inboxArchive: "inbox_archive",
   thread: "thread",
   message: "msg",
-  activity: "activity",
   vault: "packet_vault",
   key: "key",
 } as const;
 
 export const PACKET_PROGRAM_ID = new PublicKey("A3YNvikE96zn2PYrbqRa8hheH99ks7qt22zQiUF8Ttao");
 
-export const PACKET_LOOK_UP_TABLE = new PublicKey("G5FjZiNuSHC6EqzycX8pEib7MBG9auEv7UiYJosiNcPY");
+export const PACKET_LOOK_UP_TABLE = new PublicKey("CxLU3QQAntcTdvyJCwVawT7rKMy1Gu6HsPEjju6qLVNc");
+export const PACKET_LOOK_UP_TABLE_DEVNET = new PublicKey("VfPSYLZfDKDbyzGHk6h7PWVqtAFZmEvt164by21wP1U");
 
 export const WSOL_ID = new PublicKey("So11111111111111111111111111111111111111112");
 export const SYSTEM_PROGRAM_ID = new PublicKey("11111111111111111111111111111111");

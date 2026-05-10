@@ -19,7 +19,7 @@ export class MessageClient {
         readonly threadId: number,
         readonly msgSeq: number,
         public thread?: ThreadClient,
-    ) {}
+    ) { }
 
     get Loaded(): boolean {
         return Boolean(this.message);
@@ -51,7 +51,7 @@ export class MessageClient {
             params.client,
             params.threadId,
             params.msgSeq,
-            params.thread ?? params.client.threadHandle(params.threadId)
+            params.thread ?? params.client.thread(params.threadId)
         );
     }
 
@@ -63,7 +63,7 @@ export class MessageClient {
         const address = Pda.messagePda(this.threadId, this.msgSeq);
 
         const account = await GetMessageAccount(
-            this.client.lightRpc, 
+            this.client.lightRpc,
             this.client.program,
             address,
         );
@@ -125,8 +125,28 @@ export class MessageClient {
                 let url = Buffer.from(message.content).toString("utf8");
                 // Packet convention: content should be a URL. For older Irys-only
                 // messages that stored just the tx id, fall back to the public gateway.
-                if (!/^https?:\/\//.test(url) && message.messageType === 3) {
-                    url = `https://gateway.irys.xyz/${url}`;
+                if (!/^https?:\/\//.test(url)) {
+                    if (message.messageType === 2) {
+                        if (url.startsWith("ipfs://")) {
+                            url = `https://ipfs.io/ipfs/${url.slice(7)}`;
+                        } else {
+                            url = `https://ipfs.io/ipfs/${url}`;
+                        }
+                    } else if (message.messageType === 3) {
+                        if (url.startsWith("irys://")) {
+                            url = `https://gateway.irys.xyz/${url.slice(7)}`;
+                        } else if (url.startsWith("ar://")) {
+                            url = `https://gateway.irys.xyz/${url.slice(5)}`;
+                        }else {
+                            url = `https://gateway.irys.xyz/${url}`;
+                        }
+                    } else if (message.messageType === 4) {
+                        if (url.startsWith("ar://")) {
+                            url = `https://arweave.net/${url.slice(5)}`;
+                        } else {
+                            url = `https://arweave.net/${url}`;
+                        }
+                    }
                 }
                 const res = await fetch(url);
 

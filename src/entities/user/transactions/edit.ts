@@ -1,41 +1,39 @@
 import {
-    ComputeBudgetProgram,
     Connection,
     PublicKey,
-    Transaction,
 } from "@solana/web3.js";
 
 import type { PacketProgram } from "../../../providers/program";
-import { EditUserIx } from "../instructions/edit";
 import type { EditUserParams } from "../types";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
+import { EditUserPipeline } from "../pipeline/edit";
+import { HandleTxPipeline } from "../../..";
 
 export async function EditUserTx(
     connection: Connection,
     signer: PublicKey,
     program: PacketProgram,
     params: EditUserParams,
-    priorityFee = 1000,
-): Promise<Transaction> {
-    const tx = new Transaction();
+    options?: PacketIxOptions & PacketTxOptions
+) {
+    let computeUnits = 200_000;
 
-    tx.add(
-        ComputeBudgetProgram.setComputeUnitLimit({
-            units: 200_000,
-        }),
+    // pipeline
+    const { pipeline } = await EditUserPipeline(
+        signer,
+        program,
+        params,
+        options
     );
 
-    if (priorityFee) {
-        tx.add(
-            ComputeBudgetProgram.setComputeUnitPrice({
-                microLamports: priorityFee,
-            }),
-        );
-    }
+    // main tx
+    const txs = await HandleTxPipeline(pipeline, {
+        connection,
+        payer: signer,
+        computeUnits,
+        priorityFee: options?.priorityFee,
+        lookupTables: options?.lookupTables
+    });
 
-    tx.add(await EditUserIx(signer, program, params));
-
-    tx.feePayer = signer;
-    tx.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
-
-    return tx;
+    return txs;
 }

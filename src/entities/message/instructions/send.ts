@@ -1,47 +1,51 @@
-import { Connection, PublicKey } from "@solana/web3.js";
-import { PackedAccounts, type Rpc } from "@lightprotocol/stateless.js";
+import {
+    Connection,
+    PublicKey,
+    SystemProgram,
+} from "@solana/web3.js";
+import {
+    PackedAccounts,
+    type Rpc,
+} from "@lightprotocol/stateless.js";
 
 import type { PacketProgram } from "../../../providers/program";
 import * as Pda from "../../../pda";
 
 import {
     ResolveMessageInputAndAccounts,
+    resolveThreadReceiver,
     type CreateMessageInputAndAccountsParams,
 } from "./resolve";
 
 import {
     getSendMessageProof,
 } from "../../../providers/light/proof/send-message";
+import type { PacketIxOptions } from "../../transaction/types";
 
-import { InboxKind } from "../../inbox/types";
 
 export const SendMsgIx = async (
     connection: Connection,
     rpc: Rpc,
-    sender: PublicKey,
+    signer: PublicKey,
     program: PacketProgram,
     params: CreateMessageInputAndAccountsParams,
+    options?: PacketIxOptions
 ) => {
-
-    const archiveCandidate =
-        params.targetInbox && params.targetInbox.kind === InboxKind.Standard
-            ? {
-                inbox: params.targetInbox.address,
-                index: params.targetInbox.index,
-            }
-            : null;
+    const sender = options?.owner ?? signer;
+    
+    const receiver = resolveThreadReceiver(sender, params.threadInfo);
 
     const {
         createAccountsProof,
-        createAccountsProofWithArchive,
-        packedAccounts,
-        debug,
+        threadAccountMeta,
+        currentThread,
+        metas,
+        messageSeq
     } = await getSendMessageProof({
         rpc,
-        programId: program.programId,
+        program,
         threadId: params.threadInfo.id,
         messageSeq: params.messageSeq,
-        archive: archiveCandidate,
     });
 
     const {
@@ -50,28 +54,18 @@ export const SendMsgIx = async (
         payment,
     } = await ResolveMessageInputAndAccounts(
         connection,
+        signer,
         sender,
-        params,
+        {
+            ...params,
+            messageSeq: messageSeq,
+        },
         false,
     );
-
-    const metas = packedAccounts.toAccountMetas() as ReturnType<
-        PackedAccounts["toAccountMetas"]
-    > & {
-        systemAccountsOffset?: number;
-    };
-
-    createAccountsProof.systemAccountsOffset = metas.systemAccountsOffset ?? 0;
-
-    if (createAccountsProofWithArchive) {
-        createAccountsProofWithArchive.systemAccountsOffset =
-            metas.systemAccountsOffset ?? 0;
-    }
 
     const emptyOptionalInboxAccounts = {
         targetInbox: null,
         targetInboxBody: null,
-        permit: null,
     };
 
     const emptyOptionalPaymentAccounts = {
@@ -83,23 +77,33 @@ export const SendMsgIx = async (
     };
 
     const ix = await program.methods
-        .sendMsg({
-            createAccountsProof,
-            createAccountsProofWithArchive,
-            threadId: params.threadInfo.id,
-            message,
-        })
+        .sendMsg(
+            receiver,
+            {
+                createAccountsProof,
+                threadAccountMeta,
+                currentThread,
+                message,
+            },
+        )
         .accounts({
-            signer: sender,
+            signer,
             sender,
-            fromActivity: Pda.activityPda(params.threadInfo.from),
-            toActivity: Pda.activityPda(params.threadInfo.to),
+            permit: options?.permit ?? null,
 
             ...emptyOptionalInboxAccounts,
             ...(accounts.targetInboxAccounts ?? {}),
 
             ...emptyOptionalPaymentAccounts,
-            ...(accounts.paymentAccounts ?? {}),
+            ...(accounts.paymentAccounts
+                ? {
+                    fromTokenAccount: accounts.paymentAccounts.fromTokenAccount,
+                    toTokenAccount: accounts.paymentAccounts.toTokenAccount,
+                    vaultTokenAccount: accounts.paymentAccounts.vaultTokenAccount,
+                    paymentMint: accounts.paymentAccounts.paymentMint,
+                    tokenProgram: accounts.paymentAccounts.tokenProgram,
+                }
+                : {}),
         })
         .remainingAccounts(metas.remainingAccounts)
         .instruction();
