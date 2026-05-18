@@ -1,4 +1,4 @@
-{
+export const PACKET_IDL_JSON = {
   "address": "A3YNvikE96zn2PYrbqRa8hheH99ks7qt22zQiUF8Ttao",
   "metadata": {
     "name": "packet",

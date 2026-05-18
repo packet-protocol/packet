@@ -8,6 +8,7 @@ export * from "./payment"
 
 export * from "./thread"
 export * from "./transaction/client"
+export * from "./transaction/types"
 export * from "./wallet"
 export * from "./encryption"
 export * from "./key"

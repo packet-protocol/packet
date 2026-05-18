@@ -1,10 +1,5 @@
 import { PublicKey, TransactionInstruction } from "@solana/web3.js";
-import {
-    bn,
-    PackedAccounts,
-    SystemAccountMetaConfig,
-    type Rpc,
-} from "@lightprotocol/stateless.js";
+import { type Rpc } from "@lightprotocol/stateless.js";
 
 import type { PacketProgram } from "../../../providers/program";
 import { keyTypeToAnchor } from "../utils";

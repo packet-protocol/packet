@@ -1,6 +1,6 @@
 {
   "name": "xpkt-sdk",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "TypeScript SDK for Packet protocol",
   "type": "module",
   "sideEffects": false,
@@ -22,14 +22,20 @@
     "dev": "tsc -p tsconfig.json --watch",
     "clean": "rm -rf dist",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test:debug": "tsx tests/index.ts",
-    "test:full": "tsx tests/full.ts",
-    "test:archive": "tsx tests/archive.ts",
-    "test:crypto": "tsx tests/crypto.ts",
     "prepublishOnly": "npm run typecheck && npm run build",
     "pack:check": "npm pack --dry-run"
   },
-  "keywords": ["solana", "packet", "communication", "decentralized", "payment"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/packet-protocol/packet.git"
+  },
+  "keywords": [
+    "solana",
+    "packet",
+    "communication",
+    "decentralized",
+    "payment"
+  ],
   "author": "@packetchat",
   "license": "MIT",
   "engines": {

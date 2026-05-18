@@ -42,7 +42,7 @@ npm install @solana/wallet-adapter-react @solana/wallet-adapter-base
 import { Connection } from "@solana/web3.js";
 import { PacketClient, PacketWallet } from "xpkt-sdk";
 
-const connection = new Connection("photon-or-helius-rpc", "confirmed");
+const connection = new Connection("https://your-sol-photon-rpc-endpoint", "confirmed");
 
 const packetWallet = PacketWallet.fromAdapter({
   publicKey: wallet.publicKey,
@@ -54,7 +54,7 @@ const client = new PacketClient({
   wallet: packetWallet,
   connection,
   photonRpc: {
-    compressionApiEndpoint: "https://your-photon-endpoint",
+    compressionApiEndpoint: "https://your-sol-photon-rpc-endpoint",
     proverEndpoint: "https://your-prover-endpoint",
   },
 });
@@ -62,22 +62,23 @@ const client = new PacketClient({
 await client.loadLookupTables();
 ```
 
-### Node / localnet
+### Node
 
 ```ts
 import { Connection, Keypair } from "@solana/web3.js";
 import { PacketClient, PacketWallet } from "xpkt-sdk";
 
 const wallet = Keypair.generate();
-const connection = new Connection("http://127.0.0.1:8899", "confirmed");
+const connection = new Connection("https://your-sol-photon-rpc-endpoint", "confirmed");
 
 const client = new PacketClient({
   wallet: PacketWallet.fromKeypair(wallet),
   connection,
   photonRpc: {
-    compressionApiEndpoint: "http://127.0.0.1:8784",
-    proverEndpoint: "http://127.0.0.1:3001",
+    compressionApiEndpoint: "https://your-sol-photon-rpc-endpoint",
+    proverEndpoint: "https://your-sol-photon-rpc-endpoint",
   },
+  cluster: "mainnet"
 });
 ```
 
@@ -335,10 +336,10 @@ export function PacketProvider({ children }: { children: React.ReactNode }) {
         signTransaction: wallet.signTransaction,
         signAllTransactions: wallet.signAllTransactions,
       }),
-      connection: new Connection("photon-or-helius-rpc", "confirmed"),
+      connection: new Connection("https://your-sol-photon-rpc-endpoint", "confirmed"),
       photonRpc: {
-        compressionApiEndpoint: "https://your-photon-endpoint",
-        proverEndpoint: "https://your-prover-endpoint",
+        compressionApiEndpoint: "https://your-sol-photon-rpc-endpoint",
+        proverEndpoint: "https://your-sol-photon-rpc-endpoint",
       },
     });
   }, [wallet.publicKey, wallet.signTransaction, wallet.signAllTransactions]);

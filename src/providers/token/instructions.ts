@@ -94,7 +94,7 @@ export const EnsureWrappedSolAmountForAtaIx = async (
             return [];
         }
     }catch (err) {
-        if (err instanceof SolanaJSONRPCError) {
+        if (err instanceof SolanaJSONRPCError || (err instanceof Error && err.message.includes("could not find account"))) {
             createAccountIx = CreateAssociatedTokenAccountIx(signer, owner, WSOL_ID);
         }else {
             throw err;

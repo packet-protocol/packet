@@ -1,6 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
 import type { PacketIDL } from "../idl/packet.idl";
-import PacketIDLJson from "../idl/packet.idl.json";
+import {PACKET_IDL_JSON} from "../idl/packet.idl.json";
 import type { PacketWallet } from "../entities/wallet";
 
 /**
@@ -20,6 +20,8 @@ export type PacketProgram = anchor.Program<PacketIDL>;
 /**
  * Create Packet anchor program client
 */
-export function makeProgram(provider: anchor.AnchorProvider): PacketProgram {
-    return new anchor.Program(PacketIDLJson as PacketIDL, provider);
+export function makeProgram(provider: anchor.AnchorProvider, programId: anchor.web3.PublicKey): PacketProgram {
+    const json = PACKET_IDL_JSON as PacketIDL;
+    json.address = programId.toString();
+    return new anchor.Program(json, provider);
 }

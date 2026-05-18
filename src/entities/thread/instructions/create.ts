@@ -51,6 +51,7 @@ export const CreateThreadIx = async (
     } = await ResolveMessageInputAndAccounts(
         connection,
         signer,
+        program,
         sender,
         params,
         true,

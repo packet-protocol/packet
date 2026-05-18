@@ -2,7 +2,6 @@ import * as anchor from "@coral-xyz/anchor";
 import { bn, type Rpc } from "@lightprotocol/stateless.js";
 import type { PacketProgram } from "../../../providers/program";
 import { PublicKey } from "@solana/web3.js";
-import type { PacketIDL } from "../../../idl/packet.idl";
 import type { Thread, ThreadAccountData } from "../types";
 import { ParseThreadEscrowInfoOption } from "../../payment/parse";
 import {
@@ -61,7 +60,7 @@ export function DecodeThreadOwnerAccountItem(params: {
     return {
         address: params.item.address
             ? new PublicKey(params.item.address)
-            : Pda.threadPda(threadId),
+            : Pda.threadPda(threadId, params.program.programId),
         compressedAccount: params.item,
         data: decoded,
     };

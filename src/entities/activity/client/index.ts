@@ -431,6 +431,7 @@ export class ActivityClient {
         const inboxAddress = Pda.inboxPda(
             params.account.inboxId,
             params.account.to,
+            this.client.program.programId
         );
 
         return this.inboxClients.getOrCreate(

@@ -13,7 +13,6 @@ import {
 } from "../../../constants";
 
 import * as Pda from "../../../pda";
-import { pdas } from "../../../pda";
 import { MessageTypeToAnchorEnum } from "../utils/helpers";
 import { InboxKind, type Inbox } from "../../inbox/types";
 import {
@@ -23,6 +22,7 @@ import {
     CreateAssociatedTokenAccountIx,
     EnsureWrappedSolAmountForAtaIx,
 } from "../../../providers/token/instructions";
+import type { PacketProgram } from "../../..";
 
 export type CreateMessageInputAndAccountsParams = {
     messageType: MessageType;
@@ -91,6 +91,7 @@ export function resolveThreadReceiver(
 export const ResolveMessageInputAndAccounts = async (
     connection: Connection,
     signer: PublicKey,
+    program: PacketProgram,
     sender: PublicKey,
     params: CreateMessageInputAndAccountsParams,
     creatingThread: boolean = false,
@@ -117,8 +118,8 @@ export const ResolveMessageInputAndAccounts = async (
         };
 
         if (params.targetInbox.kind === InboxKind.Standard) {
-            targetInboxAccounts.targetInboxBody = pdas.inboxBody(
-                params.targetInbox.address,
+            targetInboxAccounts.targetInboxBody = Pda.inboxBodyPda(
+                params.targetInbox.address, program.programId
             );
         }
     }
@@ -354,7 +355,7 @@ export const ResolveMessageInputAndAccounts = async (
 
             paymentAccounts.vaultTokenAccount = Pda.associatedTokenAddress(
                 mint,
-                pdas.vault(),
+                Pda.vaultPda(program.programId),
                 tokenProgram,
             );
 
@@ -432,7 +433,7 @@ export const ResolveMessageInputAndAccounts = async (
             associatedTokenProgram,
             vaultTokenAccount: Pda.associatedTokenAddress(
                 mint,
-                pdas.vault(),
+                Pda.vaultPda(program.programId),
                 tokenProgram,
             ),
         };

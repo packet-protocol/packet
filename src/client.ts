@@ -15,7 +15,7 @@ import { ActivityClient } from "./entities/activity/client";
 import BN from "bn.js";
 import type { CreateInboxParams } from "./entities/inbox/instructions/create";
 import { fetchAddressLookupTable } from "./providers/lut/packet-lut";
-import { PACKET_LOOK_UP_TABLE } from "./constants";
+import { PACKET_LOOK_UP_TABLE, PACKET_LOOK_UP_TABLE_DEVNET, PACKET_PROGRAM_ID } from "./constants";
 import type { Inbox } from "./entities/inbox";
 import type { Thread } from "./entities/thread";
 import { PacketEncryptionClient, type PacketCryptoIdentityInput } from "./entities/encryption";
@@ -45,12 +45,19 @@ export class PacketClient {
     private cryptoIdentity: PacketEncryptionClient = new PacketEncryptionClient();
     private messageEventsClient?: MessageEventsClient;
 
+    readonly lookUpTableAddress?: anchor.web3.PublicKey;
+    readonly cluster: "mainnet" | "devnet";
+    readonly programId: anchor.web3.PublicKey;
+
     defaultTxOptions?: PacketTxOptions;
 
     constructor(config: PacketClientConfig) {
         this.#connection = typeof config.connection === "string" ? new anchor.web3.Connection(config.connection, { commitment: "confirmed" }) : config.connection;
-        this.#wallet = config.wallet || PacketWallet.blank();
+        this.#wallet = config.wallet ?? PacketWallet.blank();
         this.#photonRpc = config.photonRpc;
+        this.lookUpTableAddress = config.lookUpTableAddress ?? (config.cluster === "devnet" ? PACKET_LOOK_UP_TABLE_DEVNET : (typeof config.cluster !== "undefined" && config.cluster !== "mainnet") ? undefined : PACKET_LOOK_UP_TABLE);
+        this.cluster = config.cluster ?? "mainnet";
+        this.programId = config.programId ?? PACKET_PROGRAM_ID;
 
         this.#buildRuntime({
             connection: this.#connection,
@@ -128,7 +135,7 @@ export class PacketClient {
         const photonRpc = params?.photonRpc ?? this.#photonRpc;
 
         const provider = makeAnchorProvider(connection, wallet);
-        const program = makeProgram(provider);
+        const program = makeProgram(provider, this.programId);
         const lightRpc = makeLightRpc(connection, photonRpc);
 
         this.#provider = provider;
@@ -136,12 +143,16 @@ export class PacketClient {
         this.#lightRpc = lightRpc;
     }
 
-    loadLookupTables = async (force: boolean = false): Promise<AddressLookupTableAccount[]> => {
+    loadLookupTables = async (force: boolean = false): Promise<AddressLookupTableAccount[] | undefined> => {
         if (this.lookupTableCache && !force) {
             return this.lookupTableCache;
         }
 
-        const res = await fetchAddressLookupTable(this.connection, PACKET_LOOK_UP_TABLE);
+        if (!this.lookUpTableAddress) {
+            return undefined;
+        }
+
+        const res = await fetchAddressLookupTable(this.connection, this.lookUpTableAddress);
         this.lookupTableCache = res;
         return res;
     }
@@ -342,7 +353,7 @@ export class PacketClient {
             params
         );
     }
-    
+
     /** Load wallet-derived decryption reader */
     loadWalletDerivedReader = (ownerWallet: PublicKey | string): PacketReaderInput =>
         PacketEncryptionClient.LoadWalletDerivedReader(ownerWallet);

@@ -56,7 +56,7 @@ export class InboxClient {
         options?: PacketIxOptions & PacketTxOptions,
     }): Promise<TxReceiptWithClient<InboxClient>> {
         const inboxId = new BN(params.params.inboxId);
-        const inboxPda = Pda.inboxPda(inboxId, params.client.walletPublicKey);
+        const inboxPda = Pda.inboxPda(inboxId, params.client.walletPublicKey, params.client.program.programId);
 
         const optionsOverride = params.options ?? params.client.defaultTxOptions ?? {};
 
@@ -98,7 +98,7 @@ export class InboxClient {
         const inboxAddress =
             params.id instanceof PublicKey
                 ? params.id
-                : Pda.inboxPda(params.id, params.client.walletPublicKey);
+                : Pda.inboxPda(params.id, params.client.walletPublicKey, params.client.program.programId);
 
         const inboxAccount = await GetInboxAccount(
             params.client.program,
@@ -124,7 +124,7 @@ export class InboxClient {
         client: PacketClient;
         inbox: Inbox;
     }): Promise<InboxClient> {
-        const inboxAddress = Pda.inboxPda(params.inbox.id, params.inbox.owner);
+        const inboxAddress = Pda.inboxPda(params.inbox.id, params.inbox.owner, params.client.program.programId);
 
         return new InboxClient(
             params.client,

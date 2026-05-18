@@ -75,11 +75,7 @@ export function associatedTokenAddress(mint: PublicKey, owner: PublicKey, tokenP
   )[0];
 }
 
-export const rentSponsorPda = PublicKey.findProgramAddressSync([s("rent_sponsor")], pid())[0];
-export const compressionConfigPda = PublicKey.findProgramAddressSync([s("compressible_config"), Buffer.from([0x00, 0x00])], pid())[0];
-
-
-export const pdas = {
+export const PacketPDAs = {
   user: userPda,
   inbox: inboxPda,
   inboxBody: inboxBodyPda,
@@ -90,6 +86,4 @@ export const pdas = {
   vault: vaultPda,
   key: keyPda,
   ata: associatedTokenAddress,
-  rentSponsor: rentSponsorPda,
-  compressionConfig: compressionConfigPda,
 };

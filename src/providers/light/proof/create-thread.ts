@@ -23,8 +23,8 @@ export async function getCreateThreadAtomicProof(args: {
 }): Promise<FinalizedLightProof<CreateThreadAtomicProofResult>> {
     const messageSeq = args.messageSeq ?? 1;
 
-    const threadAddress = Pda.threadPda(args.threadId);
-    const messageAddress = Pda.messagePda(args.threadId, messageSeq);
+    const threadAddress = Pda.threadPda(args.threadId, args.programId);
+    const messageAddress = Pda.messagePda(args.threadId, messageSeq, args.programId);
 
     const proof = await getNewAddressProof({
         rpc: args.rpc,

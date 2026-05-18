@@ -14,7 +14,9 @@ export const SEEDS = {
   key: "key",
 } as const;
 
-export const PACKET_PROGRAM_ID = new PublicKey("A3YNvikE96zn2PYrbqRa8hheH99ks7qt22zQiUF8Ttao");
+export const PACKET_PROGRAM_ADDRESS = "A3YNvikE96zn2PYrbqRa8hheH99ks7qt22zQiUF8Ttao";
+export const PACKET_PROGRAM_ID = new PublicKey(PACKET_PROGRAM_ADDRESS);
+export type PACKET_PROGRAM_ID = typeof PACKET_PROGRAM_ADDRESS;
 
 export const PACKET_LOOK_UP_TABLE = new PublicKey("CxLU3QQAntcTdvyJCwVawT7rKMy1Gu6HsPEjju6qLVNc");
 export const PACKET_LOOK_UP_TABLE_DEVNET = new PublicKey("VfPSYLZfDKDbyzGHk6h7PWVqtAFZmEvt164by21wP1U");

@@ -14,7 +14,7 @@ export const ArchiveInboxIx = async (
     skipIfArchived: boolean = true,
 ) => {
 
-    const archive = Pda.inboxArchivePda(inbox.address, inbox.index);
+    const archive = Pda.inboxArchivePda(inbox.address, inbox.index, program.programId);
 
     const proofBundle = await getInboxArchiveProof({
         rpc,

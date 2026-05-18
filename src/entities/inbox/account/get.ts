@@ -44,7 +44,7 @@ export const GetInboxArchiveAccount = async (
     archiveIndex: BN,
     program: PacketProgram
 ) => {
-    const archiveAddress = Pda.inboxArchivePda(address, archiveIndex);
+    const archiveAddress = Pda.inboxArchivePda(address, archiveIndex, program.programId);
 
     const data = await rpc.getCompressedAccount(bn(archiveAddress.toBytes()));
     if (!data?.data) {
@@ -97,7 +97,7 @@ export const GetInboxMetadata = async (
     program: PacketProgram,
     address: PublicKey
 ): Promise<InboxMetadata | null> => {
-    const account = Pda.inboxMetadataPda(address);
+    const account = Pda.inboxMetadataPda(address, program.programId);
 
     const metadataAccount = await program.account.inboxMetadata.fetchNullable(account);
 

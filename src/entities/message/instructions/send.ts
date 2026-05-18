@@ -55,6 +55,7 @@ export const SendMsgIx = async (
     } = await ResolveMessageInputAndAccounts(
         connection,
         signer,
+        program,
         sender,
         {
             ...params,

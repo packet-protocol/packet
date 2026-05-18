@@ -14,7 +14,14 @@ export type PacketClientConfig = {
         proverEndpoint?: string;
     };
 
-    defaultTxOptions?: PacketTxOptions
+    defaultTxOptions?: PacketTxOptions;
+
+    /** Optional lookup table address override. Defaults to known addresses for mainnet and devnet.*/
+    lookUpTableAddress?: anchor.web3.PublicKey;
+
+    cluster?: "mainnet" | "devnet";
+    /** Defaults to [`constants.PACKET_PROGRAM_ID`] */
+    programId?: anchor.web3.PublicKey;
 };
 
 

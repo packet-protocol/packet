@@ -60,7 +60,7 @@ export class MessageClient {
             return this;
         }
 
-        const address = Pda.messagePda(this.threadId, this.msgSeq);
+        const address = Pda.messagePda(this.threadId, this.msgSeq, this.client.program.programId);
 
         const account = await GetMessageAccount(
             this.client.lightRpc,

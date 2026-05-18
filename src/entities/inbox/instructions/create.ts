@@ -44,9 +44,9 @@ export const CreateInboxIx = async (
 
     const inboxId = new BN(params.inboxId);
 
-    const vaultPda = Pda.vaultPda();
-    const inboxPda = Pda.inboxPda(inboxId, owner);
-    const inboxMetadata = { metadata: params.metadata ? Pda.inboxMetadataPda(inboxPda) : null };
+    const vaultPda = Pda.vaultPda(program.programId);
+    const inboxPda = Pda.inboxPda(inboxId, owner, program.programId);
+    const inboxMetadata = { metadata: params.metadata ? Pda.inboxMetadataPda(inboxPda, program.programId) : null };
 
     var preInstructions: TransactionInstruction[] = [];
 
@@ -146,7 +146,7 @@ export const CreateInboxIx = async (
 
         if (params.payment.escrowEnabled) {
             paymentAccounts.paymentTokenAccount = null;
-            paymentAccounts.paymentEscrowTokenAccount = Pda.associatedTokenAddress(params.payment.mint, inboxPda);
+            paymentAccounts.paymentEscrowTokenAccount = Pda.associatedTokenAddress(params.payment.mint, inboxPda, tokenProgram);
             paymentToAddress = paymentAccounts.paymentEscrowTokenAccount;
         }
     }

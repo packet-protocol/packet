@@ -91,7 +91,7 @@ export class ThreadClient {
     }): Promise<TxReceiptWithClient<ThreadClient>> => {
         const { InboxClient: IC } = await import("../../inbox/client/inbox");
         const threadId = params.params.threadId ?? randomThreadId();
-        const address = Pda.threadPda(threadId);
+        const address = Pda.threadPda(threadId, params.client.programId);
 
         const optionsOverride = params.options ?? params.client.defaultTxOptions ?? {};
 
@@ -121,8 +121,6 @@ export class ThreadClient {
         const transactionClient = new PacketTransactionClient(params.client.connection);
         transactionClient.addTransaction(...tx);
 
-        await transactionClient.sign(params.client.wallet);
-
         const signatures = await transactionClient.submitAndConfirm(params.client.wallet, optionsOverride?.options);
 
         try {
@@ -144,7 +142,7 @@ export class ThreadClient {
         client: PacketClient;
         id: BN | number;
     }): ThreadClient {
-        const address = Pda.threadPda(params.id instanceof BN ? params.id.toNumber() : params.id);
+        const address = Pda.threadPda(params.id instanceof BN ? params.id.toNumber() : params.id, params.client.programId);
 
         return new ThreadClient(
             params.client,
@@ -180,7 +178,7 @@ export class ThreadClient {
         }
         const client = new ThreadClient(
             params.client,
-            Pda.threadPda(params.thread.id),
+            Pda.threadPda(params.thread.id, params.client.programId),
             params.thread.id,
             params.thread.from,
             params.thread.to,
@@ -223,7 +221,7 @@ export class ThreadClient {
         account: anchor.IdlEvents<PacketIDL>["thread"],
         inbox?: Inbox | InboxClient | undefined,
     }): Promise<ThreadClient> {
-        const thread = ThreadAccountToThread(params.account, Pda.threadPda(params.account.id));
+        const thread = ThreadAccountToThread(params.account, Pda.threadPda(params.account.id, this.client.programId));
 
         this.thread = thread;
         await this.loadInbox({ inbox: params.inbox });
@@ -256,7 +254,7 @@ export class ThreadClient {
         if (threadInboxId && !threadInboxId.eq(NO_INBOX) && !this.inbox) {
             const { InboxClient: IC } = await import("../../inbox/client/inbox");
             let inbox = params?.inbox;
-            const inboxAddress = Pda.inboxPda(threadInboxId, this.Thread.to);
+            const inboxAddress = Pda.inboxPda(threadInboxId, this.Thread.to, this.client.programId);
 
             if (inbox && inbox instanceof IC && inbox.address.equals(inboxAddress)) {
                 this.inbox = inbox;

@@ -1,18 +1,42 @@
-import * as anchor from "@coral-xyz/anchor";
-import { createRpc, Rpc } from "@lightprotocol/stateless.js";
+import type * as anchor from "@coral-xyz/anchor";
+import { createRpc, type Rpc } from "@lightprotocol/stateless.js";
 import type { PacketClientConfig } from "../../types/client";
 
-export * from "./proof"
+export * from "./proof";
 
-export function makeLightRpc(connection: anchor.web3.Connection | string, config?: PacketClientConfig["photonRpc"]): Rpc {
+type LightConnection = anchor.web3.Connection | string;
 
-    const commitment = config?.connection ? (typeof config.connection === "string" ? "confirmed" : config.connection.commitment || "confirmed") : typeof connection === "string" ? "confirmed" : connection.commitment;
-    const rpcEndpoint = typeof connection === "string" ? connection : connection.rpcEndpoint;
-    const compressionApiEndpoint = config?.compressionApiEndpoint ?? rpcEndpoint;
-    const proverEndpoint = config?.proverEndpoint ?? rpcEndpoint;
-
-    return createRpc(config?.connection ?? connection, compressionApiEndpoint, proverEndpoint, {
-        commitment: commitment,
-    });
+function getRpcEndpoint(connection: LightConnection): string {
+  return typeof connection === "string" ? connection : connection.rpcEndpoint;
 }
 
+function getCommitment(connection: LightConnection): anchor.web3.Commitment {
+  return typeof connection === "string"
+    ? "confirmed"
+    : connection.commitment ?? "confirmed";
+}
+
+export function makeLightRpc(
+  connection: LightConnection,
+  config?: PacketClientConfig["photonRpc"],
+): Rpc {
+  const rpcConnection = config?.connection ?? connection;
+
+  const rpcEndpoint = getRpcEndpoint(rpcConnection);
+  const commitment = getCommitment(rpcConnection);
+
+  const compressionApiEndpoint =
+    config?.compressionApiEndpoint ?? rpcEndpoint;
+
+  const proverEndpoint =
+    config?.proverEndpoint ?? rpcEndpoint;
+
+  return createRpc(
+    rpcConnection,
+    compressionApiEndpoint,
+    proverEndpoint,
+    {
+      commitment,
+    },
+  );
+}

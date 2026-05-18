@@ -6,7 +6,7 @@ export * from "./types"
 export * from "./utils"
 export * from "./client"
 export * from "./constants"
-export { pdas } from "./pda"
+export { PacketPDAs } from "./pda"
 
 import BN from "bn.js";
 export { BN };

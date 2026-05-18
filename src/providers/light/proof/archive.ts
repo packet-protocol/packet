@@ -1,5 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
-import { type PackedAccounts, type Rpc } from "@lightprotocol/stateless.js";
+import { type Rpc } from "@lightprotocol/stateless.js";
 
 import {
     finalizeLightProof,

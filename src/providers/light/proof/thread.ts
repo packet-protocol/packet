@@ -35,7 +35,7 @@ export async function getExistingThreadProof(args: {
     threadId: number;
     newAddresses?: PublicKey[];
 }): Promise<ExistingThreadProofResult> {
-    const threadAddress = Pda.threadPda(args.threadId);
+    const threadAddress = Pda.threadPda(args.threadId, args.program.programId);
 
     const threadAccount = await GetThreadAccount(
         args.rpc,

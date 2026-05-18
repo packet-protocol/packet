@@ -41,7 +41,7 @@ export class InboxBodyPageClient extends SegmentPageClient {
             return archive.raw.raw;
         }
 
-        const inboxBodyPda = Pda.inboxBodyPda(this.inboxAddress);
+        const inboxBodyPda = Pda.inboxBodyPda(this.inboxAddress, this.client.program.programId);
 
         const bodyAccount = await this.client.program.account.inboxBody.fetchNullable(
             inboxBodyPda,

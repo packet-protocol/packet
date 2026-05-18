@@ -7,7 +7,6 @@ import { getExistingThreadProof } from "./thread";
 import {
     finalizeLightProof,
     type FinalizedLightProof,
-    type LightProofBase,
     type LightProofBundleWithMeta,
 } from "./helpers";
 import type { CompressedAccountMetaPacket } from "./types";
@@ -28,8 +27,8 @@ export async function getSendMessageProof(args: {
     threadId: number;
     messageSeq: number;
 }): Promise<FinalizedLightProof<SendMessageProofResult>> {
-    const expectedThreadAddress = Pda.threadPda(args.threadId);
-    const messageAddress = Pda.messagePda(args.threadId, args.messageSeq);
+    const expectedThreadAddress = Pda.threadPda(args.threadId, args.program.programId);
+    const messageAddress = Pda.messagePda(args.threadId, args.messageSeq, args.program.programId);
 
     const proof = await getExistingThreadProof({
         rpc: args.rpc,

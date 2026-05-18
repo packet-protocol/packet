@@ -18,7 +18,7 @@ export const EditInboxPaymentIx = async (
 
     const owner = options?.owner ?? signer;
 
-    const vaultPda = Pda.vaultPda();
+    const vaultPda = Pda.vaultPda(program.programId);
 
     var preInstructions: TransactionInstruction[] = [];
 
@@ -113,7 +113,7 @@ export const EditInboxPaymentIx = async (
         }
 
         if (payment.escrowEnabled) {
-            paymentAccounts.paymentEscrowTokenAccount = Pda.associatedTokenAddress(payment.mint, inboxPda);
+            paymentAccounts.paymentEscrowTokenAccount = Pda.associatedTokenAddress(payment.mint, inboxPda, tokenProgram);
         }
     }
 

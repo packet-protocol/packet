@@ -1,3 +1,5 @@
+import { type PACKET_PROGRAM_ID } from "../constants";
+
 /**
  * Program IDL in camelCase format in order to be used in JS/TS.
  *
@@ -5,7 +7,7 @@
  * IDL can be found at `target/idl/packet.json`.
  */
 export type PacketIDL = {
-  "address": "A3YNvikE96zn2PYrbqRa8hheH99ks7qt22zQiUF8Ttao",
+  "address": PACKET_PROGRAM_ID | string,
   "metadata": {
     "name": "packet",
     "version": "0.1.0",
