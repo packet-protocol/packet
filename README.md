@@ -1,383 +1,92 @@
-# Packet SDK (xpkt)
+# Packet
 
-**xpkt** is a TypeScript SDK for Packet: a Solana-native communication and order protocol for humans, apps, and agents.
+![image](https://xpkt.dev/assets/banner.png)
 
-Packet is not only chat. It combines:
+Packet is an on-chain messaging and order protocol built on Solana. It combines end-to-end encryption, payment gating, compressed state via Light Protocol, and permanent off-chain storage via Irys — letting wallets, apps, and agents send verifiable, private messages without a centralized server.
 
-- **Sovereign inboxes** — on-chain endpoints that can act like decentralized mailboxes, storefronts, or agent APIs.
-- **Encrypted content references** — messages point to content stored elsewhere, usually Irys, Arweave, IPFS, or a custom URL.
-- **Payable payloads** — requests and payments can travel together in one protocol flow.
-- **Escrowed threads** — paid inboxes can lock funds until both sides approve or a time lock allows withdrawal.
-- **Compressed state** — activity, inbox pages, message accounts, and user key registries are designed for low-rent, scalable Solana usage.
+See full documentation at [docs.xpkt.dev](https://docs.xpkt.dev).
 
-> Recommended content model: keep on-chain message content as a URL or content reference. Irys is the recommended default for encrypted JSON bodies.
+## Monorepo Structure
 
----
+```
+packet/
+├── ts/          # TypeScript SDK (xpkt-sdk)
+├── cli/         # CLI tool (xpkt)
+```
 
-## Installation
+### [`ts/`](./ts) — TypeScript SDK
+
+**Package:** `xpkt-sdk`
+
+The SDK for integrating Packet into TypeScript/JavaScript apps. Supports both browser (wallet-adapter) and Node.js (Keypair) environments.
 
 ```bash
 npm install xpkt-sdk
 ```
 
-Peer/runtime stack used by the SDK:
+See [ts/README.md](./ts/README.md) for full documentation.
+
+### [`cli/`](./cli) — CLI
+
+**Package:** `xpkt-cli` · **Binary:** `packet`
+
+A terminal interface for Packet. Send encrypted messages, manage inboxes, upload to Irys, and configure your wallet — no code required.
 
 ```bash
-npm install @solana/web3.js @coral-xyz/anchor @lightprotocol/stateless.js bn.js
+npm install -g xpkt-cli
 ```
 
-For frontend wallet support, use your normal Solana wallet adapter stack:
+See [cli/README.md](./cli/README.md) for full documentation.
 
-```bash
-npm install @solana/wallet-adapter-react @solana/wallet-adapter-base
-```
-
----
-
-## Quick start
-
-### Browser / wallet-adapter
-
-```ts
-import { Connection } from "@solana/web3.js";
-import { PacketClient, PacketWallet } from "xpkt-sdk";
-
-const connection = new Connection("https://your-sol-photon-rpc-endpoint", "confirmed");
-
-const packetWallet = PacketWallet.fromAdapter({
-  publicKey: wallet.publicKey,
-  signTransaction: wallet.signTransaction,
-  signAllTransactions: wallet.signAllTransactions,
-});
-
-const client = new PacketClient({
-  wallet: packetWallet,
-  connection,
-  photonRpc: {
-    compressionApiEndpoint: "https://your-sol-photon-rpc-endpoint",
-    proverEndpoint: "https://your-prover-endpoint",
-  },
-});
-
-await client.loadLookupTables();
-```
-
-### Node
-
-```ts
-import { Connection, Keypair } from "@solana/web3.js";
-import { PacketClient, PacketWallet } from "xpkt-sdk";
-
-const wallet = Keypair.generate();
-const connection = new Connection("https://your-sol-photon-rpc-endpoint", "confirmed");
-
-const client = new PacketClient({
-  wallet: PacketWallet.fromKeypair(wallet),
-  connection,
-  photonRpc: {
-    compressionApiEndpoint: "https://your-sol-photon-rpc-endpoint",
-    proverEndpoint: "https://your-sol-photon-rpc-endpoint",
-  },
-  cluster: "mainnet"
-});
-```
-
----
-
-## Core concepts
-
-### User
-
-A user profile is a normal Packet PDA with a short display name, metadata URI, and optional agent identity link.
-
-```ts
-await client.createUser({
-  name: "alice",
-  uri: "https://example.com/alice.json",
-});
-
-const user = await client.loadUser();
-console.log(user.name, user.uri, user.agent);
-```
-
-### Key registry
-
-A user key is a compressed public encryption key account. Other users or agents can load it and use it as a reader when encrypting a message.
-
-```ts
-await client.useWalletPasswordCrypto({
-  password,
-  signMessage: wallet.signMessage,
-});
-
-await client.createKeyFromCrypto();
-
-const key = await client.loadKey();
-const reader = key.Reader;
-```
-
-If no key is declared on-chain, apps may fall back to `SOLANA-ED25519-X25519` wallet-derived encryption when appropriate.
+## Core Concepts
 
 ### Inbox
 
-An inbox is a sovereign endpoint. It can be free, paid, escrow-paid, standard, or ephemeral.
+An on-chain account owned by a wallet. Acts as a directory of incoming threads. Inboxes can enforce a payment rule — senders must include a minimum SOL payment to open a thread. Multiple inboxes per wallet are supported (inbox 0, 1, 2, …).
 
-```ts
-import { BN, InboxKind } from "xpkt-sdk";
-import { PublicKey } from "@solana/web3.js";
+### Thread
 
-const inboxRes = await client.createInbox({
-  inboxId: 0,
-  inboxKind: InboxKind.Standard,
-  metadata: {
-    name: "Support Inbox",
-    uri: "https://example.com/inbox.json",
-  },
-});
+The conversation container between two wallets, created by the sender alongside the first message. Both parties can send messages by appending to the thread. Threads optionally hold an escrow balance.
 
-const inbox = inboxRes.client;
+### Message
+
+A single entry in a thread. Carries a type (`text`, `url`, or `irys`) and a content field. Large or sensitive payloads are uploaded to Irys; the message stores the CID pointer.
+
+### Encryption
+
+Messages are encrypted with X25519 Diffie-Hellman before leaving the sender. A message can have multiple readers (sender + recipient). Wallets can use a deterministic wallet-derived key or register a separate Key account on-chain.
+
+### Escrow
+
+Inbox owners can enable escrow: incoming payments are held in a per-thread escrow account until the receiver approves and withdraws.
+
+## Quick Example
+
+**CLI:**
+
+```bash
+xpkt init config --rpc https://your-rpc --keypair ~/.config/solana/id.json
+xpkt message new-thread --to <pubkey> --content "Hello" --encrypt
 ```
 
-### Paid inbox
-
-A paid inbox requires payment when a thread is created into that inbox.
+**SDK:**
 
 ```ts
-const paidInbox = await client.createInbox({
-  inboxId: 1,
-  inboxKind: InboxKind.Standard,
-  metadata: {
-    name: "Paid Requests",
-    uri: "https://example.com/paid.json",
-  },
-  payment: {
-    amount: new BN(100_000_000),
-    mint: WSOL_MINT,
-    escrowEnabled: false,
-  },
-});
-```
-
-### Escrow inbox
-
-An escrow inbox locks payment into the thread. Funds can be released by mutual approval or by the escrow rules configured in the protocol.
-
-```ts
-const escrowInbox = await client.createInbox({
-  inboxId: 2,
-  inboxKind: InboxKind.Standard,
-  metadata: {
-    name: "Escrow Orders",
-    uri: "https://example.com/escrow.json",
-  },
-  payment: {
-    amount: new BN(100_000_000),
-    mint: WSOL_MINT,
-    escrowEnabled: true,
-  },
-});
-```
-
----
-
-## Sending encrypted messages
-
-Packet messages should usually contain a content URL/reference, not the whole plaintext body.
-
-Recommended flow:
-
-1. Build JSON payload, for example `{ subject, message }`.
-2. Encrypt it with `client.crypto`.
-3. Upload the encrypted JSON to Irys/Arweave/IPFS/custom storage.
-4. Send the uploaded URL or content ID on-chain with `MessageType.Irys`, `MessageType.Arweave`, `MessageType.Ipfs`, or `MessageType.Url`.
-
-```ts
-import { MessageType } from "xpkt-sdk";
-
-const recipientKey = await client.loadKey(recipientWallet);
-
-const encryptedJson = await client.crypto.encryptToJson({
-  plaintext: JSON.stringify({
-    subject: "Build request",
-    message: "Can you build this agent workflow by Friday?",
-  }),
-  readers: [recipientKey.Reader],
-});
-
-const contentUrl = await uploadEncryptedJsonToIrys(encryptedJson);
-
-const thread = await client.createThread({
-  to: recipientWallet,
-  messageType: MessageType.Irys,
-  content: contentUrl,
-});
-```
-
-### Sending into an inbox
-
-If the inbox has a payment rule, the SDK can build the required payment flow when creating the first thread.
-
-```ts
-const targetInbox = await client.inbox(inboxAddress);
-
-const threadRes = await targetInbox.createThread({
-  messageType: MessageType.Irys,
-  content: contentUrl,
-});
-```
-
-### Attaching manual payment to a normal message
-
-Manual payment can be attached to normal sends when not already handled by a paid inbox rule.
-
-```ts
-await thread.sendMessage({
-  messageType: MessageType.Irys,
-  content: contentUrl,
-  payment: {
-    amount: new BN(10_000_000),
-    mint: WSOL_MINT,
-  },
-});
-```
-
----
-
-### Inbox threads
-
-Standard inboxes use segmented pages. You can load the latest body, previous bodies, or search across body pages.
-
-```ts
-const inbox = await client.inbox(inboxAddress);
-
-const latestThreads = await inbox.loadThreads({
-  limit: 20,
-  includeLastMessage: true,
-});
-
-const moreThreads = await inbox.loadThreadsAcrossBodies({
-  limit: 50,
-  maxPages: 3,
-  includeLastMessage: true,
-});
-```
-
-### Thread messages
-
-```ts
-const thread = await client.threadById(threadId);
-await thread.load();
-
-const last = await thread.loadLastMessage();
-const messages = await thread.loadMessages({
-  limit: 30,
-  direction: "backward",
-});
-```
-
-### Message content
-
-For URL-backed messages, load the URL, parse encrypted JSON, then decrypt with the active crypto identity.
-
-```ts
-const encryptedBody = await fetch(contentUrl).then((r) => r.json());
-const plaintext = await client.crypto.decrypt({ body: encryptedBody });
-```
-
----
-
-## Escrow lifecycle
-
-If a thread has escrow payment info, both participants can approve. The receiver can withdraw when the protocol allows it.
-
-```ts
-await thread.approveEscrow({
-  skipActivityCreation: true,
-});
-
-await thread.withdrawEscrow();
-```
-
-Apps should display escrow state near the thread header: amount, mint, approval status, release time, and whether funds were released.
-
----
-
-## Realtime events
-
-Packet emits message events from the program. Use event listeners for live UI updates, but do not rely on websocket events as your only indexer. Always backfill by loading activity/inbox/thread state.
-
-Recommended app 
-
----
-
-## React usage pattern
-
-A simple app usually keeps one `PacketClient` in context:
-
-```tsx
-import { createContext, useContext, useMemo } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { Connection } from "@solana/web3.js";
 import { PacketClient, PacketWallet } from "xpkt-sdk";
 
-const PacketContext = createContext<PacketClient | null>(null);
-
-export function PacketProvider({ children }: { children: React.ReactNode }) {
-  const wallet = useWallet();
-
-  const client = useMemo(() => {
-    if (!wallet.publicKey || !wallet.signTransaction || !wallet.signAllTransactions) {
-      return null;
-    }
-
-    return new PacketClient({
-      wallet: PacketWallet.fromAdapter({
-        publicKey: wallet.publicKey,
-        signTransaction: wallet.signTransaction,
-        signAllTransactions: wallet.signAllTransactions,
-      }),
-      connection: new Connection("https://your-sol-photon-rpc-endpoint", "confirmed"),
-      photonRpc: {
-        compressionApiEndpoint: "https://your-sol-photon-rpc-endpoint",
-        proverEndpoint: "https://your-sol-photon-rpc-endpoint",
-      },
-    });
-  }, [wallet.publicKey, wallet.signTransaction, wallet.signAllTransactions]);
-
-  return <PacketContext.Provider value={client}>{children}</PacketContext.Provider>;
-}
-
-export function usePacket() {
-  return useContext(PacketContext);
-}
-```
-
----
-
-## Local development
-
-Typical local setup needs:
-
-- Light test validator validator
-- Packet program deployed
-- funded wallet 
-
-Example client config:
-
-```ts
 const client = new PacketClient({
-  wallet: PacketWallet.fromKeypair(wallet),
-  connection: "http://127.0.0.1:8899",
-  photonRpc: {
-    compressionApiEndpoint: "http://127.0.0.1:8784",
-    proverEndpoint: "http://127.0.0.1:3001",
-  },
+  wallet: PacketWallet.fromKeypair(keypair),
+  connection,
+  photonRpc: { compressionApiEndpoint: "...", proverEndpoint: "..." },
+});
+
+await client.createThread({
+  to: recipientPublicKey,
+  messageType: MessageType.Irys,
+  content: irysUrl,
 });
 ```
-
-Localnet wallet warnings are common when signing custom Light/Packet transactions. Wallet security scanners may be unable to verify local/custom programs or lookup tables.
-
---
+---
 ## Programs
 
 `A3YNvikE96zn2PYrbqRa8hheH99ks7qt22zQiUF8Ttao` - Packet main program (inboxes, threads, messages, keys, users) (`mainnet` and `devnet`)
@@ -386,7 +95,7 @@ Localnet wallet warnings are common when signing custom Light/Packet transaction
 
 ## Status
 
-`xpkt` is experimental and actively evolving. APIs may change quickly while Packet’s agent/order protocol and SDK surface are being finalized.
+Packet is experimental and actively evolving. APIs may change while the agent/order protocol and SDK surface are being finalized.
 
 ---
 

@@ -1,0 +1,58 @@
+{
+  "name": "xpkt-cli",
+  "version": "0.0.1",
+  "description": "TypeScript CLI for Packet protocol",
+  "type": "module",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "bin": {
+    "packet": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "scripts": {
+    "build": "npm run clean && npm run typecheck && node esbuild.config.mjs && chmod +x dist/index.js",
+    "dev": "tsx src/index.ts",
+    "start": "node ./dist/index.js",
+    "clean": "rm -rf dist .types",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "npm run typecheck && npm run build",
+    "pack:check": "npm pack --dry-run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/packet-protocol/packet.git"
+  },
+  "keywords": [
+    "solana",
+    "packet",
+    "communication",
+    "decentralized",
+    "payment"
+  ],
+  "author": "@packetchat",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@iarna/toml": "^2.2.5",
+    "@irys/upload": "^0.0.15",
+    "@irys/upload-solana": "^0.1.8",
+    "@solana/web3.js": "^1.98.4",
+    "bs58": "^6.0.0",
+    "commander": "^14.0.2",
+    "env-paths": "^4.0.0",
+    "file-type": "^22.0.1",
+    "write-file-atomic": "^7.0.1",
+    "xpkt-sdk": "^0.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.3",
+    "@types/write-file-atomic": "^4.0.3",
+    "esbuild": "^0.28.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.2"
+  }
+}

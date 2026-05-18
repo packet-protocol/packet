@@ -1,6 +1,6 @@
 {
   "name": "xpkt-sdk",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "TypeScript SDK for Packet protocol",
   "type": "module",
   "sideEffects": false,
