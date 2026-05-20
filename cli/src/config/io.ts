@@ -90,6 +90,7 @@ function toTomlString(config: OnDiskConfig): string {
       compression_api_endpoint: config.photonRpc.compressionApiEndpoint,
       prover_endpoint: config.photonRpc.proverEndpoint,
     },
+    cluster: config.cluster,
   };
 
   return header + TOML.stringify(document as TOML.JsonMap);

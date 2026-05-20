@@ -118,5 +118,6 @@ function parseTomlSync(raw: string): OnDiskConfig {
           ? photon.prover_endpoint
           : rpc,
     },
+    cluster: typeof parsed.cluster === "string" ? parsed.cluster : undefined,
   };
 }

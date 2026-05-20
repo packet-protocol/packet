@@ -67,8 +67,8 @@ export async function SetUserConfig(
     cluster = detectedCluster;
     if (cluster === "testnet"){
       console.warn("Warning: Detected testnet RPC URL. Packet is not deployed on testnet. Proceeding with cluster = 'mainnet'.");
+      cluster = "mainnet";
     }
-    cluster = "mainnet";
   } catch (err) {
     console.warn(
       `Warning: Failed to detect Solana cluster from RPC URL: ` +
@@ -121,9 +121,9 @@ export async function SetUserConfig(
 }
 
 const GENESIS_HASHES: Record<string, string> = {
-  "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp": "mainnet",
-  "EtWTRABZaYq6iMfeYKouRu166VU2xqa1": "testnet",
-  "GH7ome3EiwEr7tu9JuTh2dpYWBJK3z69Xm1ZE3MEE6JC": "devnet",
+  "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d": "mainnet",
+  "4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY": "testnet",
+  "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG": "devnet",
 };
 
 async function getSolanaCluster(rpcUrl: string) {
@@ -140,8 +140,14 @@ async function getSolanaCluster(rpcUrl: string) {
   const json:any = await res.json();
   const genesisHash = json.result;
 
+  var cluster = GENESIS_HASHES[genesisHash];
+
+  if (!cluster) {
+    throw new Error(`Unknown genesis hash: ${genesisHash}`);
+  }
+
   return {
     genesisHash,
-    cluster: GENESIS_HASHES[genesisHash] ?? "mainnet", 
+    cluster, 
   };
 }
