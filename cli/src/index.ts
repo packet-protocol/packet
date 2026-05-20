@@ -7,7 +7,7 @@ import { CommandMessage } from "./message/index.js";
 (() => {
     program
         .name("Packet CLI")
-        .version("0.0.1")
+        .version(process.env._PACKET_CLI_VERSION || "0.0.0") 
         .description("A CLI for Packet Protocol (xpkt)")
 
 

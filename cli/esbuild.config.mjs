@@ -1,19 +1,18 @@
 import { build } from "esbuild";
+import pkg from "./package.json" with { type: "json" }; 
 
 await build({
   entryPoints: ["src/index.ts"],
   outfile: "dist/index.js",
-
   bundle: true,
   platform: "node",
   format: "esm",
   target: "node20",
-
   sourcemap: true,
-  external: [
-  "bigint-buffer"
-],
-
+  external: ["bigint-buffer"],
+  define: {
+    "process.env._PACKET_CLI_VERSION": JSON.stringify(pkg.version),
+  },
   banner: {
     js: `#!/usr/bin/env node
 import { createRequire } from "node:module";

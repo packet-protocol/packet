@@ -11,7 +11,7 @@ See full documentation at [docs.xpkt.dev](https://docs.xpkt.dev).
 ```
 packet/
 ├── ts/          # TypeScript SDK (xpkt-sdk)
-├── cli/         # CLI tool (xpkt)
+├── cli/         # CLI tool (xpkt-cli - packet binary)
 ```
 
 ### [`ts/`](./ts) — TypeScript SDK
@@ -65,8 +65,8 @@ Inbox owners can enable escrow: incoming payments are held in a per-thread escro
 **CLI:**
 
 ```bash
-xpkt init config --rpc https://your-rpc --keypair ~/.config/solana/id.json
-xpkt message new-thread --to <pubkey> --content "Hello" --encrypt
+packet init config --rpc https://your-rpc --keypair ~/.config/solana/id.json
+packet message new-thread --to <pubkey> --content "Hello" --encrypt
 ```
 
 **SDK:**
