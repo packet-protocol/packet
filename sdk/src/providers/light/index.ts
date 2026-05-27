@@ -1,4 +1,4 @@
-import type * as anchor from "@coral-xyz/anchor";
+import type * as anchor from "@anchor-lang/core";
 import { createRpc, type Rpc } from "@lightprotocol/stateless.js";
 import type { PacketClientConfig } from "../../types/client";
 

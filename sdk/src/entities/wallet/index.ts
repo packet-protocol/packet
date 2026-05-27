@@ -4,7 +4,7 @@ import {
     Transaction,
     VersionedTransaction,
 } from "@solana/web3.js";
-import * as anchor from "@coral-xyz/anchor";
+import * as anchor from "@anchor-lang/core";
 
 export type PacketWalletAdapter = {
     publicKey: PublicKey | string | (() => PublicKey | string | null | undefined);

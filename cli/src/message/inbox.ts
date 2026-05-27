@@ -2,27 +2,27 @@ import type { Command } from "commander";
 import { InboxKind } from "xpkt-sdk";
 import { GetUserConfig } from "../config/get.js";
 import { buildInboxWsolPaymentRule } from "./payment.js";
-import { parseOptionalInteger, parsePublicKey, requiredString } from "./parse.js";
+import { parseOptionalInteger, parsePublicKey, requiredString } from "../input/index.js";
 import { formatPayment, printJson, shortKey } from "./format.js";
 import { resolveTargetInbox } from "./resolve.js";
 import { txOptions } from "../config/tx.js";
 
-function addInboxPaymentOptions(cmd: Command) {
+const addInboxPaymentOptions = (cmd: Command) => {
   return cmd
     .option("--payment-sol <amount>", "Enable SOL/WSOL payment wall, e.g. 0.05")
     .option("--payment-to <pubkey>", "Payment destination owner ATA by default, or raw token account with --payment-to-raw")
     .option("--payment-to-raw", "Treat --payment-to as a token account address, not an owner", false)
     .option("--escrow", "Escrow inbox payments instead of paying receiver immediately", false);
-}
+};
 
-function addTxOptions(cmd: Command) {
+const addTxOptions = (cmd: Command) => {
   return cmd
     .option("--skip-preflight", "Skip transaction preflight", false)
     .option("--priority-fee <microLamports>", "Priority fee in micro lamports")
     .option("--json", "Print JSON output", false);
-}
+};
 
-export function registerInboxCommands(parent: Command) {
+export const registerInboxCommands = (parent: Command) => {
   addTxOptions(addInboxPaymentOptions(
     parent
       .command("create-inbox")
@@ -44,7 +44,7 @@ export function registerInboxCommands(parent: Command) {
       inboxKind: options.ephemeral ? InboxKind.Ephemeral : InboxKind.Standard,
       metadata: name ? { name, uri } : undefined,
       payment,
-      options: await txOptions(options, client.connection),
+      options: txOptions(options),
     });
 
     const inbox = res.client;
@@ -94,7 +94,7 @@ export function registerInboxCommands(parent: Command) {
 
     const res = await inbox.editPayment({
       payment,
-      options: await txOptions(options, client.connection),
+      options: txOptions(options),
     });
 
     await res.client.refresh({ clearPages: false }).catch(() => res.client);
@@ -117,4 +117,4 @@ export function registerInboxCommands(parent: Command) {
     console.log("escrow:", res.client.Inbox.paymentRule?.escrow ? "yes" : "no");
     console.log("tx:", res.receipt.join(", "));
   });
-}
+};

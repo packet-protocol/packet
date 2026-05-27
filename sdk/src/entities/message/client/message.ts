@@ -3,12 +3,14 @@ import type { Message } from "../types";
 import * as Pda from "../../../pda";
 import { GetMessageAccount, MessageAccountToMessage } from "../account/get";
 import type { ThreadClient } from "../../thread/client/thread";
+import {
+    loadPacketMessageContent,
+    parseLoadedPacketMessageContent,
+    type PacketLoadedContent,
+    type ParsedPacketMessageContent,
+} from "../content";
 
-export type MessageContentLoadResult = {
-    kind: "inline" | "url";
-    bytes: Uint8Array;
-    text?: string;
-};
+export type MessageContentLoadResult = PacketLoadedContent;
 
 export class MessageClient {
     private message?: Message;
@@ -107,66 +109,42 @@ export class MessageClient {
         }
 
         const message = this.Message;
+        this.content = await loadPacketMessageContent({
+            messageType: message.messageType,
+            content: message.content,
+        });
+        return this.content;
+    }
 
-        switch (message.messageType) {
-            case 0: {
-                this.content = {
-                    kind: "inline",
-                    bytes: message.content,
-                    text: Buffer.from(message.content).toString("utf8"),
-                };
-                return this.content;
-            }
+    async loadParsedContent(params: {
+        decrypt?: boolean;
+        force?: boolean;
+    } = {}): Promise<ParsedPacketMessageContent> {
+        const loaded = await this.loadContent(params.force);
 
-            case 1:
-            case 2:
-            case 3:
-            case 4: {
-                let url = Buffer.from(message.content).toString("utf8");
-                // Packet convention: content should be a URL. For older Irys-only
-                // messages that stored just the tx id, fall back to the public gateway.
-                if (!/^https?:\/\//.test(url)) {
-                    if (message.messageType === 2) {
-                        if (url.startsWith("ipfs://")) {
-                            url = `https://ipfs.io/ipfs/${url.slice(7)}`;
-                        } else {
-                            url = `https://ipfs.io/ipfs/${url}`;
-                        }
-                    } else if (message.messageType === 3) {
-                        if (url.startsWith("irys://")) {
-                            url = `https://gateway.irys.xyz/${url.slice(7)}`;
-                        } else if (url.startsWith("ar://")) {
-                            url = `https://gateway.irys.xyz/${url.slice(5)}`;
-                        }else {
-                            url = `https://gateway.irys.xyz/${url}`;
-                        }
-                    } else if (message.messageType === 4) {
-                        if (url.startsWith("ar://")) {
-                            url = `https://arweave.net/${url.slice(5)}`;
-                        } else {
-                            url = `https://arweave.net/${url}`;
-                        }
-                    }
-                }
-                const res = await fetch(url);
-
-                if (!res.ok) {
-                    throw new Error(`Failed to load message content: ${res.status}`);
-                }
-
-                const bytes = new Uint8Array(await res.arrayBuffer());
-
-                this.content = {
-                    kind: "url",
-                    bytes,
-                    text: new TextDecoder().decode(bytes),
-                };
-
-                return this.content;
-            }
-
-            default:
-                throw new Error(`Unsupported message type: ${message.messageType}`);
+        if (loaded.text === undefined) {
+            const contentType = loaded.contentType ?? "application/octet-stream";
+            const sizeKb = Math.round(loaded.bytes.byteLength / 1024);
+            return {
+                message: `[binary ${contentType}, ~${sizeKb} KB]`,
+                envelope: "",
+                rawBytes: loaded.bytes,
+                loadedContentType: loaded.contentType,
+                loadedUrl: loaded.url,
+                contentType: loaded.contentType,
+                encrypted: false,
+                mediaKind: "binary",
+            };
         }
+
+        const decrypted = params.decrypt === false
+            ? { encrypted: false as const, plaintext: loaded.text }
+            : await this.client.crypto.maybeDecrypt(loaded.text);
+
+        return parseLoadedPacketMessageContent({
+            loaded,
+            plaintext: decrypted.plaintext,
+            encrypted: decrypted.encrypted,
+        });
     }
 }

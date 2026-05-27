@@ -1,19 +1,20 @@
 import type { Command } from "commander";
 import { InboxClient } from "xpkt-sdk";
 import { GetUserConfig } from "../config/get.js";
-import { parseOptionalInteger, parsePublicKey } from "./parse.js";
+import { parseOptionalInteger, parsePublicKey } from "../input/index.js";
 import { useCliCrypto } from "./crypto.js";
 import { resolveTargetInbox } from "./resolve.js";
 import { formatEscrow, formatPayment, formatThreadInfo, messageToPlainObject, printJson, printMessageItem, shortKey } from "./format.js";
 
-function readOptions(cmd: Command) {
+const readOptions = (cmd: Command) => {
   return cmd
     .option("--no-decrypt", "Do not decrypt message content")
     .option("--no-load-content", "Do not fetch URL/Irys/Arweave/IPFS body; print pointer/raw content only")
+    .option("--full-view <dir>", "Save binary Packet envelope parts to a target folder")
     .option("--json", "Print JSON output", false);
-}
+};
 
-export function registerReadCommands(parent: Command) {
+export const registerReadCommands = (parent: Command) => {
   parent
     .command("inboxes")
     .description("List my inboxes")
@@ -73,7 +74,7 @@ export function registerReadCommands(parent: Command) {
       const t = thread.Thread;
       let last: any = null;
       if (thread.LastMessage) {
-        last = await messageToPlainObject({ client, thread, message: thread.LastMessage, decrypt: options.decrypt !== false, loadContent: options.loadContent !== false });
+        last = await messageToPlainObject({ client, thread, message: thread.LastMessage, decrypt: options.decrypt !== false, loadContent: options.loadContent !== false, fullViewDir: options.fullView });
       }
       out.push({
         id: t.id,
@@ -128,7 +129,7 @@ export function registerReadCommands(parent: Command) {
     for (const thread of threads) {
       const t = thread.Thread;
       const last = thread.LastMessage
-        ? await messageToPlainObject({ client, thread, message: thread.LastMessage, decrypt: options.decrypt !== false, loadContent: options.loadContent !== false })
+        ? await messageToPlainObject({ client, thread, message: thread.LastMessage, decrypt: options.decrypt !== false, loadContent: options.loadContent !== false, fullViewDir: options.fullView })
         : null;
       out.push({ id: t.id, from: t.from.toBase58(), to: t.to.toBase58(), lastUpdated: t.lastUpdated, totalMsgs: t.totalMsgs, lastMessage: last });
     }
@@ -176,7 +177,7 @@ export function registerReadCommands(parent: Command) {
 
     const out = [];
     for (const message of messages) {
-      out.push(await messageToPlainObject({ client, thread, message, decrypt: options.decrypt !== false, loadContent: options.loadContent !== false }));
+      out.push(await messageToPlainObject({ client, thread, message, decrypt: options.decrypt !== false, loadContent: options.loadContent !== false, fullViewDir: options.fullView }));
     }
 
     if (options.json) return printJson(out);
@@ -199,8 +200,8 @@ export function registerReadCommands(parent: Command) {
       return;
     }
 
-    const out = await messageToPlainObject({ client, thread, message, decrypt: options.decrypt !== false, loadContent: options.loadContent !== false });
+    const out = await messageToPlainObject({ client, thread, message, decrypt: options.decrypt !== false, loadContent: options.loadContent !== false, fullViewDir: options.fullView });
     if (options.json) return printJson(out);
     printMessageItem(out);
   });
-}
+};

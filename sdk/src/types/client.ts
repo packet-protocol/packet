@@ -1,4 +1,4 @@
-import type * as anchor from "@coral-xyz/anchor";
+import type * as anchor from "@anchor-lang/core";
 import type { TransactionInstruction } from "@solana/web3.js";
 import type { PacketWallet } from "../entities/wallet";
 import type { PacketTxOptions } from "../entities/transaction/types";

@@ -14,7 +14,7 @@ import { PacketTransactionClient } from "../../transaction/client";
 import type { TxReceiptWithClient } from "../../../types/client";
 import { SendMsgTx } from "../../message/transactions/send";
 import type { PacketIDL } from "../../../idl/packet.idl";
-import * as anchor from "@coral-xyz/anchor";
+import * as anchor from "@anchor-lang/core";
 import { EscrowWithdrawTx } from "../transactions/escrow-withdraw";
 import { EscrowApproveTx } from "../transactions/escrow-approve";
 import BN from "bn.js";

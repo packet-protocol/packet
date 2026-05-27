@@ -1,4 +1,4 @@
-import * as anchor from "@coral-xyz/anchor";
+import * as anchor from "@anchor-lang/core";
 import { AddressLookupTableAccount, Keypair, PublicKey } from "@solana/web3.js";
 import {
     makeAnchorProvider,
@@ -24,6 +24,7 @@ import { KeyClient } from "./entities/key/client/key";
 import type { CreateUserKeyParams } from "./entities/key/types";
 import { MessageEventsClient, UserClient, type CreateUserParams } from "./entities";
 import type { PacketIxOptions, PacketTxOptions, WithTxOptions } from "./entities/transaction/types";
+import { AnchorCpiEventClient } from "./entities/events/cpi-events";
 
 /**
  * PacketClient is the main entry point for interacting with the Packet.
@@ -48,6 +49,7 @@ export class PacketClient {
     readonly lookUpTableAddress?: anchor.web3.PublicKey;
     readonly cluster: "mainnet" | "devnet";
     readonly programId: anchor.web3.PublicKey;
+    readonly cpiEvents: AnchorCpiEventClient;
 
     defaultTxOptions?: PacketTxOptions;
 
@@ -73,6 +75,13 @@ export class PacketClient {
                 priorityFee: 1000,
             }
         }
+
+         this.cpiEvents = new AnchorCpiEventClient(
+            this.program.provider.connection,
+            this.program.programId,
+            new anchor.BorshCoder(this.program.idl),
+            this.connection.commitment === "finalized" ? "finalized" : "confirmed"
+        );
     }
 
     get connection(): anchor.web3.Connection {

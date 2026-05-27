@@ -1,9 +1,9 @@
 import type { Command } from "commander";
 import { GetUserConfig } from "../config/get.js";
-import { parseOptionalInteger, parseOptionalPublicKey } from "./parse.js";
+import { parseOptionalInteger, parseOptionalPublicKey } from "../input/index.js";
 import { useCliCrypto } from "./crypto.js";
 
-export function registerEscrowCommands(parent: Command) {
+export const registerEscrowCommands = (parent: Command) => {
   const escrow = parent.command("escrow").description("Thread escrow actions");
 
   escrow
@@ -36,4 +36,4 @@ export function registerEscrowCommands(parent: Command) {
       console.log("[OK] escrow withdrawn");
       console.log("tx:", res.receipt.join(", "));
     });
-}
+};

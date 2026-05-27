@@ -1,12 +1,12 @@
 import { PublicKey } from "@solana/web3.js";
-import { BN, PacketPDAs, type PacketClient } from "xpkt-sdk";
-import { looksLikeBase58PublicKey } from "./parse.js";
+import { BN, InboxClient, PacketPDAs, type PacketClient } from "xpkt-sdk";
+import { looksLikeBase58PublicKey } from "../input/index.js";
 
-export async function resolveTargetInbox(params: {
+export const resolveTargetInbox = async (params: {
   client: PacketClient;
   owner: PublicKey;
   inbox?: string | number;
-}): Promise<any | undefined> {
+}): Promise<InboxClient | undefined> => {
   if (params.inbox === undefined || params.inbox === null || params.inbox === "") return undefined;
 
   const raw = String(params.inbox).trim();
@@ -20,11 +20,11 @@ export async function resolveTargetInbox(params: {
   }
 
   throw new Error("--inbox must be a numeric inbox id or inbox PDA address");
-}
+};
 
-export function getThreadCounterparty(thread: any, wallet: PublicKey): PublicKey {
+export const getThreadCounterparty = (thread: any, wallet: PublicKey): PublicKey => {
   const t = thread.Thread ?? thread;
   if (t.from.equals(wallet)) return t.to;
   if (t.to.equals(wallet)) return t.from;
   return t.to;
-}
+};

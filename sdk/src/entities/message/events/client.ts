@@ -3,22 +3,22 @@ import type { PublicKey } from "@solana/web3.js";
 import type { PacketClient } from "../../../client";
 import type {
     ListenMessagesParams,
-    PacketEventSubscription,
     PacketMessageSentEvent,
     PacketMessageSentEventRaw,
 } from "./types";
 import { MessageClient, ThreadClient } from "../..";
+import type { PacketEventSubscription } from "../../events/types";
 
-function pubkeyEq(a?: PublicKey, b?: PublicKey): boolean {
+const pubkeyEq = (a?: PublicKey, b?: PublicKey): boolean => {
     if (!a || !b) return false;
     return a.equals(b);
 }
 
-function normalizeMessageSentEvent(
+const normalizeMessageSentEvent = (
     event: PacketMessageSentEventRaw,
     slot: number,
     signature?: string,
-): PacketMessageSentEvent {
+): PacketMessageSentEvent => {
     return {
         threadId: Number(event.threadId),
         msgSeq: Number(event.msgSeq),
@@ -29,10 +29,10 @@ function normalizeMessageSentEvent(
     };
 }
 
-function matchesFilter(
+const matchesFilter = (
     event: PacketMessageSentEvent,
     params: ListenMessagesParams,
-): boolean {
+): boolean => {
     if (params.threadId !== undefined && event.threadId !== params.threadId) {
         return false;
     }
@@ -60,32 +60,37 @@ export class MessageEventsClient {
     constructor(private readonly client: PacketClient) {}
 
     /**
-     * Listen to live messageSent Anchor events.
+     * Listen to live MessageSent Anchor emit_cpi! events.
      *
-     * This is a live websocket subscription, not a historical indexer.
-     * Use it for UI updates like "new message arrived".
+     * live websocket subscription, not a historical indexer.
+     * 
+     * More optimized and less rpc intensive than [`MessageEventsClient`] because it targets
+     * specific inbox accounts instead of subscribing to all messages and filtering client-side. 
      */
     listen(params: ListenMessagesParams): PacketEventSubscription {
         const eventName = params.eventName ?? "messageSent";
 
-        const id = this.client.program.addEventListener(
-            eventName,
-            async (
-                rawEvent: PacketMessageSentEventRaw,
-                slot: number,
-                signature?: string,
-            ) => {
+        return this.client.cpiEvents.listen<
+            PacketMessageSentEventRaw,
+            PacketMessageSentEvent
+        >({
+            eventName: [eventName],
+
+            commitment: params.commitment,
+            maxRetries: params.maxRetries,
+
+            parse: (rawEvent, ctx) => {
+                return normalizeMessageSentEvent(
+                    rawEvent,
+                    ctx.slot,
+                    ctx.signature,
+                );
+            },
+
+            filter: (event) => matchesFilter(event, params),
+
+            onEvent: async (event) => {
                 try {
-                    const event = normalizeMessageSentEvent(
-                        rawEvent,
-                        slot,
-                        signature,
-                    );
-
-                    if (!matchesFilter(event, params)) {
-                        return;
-                    }
-
                     const message = MessageClient.Handle({
                         client: this.client,
                         threadId: event.threadId,
@@ -95,20 +100,15 @@ export class MessageEventsClient {
                             id: event.threadId,
                         }),
                     });
-                    
+
                     await params.onMessage(message, event);
                 } catch (err) {
                     params.onError?.(err);
                 }
             },
-        );
 
-        return {
-            id,
-            stop: async () => {
-                await this.client.program.removeEventListener(id);
-            },
-        };
+            onError: params.onError,
+        });
     }
 
     /**

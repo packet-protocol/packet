@@ -2,7 +2,7 @@ import type { PacketClient } from "../../client";
 import type { Segment } from "./types";
 import { parseSegment } from "./parse";
 import type { ThreadClient } from "../thread/client/thread";
-import * as anchor from "@coral-xyz/anchor";
+import * as anchor from "@anchor-lang/core";
 import type { PacketIDL } from "../../idl/packet.idl";
 import type { Inbox } from "../inbox/types";
 import type { InboxClient } from "../inbox/client/inbox";

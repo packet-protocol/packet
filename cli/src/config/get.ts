@@ -17,8 +17,8 @@ export function GetUserConfig(options: LoadOptions = {}): PacketCliConfig {
   const config = readConfigSync();
   if (!config) {
     throw new Error(
-      "Packet is not configured. Run `packet config --rpc <url> --private-key <key>` " +
-        "or `packet config --rpc <url> --keypair ~/.config/solana/id.json` first."
+      "Packet is not configured. Run `packet config init --rpc <url> --private-key <key>` " +
+        "or `packet config init --rpc <url> --keypair ~/.config/solana/id.json` first."
     );
   }
 
@@ -47,8 +47,8 @@ export function GetUserConfig(options: LoadOptions = {}): PacketCliConfig {
   );
   if (!keypairPath) {
     throw new Error(
-      "No keypair could be found. Set one with `packet config --private-key <key>` " +
-        "or `packet config --keypair <path>`, or set $PACKET_KEYPAIR."
+      "No keypair could be found. Set one with `packet config init --private-key <key>` " +
+        "or `packet config init --keypair <path>`, or set $PACKET_KEYPAIR."
     );
   }
 
@@ -82,7 +82,7 @@ export function GetUserConfig(options: LoadOptions = {}): PacketCliConfig {
 /**
  * Sync read of the config file.
  */
-function readConfigSync(): OnDiskConfig | null {
+export function readConfigSync(): OnDiskConfig | null {
   if (fs.existsSync(ConfigPath)) {
     const raw = fs.readFileSync(ConfigPath, "utf-8");
     return parseTomlSync(raw);

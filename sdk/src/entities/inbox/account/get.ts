@@ -1,4 +1,4 @@
-import * as anchor from "@coral-xyz/anchor";
+import * as anchor from "@anchor-lang/core";
 import type { PacketProgram } from "../../../providers/program";
 import { PublicKey } from "@solana/web3.js";
 import type { Inbox, InboxArchive, InboxBody, InboxMetadata } from "../types";

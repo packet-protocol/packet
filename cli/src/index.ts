@@ -1,8 +1,11 @@
 import { program } from "commander";
-import { CommandInit } from "./config/init.js";
+import { CommandConfig } from "./config/index.js";
 import { CommandCrypto } from "./crypto/index.js";
 import { CommandUpload } from "./upload/index.js";
 import { CommandMessage } from "./message/index.js";
+import dotenv from "dotenv";
+
+dotenv.config({ quiet: true });
 
 (() => {
     program
@@ -11,12 +14,12 @@ import { CommandMessage } from "./message/index.js";
         .description("A CLI for Packet Protocol (xpkt)")
 
 
-    const init = program.command("init").description("Initialization commands")
+    const config = program.command("config").description("Configuration commands")
     const crypto = program.command("crypto").description("Cryptography commands")
     const upload = program.command("upload").description("Upload commands")
     const message = program.command("message").description("Message commands")
 
-    CommandInit(init);
+    CommandConfig(config);
     CommandCrypto(crypto);
     CommandUpload(upload);
     CommandMessage(message);

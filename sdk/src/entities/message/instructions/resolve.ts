@@ -98,9 +98,9 @@ export const ResolveMessageInputAndAccounts = async (
 ): Promise<ResolvedMessageInputAndAccounts> => {
 
     if (params.content.length > 128) {
-        console.warn(
-            `xpk-sdk: Content length (${params.content.length}) exceeds 128 bytes, which transaction may fail due to transaction size limits.`,
-        );
+        //console.warn(
+        //    `xpk-sdk: Content length (${params.content.length}) exceeds 128 bytes, which transaction may fail due to transaction size limits.`,
+        //);
     }
 
     const receiver = creatingThread

@@ -1,5 +1,5 @@
 import { build } from "esbuild";
-import pkg from "./package.json" with { type: "json" }; 
+import pkg from "./package.json" with { type: "json" };
 
 await build({
   entryPoints: ["src/index.ts"],
@@ -9,7 +9,18 @@ await build({
   format: "esm",
   target: "node20",
   sourcemap: true,
-  external: ["bigint-buffer"],
+  external: [
+    "bigint-buffer",
+    "@irys/upload",
+    "@irys/upload-solana",
+    "@irys/bundles",
+    "starknet",
+    "fetch-cookie",
+    "tough-cookie",
+    "psl",
+    "punycode",
+    "node:punycode"
+  ],
   define: {
     "process.env._PACKET_CLI_VERSION": JSON.stringify(pkg.version),
   },

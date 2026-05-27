@@ -1,4 +1,4 @@
-import * as anchor from "@coral-xyz/anchor";
+import * as anchor from "@anchor-lang/core";
 import { bn, type Rpc } from "@lightprotocol/stateless.js";
 import { type PublicKey } from "@solana/web3.js";
 import type { PacketProgram } from "../../../providers/program";

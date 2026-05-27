@@ -1,50 +1,52 @@
 import { Option, type Command } from "commander";
 import { GetUserConfig } from "../config/get.js";
-import { parseOptionalInteger, parsePublicKey, requiredString } from "./parse.js";
+import { parseOptionalInteger, parsePublicKey, requiredString } from "../input/index.js";
 import { useCliCrypto, loadReaderForOwner } from "./crypto.js";
 import { buildWsolPayment } from "./payment.js";
-import { prepareMessageContent } from "./content.js";
+import { prepareMessageContent, type SendInputSource } from "./content/index.js";
 import { resolveTargetInbox, getThreadCounterparty } from "./resolve.js";
 import { formatPayment } from "./format.js";
 import { txOptions } from "../config/tx.js";
 import type { BodyEncoding } from "xpkt-sdk";
-import { readFileAsPayload } from "../helpers/file.js";
-
-export type SendInputSource = "content" | "url" | "file";
+import { buildCliPacketEnvelope, collectOption, stringList } from "../envelope/index.js";
 
 type ResolvedSendInput = {
   source: SendInputSource;
   content: string;
   encoding: BodyEncoding;
   contentType: string; // MIME — "text/plain" for --content and --url
-  filePath?: string;
+  filePaths?: string[];
   byteLength: number;
 };
 
-async function readSendInput(options: any): Promise<ResolvedSendInput> {
-  const hasFile = options.file != null;
+const readSendInput = async (options: any): Promise<ResolvedSendInput> => {
+  const texts = stringList(options.text);
+  const files = stringList(options.file);
+  const hasEnvelopeParts = texts.length > 0 || files.length > 0;
   const hasContent = options.content != null;
   const hasUrl = options.url != null;
-  const inputCount = Number(hasContent) + Number(hasUrl) + Number(hasFile);
+  const inputCount = Number(hasContent) + Number(hasUrl) + Number(hasEnvelopeParts);
 
-  if (inputCount === 0) throw new Error("Missing input. Provide one of: --content, --url, or --file");
-  if (inputCount > 1) throw new Error("Ambiguous input. Use only one of: --content, --url, or --file");
+  if (inputCount === 0) throw new Error("Missing input. Provide --content, --url, --text, or --file");
+  if (inputCount > 1) throw new Error("Ambiguous input. Use --content, --url, or --text/--file envelope inputs");
 
-  if (hasFile) {
+  if (hasEnvelopeParts) {
     if (options.raw) {
-      throw new Error(
-        "--raw cannot be combined with --file. Files need an envelope to carry their MIME type and encoding. Drop --raw, or use --content with the text you want to send bare."
-      );
+      throw new Error("--raw cannot be combined with --text/--file envelope inputs");
     }
-    const filePath = String(options.file);
-    const payload = await readFileAsPayload(filePath, options.fileContentType);
+    const envelope = await buildCliPacketEnvelope({
+      texts,
+      files,
+      subject: options.subject,
+      fileContentType: options.fileContentType,
+    });
     return {
-      source: "file",
-      filePath,
-      content: payload.content,
-      encoding: payload.encoding,
-      contentType: payload.contentType,
-      byteLength: payload.byteLength,
+      source: "envelope",
+      filePaths: files,
+      content: envelope.plaintext,
+      encoding: "utf8",
+      contentType: "application/json",
+      byteLength: envelope.byteLength,
     };
   }
 
@@ -67,28 +69,31 @@ async function readSendInput(options: any): Promise<ResolvedSendInput> {
     contentType: "text/plain",
     byteLength: Buffer.byteLength(content, "utf8"),
   };
-}
+};
 
-function addSendContentOptions(cmd: Command) {
+const addSendContentOptions = (cmd: Command) => {
   return cmd
     .option("--content <content>", "Inline message body, http(s) URL, ipfs:// URI, ar:// URI, or raw Irys/IPFS/Arweave id")
     .option("--url <url>", "Existing URL/Irys/IPFS/Arweave URL to send as pointer")
-    .option("--subject <subject>", "Optional subject, FE-compatible JSON envelope for text/upload payloads")
-    .option("--file <path>", "Read message body from a file. Use with --upload to upload the file payload to Irys")
+    .option("--text <message>", "Add a text/plain Packet envelope part", collectOption, [])
+    .option("--subject <subject>", "Optional subject for --text/--file Packet envelope payloads")
+    .option("--file <path>", "Add a file Packet envelope part", collectOption, [])
     .option("--file-content-type <mime>", "Override detected MIME type for --file")
-    .option("--raw", "Send/upload exact content instead of JSON {subject,message} envelope", false)
+    .option("--raw", "Send/upload exact --content instead of wrapping it in a PacketContent envelope", false)
     .option("--content-type <contentType>", "auto, text, url, irys, ipfs, or arweave", "auto")
-    .option("--upload", "Upload --content/--file payload to Irys and send the resulting CID (Irys only)", false)
-    .option("--encrypt", "Encrypt text/upload payload. Existing URL/Irys/IPFS/Arweave pointers stay pointers unless --upload is used", false)
+    .option("--upload", "Upload --content or --text/--file envelope payload to Irys and send the resulting CID (default)", true)
+    .option("--no-upload", "Send inline content or an existing pointer without uploading to Irys")
+    .option("--encrypt", "Encrypt text/envelope/upload payload (default). Existing URL/Irys/IPFS/Arweave pointers stay pointers unless --upload is used", true)
+    .option("--no-encrypt", "Send plaintext content without Packet encryption")
     .option("--payment-sol <amount>", "Attach a WSOL/SOL payment, e.g. 0.05")
     .option("--payment-to <pubkey>", "Payment destination owner ATA by default, or raw token account with --payment-to-raw")
     .option("--payment-to-raw", "Treat --payment-to as a token account address, not an owner", false)
     .option("--skip-preflight", "Skip transaction preflight", false)
     .option("--priority-fee <microLamports>", "Priority fee in micro lamports")
     .addOption(new Option("--ignore-warnings", "Proceed with sending even if there are warnings").default(false).hideHelp());
-}
+};
 
-export function registerSendCommands(parent: Command) {
+export const registerSendCommands = (parent: Command) => {
   addSendContentOptions(
     parent
       .command("new-thread")
@@ -109,7 +114,10 @@ export function registerSendCommands(parent: Command) {
       inbox: options.inbox,
     });
 
-    const readers = options.encrypt
+    const shouldUpload = input.source === "url" ? false : options.upload !== false;
+    const shouldEncrypt = input.source === "url" && !shouldUpload ? false : options.encrypt !== false;
+
+    const readers = shouldEncrypt
       ? [await loadReaderForOwner(client, to)]
       : [];
 
@@ -121,8 +129,8 @@ export function registerSendCommands(parent: Command) {
       content: input.content,
       subject: options.subject,
       raw: options.raw,
-      upload: options.upload,
-      encrypt: options.encrypt,
+      upload: shouldUpload,
+      encrypt: shouldEncrypt,
       readers,
       contentType: options.contentType,
       ignoreWarnings: options.ignoreWarnings,
@@ -143,14 +151,14 @@ export function registerSendCommands(parent: Command) {
       messageType: prepared.messageType,
       content: prepared.content,
       payment: manualPayment,
-      options: await txOptions(options, client.connection),
+      options: txOptions(options),
     });
 
     console.log("[OK] thread created and message sent");
     console.log("thread:", res.client.id);
     console.log("tx:", res.receipt.join(", "));
     console.log("content-source:", input.source);
-    if (input.filePath) console.log("file:", input.filePath);
+    if (input.filePaths?.length) console.log("files:", input.filePaths.join(", "));
     console.log("content-type:", prepared.finalContentType);
     console.log("content:", prepared.content);
     if (prepared.uploaded) console.log("uploaded:", prepared.uploaded.url);
@@ -183,7 +191,10 @@ export function registerSendCommands(parent: Command) {
     const thread = await client.thread(threadId).loadRetrying();
     const receiver = getThreadCounterparty(thread, client.walletPublicKey);
 
-    const readers = options.encrypt
+    const shouldUpload = input.source === "url" ? false : options.upload !== false;
+    const shouldEncrypt = input.source === "url" && !shouldUpload ? false : options.encrypt !== false;
+
+    const readers = shouldEncrypt
       ? [await loadReaderForOwner(client, receiver)]
       : [];
 
@@ -195,8 +206,8 @@ export function registerSendCommands(parent: Command) {
       content: input.content,
       subject: options.subject,
       raw: options.raw,
-      upload: options.upload,
-      encrypt: options.encrypt,
+      upload: shouldUpload,
+      encrypt: shouldEncrypt,
       readers,
       contentType: options.contentType,
       ignoreWarnings: options.ignoreWarnings,
@@ -213,7 +224,7 @@ export function registerSendCommands(parent: Command) {
         content: prepared.content,
         payment: options.disablePayment ? { disabled: true } : payment,
       },
-      await txOptions(options, client.connection)
+      txOptions(options)
     );
 
     console.log("[OK] message sent");
@@ -221,7 +232,7 @@ export function registerSendCommands(parent: Command) {
     console.log("seq:", res.client.msgSeq);
     console.log("tx:", res.receipt.join(", "));
     console.log("content-source:", input.source);
-    if (input.filePath) console.log("file:", input.filePath);
+    if (input.filePaths?.length) console.log("files:", input.filePaths.join(", "));
     console.log("content-type:", prepared.finalContentType);
     console.log("content:", prepared.content);
     if (prepared.uploaded) console.log("uploaded:", prepared.uploaded.url);
@@ -237,4 +248,4 @@ export function registerSendCommands(parent: Command) {
       );
     }
   });
-}
+};

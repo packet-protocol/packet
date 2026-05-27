@@ -2,6 +2,7 @@ import { writeConfig, writeWallet } from "./io.js";
 import { decodeBase58Secret } from "./keypair.js";
 import { ConfigSchemaVersion, WalletPath } from "../constants.js";
 import type { OnDiskConfig } from "./types.js";
+import { readConfigSync } from "./get.js";
 
 export interface SetUserConfigOptions {
   rpc: string;
@@ -25,7 +26,7 @@ export interface SetUserConfigOptions {
  *      where the key lives (Solana CLI's default, a hardware wallet
  *      shim file, etc.).
  *
- * If neither is supplied, we error out.
+ * If neither is supplied, reuse the existing configured wallet.
  */
 export async function SetUserConfig(
   privateKey: string | undefined,
@@ -36,7 +37,9 @@ export async function SetUserConfig(
     throw new Error("RPC URL is required. Pass --rpc <url>.");
   }
 
-  if (!privateKey && !options.keypairPath) {
+  const existingConfig = readConfigSync();
+
+  if (!privateKey && !options.keypairPath && !existingConfig?.keypairPath) {
     throw new Error(
       "Must supply either --private-key <key> or --keypair <path>. " +
         "If you already have a Solana CLI keypair, pass --keypair " +
@@ -58,7 +61,7 @@ export async function SetUserConfig(
   }
 
   const pinnedKeypairPath =
-    options.keypairPath ?? (secretKey ? WalletPath : undefined);
+    options.keypairPath ?? (secretKey ? WalletPath : existingConfig?.keypairPath);
 
   // Determine cluster from RPC
   var cluster: string;

@@ -3,23 +3,23 @@ import { ConfigFolderPath, ConfigPath, WalletPath } from "../constants.js";
 import { SetUserConfig } from "./set.js";
 
 /**
- * `packet config` command.
- *
+ * `packet config init` command.
+ * 
  * Three valid invocations:
  *
  *   1. Import a new private key (Packet manages it):
- *      packet config --rpc <url> --private-key <base58>
+ *      packet config init --rpc <url> --private-key <base58>
  *
  *   2. Point at an existing Solana keypair file (no key ever touches Packet):
- *      packet config --rpc <url> --keypair ~/.config/solana/id.json
+ *      packet config init --rpc <url> --keypair ~/.config/solana/id.json
  *
  *   3. Update RPC only, reusing the existing wallet:
- *      packet config --rpc <url>
+ *      packet config init --rpc <url>
  *      (works only after the user has set a wallet at least once)
  */
-export const CommandInit = (parent: Command): void => {
+export const registerConfigInitCommand = (parent: Command): void => {
   parent
-    .command("config")
+    .command("init")
     .description("Configure Packet CLI (RPC and wallet)")
     .requiredOption("--rpc <url>", "Photon Solana RPC URL")
     .option(

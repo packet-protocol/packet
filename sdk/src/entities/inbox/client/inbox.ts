@@ -1,5 +1,6 @@
-import { PublicKey } from "@solana/web3.js";
+import { PublicKey, type AccountInfo, type Context } from "@solana/web3.js";
 import BN from "bn.js";
+import * as anchor from "@anchor-lang/core";
 
 import type { PacketClient } from "../../../client";
 import * as Pda from "../../../pda";
@@ -8,7 +9,7 @@ import { ClientCache } from "../../../core/cache";
 import type { CreateInboxParams, InboxPaymentParams } from "../instructions/create";
 import { CreateInboxTx } from "../transactions/create";
 import { GetInboxAccount, GetInboxMetadata, InboxAccountToInbox } from "../account/get";
-import type { Inbox, InboxMetadata } from "../types";
+import type { Inbox, InboxChangedEvent, InboxMetadata, ListenInboxEventsParams } from "../types";
 import { InboxBodyPageClient } from "./inbox-body-page";
 import { PacketTransactionClient } from "../../transaction/client";
 import { ThreadClient, type SendFirstMsgParams } from "../../thread/client/thread";
@@ -16,6 +17,7 @@ import type { DisabledPayment, SendMsgPaymentParams } from "../../message/instru
 import type { TxReceiptWithClient } from "../../../types/client";
 import { EditInboxPaymentTx } from "../transactions/edit-payment";
 import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
+import type { PacketEventSubscription } from "../../events/types";
 
 export type CreateThreadForInboxParams = SendFirstMsgParams & {
     threadId?: number;
@@ -455,5 +457,68 @@ export class InboxClient {
             },
             options
         });
+    }
+
+    //Listen to this inbox account changes.
+    listenEvents(params: ListenInboxEventsParams): PacketEventSubscription {
+        let stopped = false;
+
+        const commitment = params.commitment ?? "confirmed";
+        const coder = new anchor.BorshCoder(this.client.program.idl);
+
+        const subscriptionId = this.client.connection.onAccountChange(
+            this.address,
+            async (
+                accountInfo: AccountInfo<Buffer>,
+                ctx: Context,
+            ) => {
+                if (stopped) return;
+
+                try {
+                    const previous = this.inbox;
+
+                    const decoded = coder.accounts.decode(
+                        "inbox",
+                        accountInfo.data,
+                    );
+
+                    const inbox = InboxAccountToInbox(this.address, decoded);
+
+                    this.inbox = inbox;
+
+                    if (params.clearPages) {
+                        this.bodyPages.clear();
+                    }
+
+                    const event: InboxChangedEvent = {
+                        address: this.address,
+                        previous,
+                        inbox,
+                        slot: ctx.slot,
+                        accountInfo,
+                    };
+
+                    if (params.filter && !(await params.filter(event))) {
+                        return;
+                    }
+
+                    await params.onChange(this, event);
+                } catch (err) {
+                    params.onError?.(err);
+                }
+            },
+            {
+                commitment,
+            }
+        );
+
+        return {
+            id: -1, // -1 because we stop locally
+            stop: async () => {
+                stopped = true;
+
+                await this.client.connection.removeAccountChangeListener(subscriptionId);
+            },
+        };
     }
 }

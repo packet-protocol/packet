@@ -1,5 +1,5 @@
 import { MessageType } from "../types";
-import * as anchor from "@coral-xyz/anchor";
+import * as anchor from "@anchor-lang/core";
 import type { PacketIDL } from "../../../idl/packet.idl";
 export const MessageTypeToAnchorEnum = (msgType: MessageType): anchor.IdlTypes<PacketIDL>["messageType"] => {
     switch (msgType) {

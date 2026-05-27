@@ -1,6 +1,6 @@
 {
   "name": "xpkt-cli",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "TypeScript CLI for Packet protocol",
   "type": "module",
   "sideEffects": false,
@@ -29,7 +29,8 @@
     "packet",
     "communication",
     "decentralized",
-    "payment"
+    "payment",
+    "cli"
   ],
   "author": "@packetchat",
   "license": "MIT",
@@ -43,10 +44,14 @@
     "@solana/web3.js": "^1.98.4",
     "bs58": "^6.0.0",
     "commander": "^14.0.2",
+    "dotenv": "^17.4.2",
     "env-paths": "^4.0.0",
     "file-type": "^22.0.1",
     "write-file-atomic": "^7.0.1",
-    "xpkt-sdk": "^0.0.5"
+    "xpkt-sdk": "^0.1.0"
+  },
+  "overrides": {
+    "tough-cookie": "^5.1.2"
   },
   "devDependencies": {
     "@types/node": "^24.12.3",

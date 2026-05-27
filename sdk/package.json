@@ -1,6 +1,6 @@
 {
   "name": "xpkt-sdk",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "TypeScript SDK for Packet protocol",
   "type": "module",
   "sideEffects": false,
@@ -34,7 +34,8 @@
     "packet",
     "communication",
     "decentralized",
-    "payment"
+    "payment",
+    "sdk"
   ],
   "author": "@packetchat",
   "license": "MIT",
@@ -42,8 +43,7 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@coral-xyz/anchor": "^0.31.1",
-    "@lightprotocol/compressed-token": "^0.23.3",
+    "@anchor-lang/core": "^1.0.2",
     "@lightprotocol/stateless.js": "^0.23.3",
     "@solana/web3.js": "^1.98.4",
     "axios": "^1.15.2",

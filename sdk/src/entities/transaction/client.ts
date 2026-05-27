@@ -7,7 +7,8 @@ import type {
     VersionedTransaction,
 } from "@solana/web3.js";
 import { PacketWallet } from "../wallet";
-import type { Wallet } from "@coral-xyz/anchor";
+import type { Wallet } from "@anchor-lang/core";
+import { sleep } from "../../utils/helpers";
 
 export type SubmitAndConfirmOptions = {
     commitment?: Commitment;
@@ -17,8 +18,6 @@ export type SubmitAndConfirmOptions = {
     searchTransactionHistory?: boolean;
     skipSign?: boolean;
 };
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export class PacketTransactionClient {
     #transactions: (Transaction | VersionedTransaction)[] = [];

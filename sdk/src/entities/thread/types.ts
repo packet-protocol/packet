@@ -2,7 +2,7 @@ import type { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
 import type { Escrow, TokenProgramType } from "../payment/types";
 import type { PacketIDL } from "../../idl/packet.idl";
-import * as anchor from "@coral-xyz/anchor";
+import * as anchor from "@anchor-lang/core";
 export interface Thread {
     address: PublicKey;
     version: number;

@@ -1,5 +1,6 @@
 export * from "./account/get"
 export * from "./client/message"
+export * from "./content"
 export * from "./instructions"
 export * from "./pipeline/send"
 export * from "./transactions/send"
