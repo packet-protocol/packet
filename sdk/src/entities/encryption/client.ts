@@ -369,17 +369,23 @@ export class PacketEncryptionClient {
         var wallet = typeof ownerWallet === "string"
             ? new PublicKey(ownerWallet)
             : ownerWallet;
+        let key;
         try {
-            const key = await client.key(wallet).loadNullable();
-            if (key) {
-                return key.Reader;
-            } else if (!fallbackToWalletDerived) {
-                throw new Error("Key not found for owner wallet: " + wallet.toBase58());
-            }
+            key = await client.key(wallet).loadNullable();
         } catch (err) {
-            if (!fallbackToWalletDerived) {
-                throw err;
-            }
+            const detail = err instanceof Error ? err.message : String(err);
+            throw new Error(
+                `failed to load encryption key for ${wallet.toBase58()}: ${detail}. ` +
+                "retry the request or send with --no-encrypt if encryption is optional",
+            );
+        }
+
+        if (key) {
+            return key.Reader;
+        }
+
+        if (!fallbackToWalletDerived) {
+            throw new Error("Key not found for owner wallet: " + wallet.toBase58());
         }
 
         const reader = client.crypto.reader({

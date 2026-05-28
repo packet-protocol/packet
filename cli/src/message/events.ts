@@ -124,7 +124,15 @@ export const registerEventsCommands = (parent: Command) => {
       sub = inbox.listenEvents({
         onChange: onChange,
         onError: (err: unknown) => console.error("[events:error]", err instanceof Error ? err.message : String(err)),
-      })
+      });
 
+      console.log("[OK] listening for inbox events. Ctrl+C to stop.");
+
+      process.once("SIGINT", async () => {
+        await stop();
+        process.exit(0);
+      });
+
+      await new Promise<void>(() => undefined);
     })
 };
