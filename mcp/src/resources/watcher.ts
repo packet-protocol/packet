@@ -29,7 +29,9 @@ const samePubkey = (a: any, b: any): boolean => {
 export class PacketResourceWatcher extends EventEmitter {
     private readonly subscriptions = new Map<string, Subscription>();
     private readonly inboxWatches = new Map<string, InboxWatch>();
+    private readonly inboxWatchPromises = new Map<string, Promise<string>>();
     private messageSub?: PacketEventSubscription;
+    private messageWatcherPromise?: Promise<void>;
 
     constructor(
         private readonly server: McpServer,
@@ -45,7 +47,7 @@ export class PacketResourceWatcher extends EventEmitter {
         if (ref.kind === "inbox") {
             subscription.inboxKey = await this.ensureInboxWatcher(ref);
         } else {
-            this.ensureMessageWatcher();
+            await this.ensureMessageWatcher();
         }
 
         this.subscriptions.set(uri, subscription);
@@ -70,26 +72,41 @@ export class PacketResourceWatcher extends EventEmitter {
         this.subscriptions.clear();
     }
 
-    private ensureMessageWatcher(): void {
+    private async ensureMessageWatcher(): Promise<void> {
         if (this.messageSub) return;
 
-        this.messageSub = this.config.client.messageEvents.listen({
-            onMessage: async (_message, event) => {
-                try {
-                    if (
-                        !samePubkey(event.sender, this.config.client.walletPublicKey) &&
-                        !samePubkey(event.receiver, this.config.client.walletPublicKey)
-                    ) {
-                        return;
-                    }
+        if (this.messageWatcherPromise) {
+            await this.messageWatcherPromise;
+            return;
+        }
 
-                    await this.notifyMessageEvent(event);
-                } catch (err) {
-                    this.emit("error", err);
-                }
-            },
-            onError: (err) => this.emit("error", err),
-        });
+        this.messageWatcherPromise = (async () => {
+            if (this.messageSub) return;
+
+            this.messageSub = this.config.client.messageEvents.listen({
+                onMessage: async (_message, event) => {
+                    try {
+                        if (
+                            !samePubkey(event.sender, this.config.client.walletPublicKey) &&
+                            !samePubkey(event.receiver, this.config.client.walletPublicKey)
+                        ) {
+                            return;
+                        }
+
+                        await this.notifyMessageEvent(event);
+                    } catch (err) {
+                        this.emit("error", err);
+                    }
+                },
+                onError: (err) => this.emit("error", err),
+            });
+        })();
+
+        try {
+            await this.messageWatcherPromise;
+        } finally {
+            this.messageWatcherPromise = undefined;
+        }
     }
 
     private async stopMessageWatcher(): Promise<void> {
@@ -110,20 +127,45 @@ export class PacketResourceWatcher extends EventEmitter {
         const key = inbox.address.toBase58();
         if (this.inboxWatches.has(key)) return key;
 
-        const sub = inbox.listenEvents({
-            clearPages: true,
-            onChange: async (changedInbox, event) => {
-                try {
-                    await this.notifyInboxEvent(key, changedInbox, event);
-                } catch (err) {
-                    this.emit("error", err);
-                }
-            },
-            onError: (err) => this.emit("error", err),
-        });
+        let pending = this.inboxWatchPromises.get(key);
+        if (!pending) {
+            pending = this.startInboxWatcher(key, inbox);
+            this.inboxWatchPromises.set(key, pending);
+        }
 
-        this.inboxWatches.set(key, { key, inbox, sub });
-        return key;
+        try {
+            return await pending;
+        } finally {
+            if (this.inboxWatchPromises.get(key) === pending) {
+                this.inboxWatchPromises.delete(key);
+            }
+        }
+    }
+
+    private startInboxWatcher(key: string, inbox: InboxClient): Promise<string> {
+        return (async () => {
+            if (this.inboxWatches.has(key)) return key;
+
+            const sub = inbox.listenEvents({
+                clearPages: true,
+                onChange: async (changedInbox, event) => {
+                    try {
+                        await this.notifyInboxEvent(key, changedInbox, event);
+                    } catch (err) {
+                        this.emit("error", err);
+                    }
+                },
+                onError: (err) => this.emit("error", err),
+            });
+
+            const prior = this.inboxWatches.get(key);
+            this.inboxWatches.set(key, { key, inbox, sub });
+            if (prior) {
+                await prior.sub.stop().catch(() => undefined);
+            }
+
+            return key;
+        })();
     }
 
     private async stopInboxWatcher(key: string): Promise<void> {

@@ -1,5 +1,5 @@
 import { PublicKey, type Keypair } from "@solana/web3.js";
-import { AsymmetricEncryptionAlgorithm, PacketEncryptionClient, type PacketClient } from "xpkt-sdk";
+import { PacketEncryptionClient, type PacketClient } from "xpkt-sdk";
 
 export const useMcpCrypto = (client: PacketClient, keypair: Keypair) => {
   client.useCrypto(new PacketEncryptionClient().useSolanaKeypair(keypair).requireIdentity());
@@ -7,16 +7,7 @@ export const useMcpCrypto = (client: PacketClient, keypair: Keypair) => {
 };
 
 export const loadReaderForOwner = async (client: PacketClient, owner: PublicKey): Promise<any> => {
-  try {
-    return await client.loadReaderForOwner({ ownerWallet: owner, fallbackToWalletDerived: true });
-  } catch {
-    // fallback is needed when the target has no on-chain reader key yet
-    return client.crypto.reader({
-      ownerWallet: owner,
-      keyAlg: AsymmetricEncryptionAlgorithm.SOLANA_ED25519_X25519,
-      publicKey: owner.toBytes(),
-    });
-  }
+  return client.loadReaderForOwner({ ownerWallet: owner, fallbackToWalletDerived: true });
 };
 
 export const maybeDecryptText = async (client: PacketClient, rawText: string, decrypt: boolean): Promise<{

@@ -1,5 +1,5 @@
 import { PublicKey, type Keypair } from "@solana/web3.js";
-import { AsymmetricEncryptionAlgorithm, PacketEncryptionClient, type PacketClient } from "xpkt-sdk";
+import { PacketEncryptionClient, type PacketClient } from "xpkt-sdk";
 
 export const useCliCrypto = (client: PacketClient, keypair: Keypair) => {
   // Node CLI can use the Solana secret key directly. Browser wallets cannot do this, but CLI can.
@@ -8,16 +8,7 @@ export const useCliCrypto = (client: PacketClient, keypair: Keypair) => {
 };
 
 export const loadReaderForOwner = async (client: PacketClient, owner: PublicKey): Promise<any> => {
-  try {
-    return await client.loadReaderForOwner({ ownerWallet: owner, fallbackToWalletDerived: true });
-  } catch {
-    // No on-chain key account? Use wallet-derived fallback
-    return client.crypto.reader({
-      ownerWallet: owner,
-      keyAlg: AsymmetricEncryptionAlgorithm.SOLANA_ED25519_X25519,
-      publicKey: owner.toBytes(),
-    });
-  }
+  return client.loadReaderForOwner({ ownerWallet: owner, fallbackToWalletDerived: true });
 };
 
 export const maybeDecryptText = async (client: PacketClient, rawText: string, decrypt: boolean): Promise<{
