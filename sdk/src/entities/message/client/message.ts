@@ -9,6 +9,7 @@ import {
     type PacketLoadedContent,
     type ParsedPacketMessageContent,
 } from "../content";
+import type { PublicKey } from "@solana/web3.js";
 
 export type MessageContentLoadResult = PacketLoadedContent;
 
@@ -33,6 +34,10 @@ export class MessageClient {
         }
 
         return this.message;
+    }
+
+    get address(): PublicKey {
+        return Pda.messagePda(this.threadId, this.msgSeq, this.client.program.programId);
     }
 
     get Content(): MessageContentLoadResult {

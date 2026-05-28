@@ -5,6 +5,7 @@ import {
     PackedAccounts,
     selectStateTreeInfo,
     SystemAccountMetaConfig,
+    TreeType,
     type CompressedAccount,
     type Rpc,
     type ValidityProof,
@@ -51,6 +52,9 @@ export type LightProofBundleWithMeta<T> = T & {
 export async function createLightProofBase(
     rpc: Rpc,
     programId: PublicKey,
+    options?: {
+        outputStateTree?: PublicKey;
+    },
 ): Promise<LightProofBase> {
     const stateTreeInfo = selectStateTreeInfo(await rpc.getStateTreeInfos());
     const addressTreeInfo = getBatchAddressTreeInfo();
@@ -64,18 +68,23 @@ export async function createLightProofBase(
         addressTreeInfo.tree,
     );
 
+    // Batch address V2 uses the same account for tree and queue; keep one packed index.
     const addressQueuePubkeyIndex = packedAccounts.insertOrGet(
         addressTreeInfo.tree,
     );
 
+    // V2 writes updated account hashes to an output queue. For update flows,
+    // callers should pass the existing account queue to avoid cross-tree proofs.
+    const outputStateTree = options?.outputStateTree ?? stateTreeInfo.queue;
+
     const outputStateTreeIndex = packedAccounts.insertOrGet(
-        stateTreeInfo.queue,
+        outputStateTree,
     );
 
     return {
         addressTree: addressTreeInfo.tree,
         addressQueue: addressTreeInfo.queue,
-        outputStateTree: stateTreeInfo.queue,
+        outputStateTree,
 
         outputStateTreeIndex,
         addressMerkleTreePubkeyIndex,
@@ -214,17 +223,35 @@ export async function getExistingAccountProof(args: {
 }): Promise<LightProofBundle & {
     accountRootIndex: number;
 }> {
-    const base = args.base ?? await createLightProofBase(args.rpc, args.programId);
+    const base = args.base ?? await createLightProofBase(args.rpc, args.programId, {
+        outputStateTree: args.account.treeInfo.queue,
+    });
     const newAddresses = args.newAddresses ?? [];
+    const proveByIndex = args.account.treeInfo.treeType === TreeType.StateV2;
+
+    if (proveByIndex && newAddresses.length === 0) {
+        return {
+            createAccountsProof: makeCreateAccountsProofFromValidity({
+                base,
+                compressedProof: null,
+                addressRootIndex: 0,
+            }),
+            packedAccounts: base.packedAccounts,
+            base,
+            accountRootIndex: 0,
+        };
+    }
 
     const proof = await args.rpc.getValidityProofV0(
-        [
-            {
-                hash: args.account.hash,
-                tree: args.account.treeInfo.tree,
-                queue: args.account.treeInfo.queue,
-            },
-        ],
+        proveByIndex
+            ? []
+            : [
+                {
+                    hash: args.account.hash,
+                    tree: args.account.treeInfo.tree,
+                    queue: args.account.treeInfo.queue,
+                },
+            ],
         newAddresses.map((address) => ({
             tree: base.addressTree,
             queue: base.addressQueue,
@@ -232,7 +259,7 @@ export async function getExistingAccountProof(args: {
         })),
     );
 
-    if (proof.rootIndices[0] === undefined) {
+    if (!proveByIndex && proof.rootIndices[0] === undefined) {
         throw new Error("Missing account root index for existing account proof");
     }
 
@@ -247,11 +274,13 @@ export async function getExistingAccountProof(args: {
     }
 
     const addressRootIndex =
-        newAddresses.length > 0
+        newAddresses.length > 0 && proveByIndex
+            ? proof.rootIndices[0]
+            : newAddresses.length > 0
             ? proof.rootIndices[1]
             : proof.rootIndices[0];
 
-    if (addressRootIndex === undefined) {
+    if (newAddresses.length > 0 && addressRootIndex === undefined) {
         throw new Error("Missing address root index for existing account proof");
     }
 
@@ -259,11 +288,11 @@ export async function getExistingAccountProof(args: {
         createAccountsProof: makeCreateAccountsProofFromValidity({
             base,
             compressedProof: proof.compressedProof ?? null,
-            addressRootIndex,
+            addressRootIndex: addressRootIndex ?? 0,
         }),
         packedAccounts: base.packedAccounts,
         base,
-        accountRootIndex: proof.rootIndices[0],
+        accountRootIndex: proveByIndex ? 0 : proof.rootIndices[0],
     };
 }
 
@@ -283,7 +312,7 @@ export function buildCompressedAccountMetaPacket(args: {
     return {
         treeInfo: {
             rootIndex: args.rootIndex,
-            proveByIndex: true,
+            proveByIndex: args.account.treeInfo.treeType === TreeType.StateV2,
             merkleTreePubkeyIndex,
             queuePubkeyIndex,
             leafIndex: args.account.leafIndex,
