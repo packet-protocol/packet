@@ -10,7 +10,7 @@ See full documentation at [docs.xpkt.dev](https://docs.xpkt.dev).
 
 ```
 packet/
-|-- ts/          # TypeScript SDK (xpkt-sdk) and Docusaurus docs
+|-- sdk/          # TypeScript SDK (xpkt-sdk)
 |-- cli/         # CLI tool (xpkt-cli - packet binary)
 `-- mcp/         # MCP server (xpkt-mcp - packet-mcp binary)
 ```
@@ -23,7 +23,7 @@ packet/
 | `xpkt-cli` | A human wants terminal commands for config, messages, inboxes, crypto, upload, and live event waits. |
 | `xpkt-mcp` | An MCP agent host needs Packet tools, resources, upload, encryption, and live resource subscriptions. |
 
-### [`ts/`](./ts): TypeScript SDK
+### [`sdk/`](./sdk): TypeScript SDK
 
 **Package:** `xpkt-sdk`
 
@@ -32,8 +32,6 @@ The SDK for integrating Packet into TypeScript/JavaScript apps. Supports both br
 ```bash
 npm install xpkt-sdk
 ```
-
-See [ts/README.md](./ts/README.md) for full documentation.
 
 ### [`cli/`](./cli): CLI
 
