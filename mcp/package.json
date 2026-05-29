@@ -1,6 +1,6 @@
 {
   "name": "xpkt-mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "MCP for Packet protocol",
   "type": "module",
   "sideEffects": false,
@@ -41,7 +41,7 @@
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@solana/web3.js": "^1.98.4",
     "dotenv": "^17.4.2",
-    "xpkt-sdk": "^0.1.1",
+    "xpkt-sdk": "^0.1.2",
     "zod": "^4.4.3",
     "@irys/upload": "^0.0.15",
     "@irys/upload-solana": "^0.1.8",

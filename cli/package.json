@@ -1,6 +1,6 @@
 {
   "name": "xpkt-cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "TypeScript CLI for Packet protocol",
   "type": "module",
   "sideEffects": false,
@@ -48,7 +48,7 @@
     "env-paths": "^4.0.0",
     "file-type": "^22.0.1",
     "write-file-atomic": "^7.0.1",
-    "xpkt-sdk": "^0.1.1"
+    "xpkt-sdk": "^0.1.2"
   },
   "overrides": {
     "tough-cookie": "^5.1.2"

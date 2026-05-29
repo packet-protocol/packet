@@ -375,8 +375,8 @@ export class PacketEncryptionClient {
         } catch (err) {
             const detail = err instanceof Error ? err.message : String(err);
             throw new Error(
-                `failed to load encryption key for ${wallet.toBase58()}: ${detail}. ` +
-                "retry the request or send with --no-encrypt if encryption is optional",
+                `Failed to load encryption key for ${wallet.toBase58()}: ${detail}`,
+                { cause: err },
             );
         }
 
