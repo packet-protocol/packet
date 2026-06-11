@@ -75,6 +75,10 @@ export function associatedTokenAddress(mint: PublicKey, owner: PublicKey, tokenP
   )[0];
 }
 
+export function roomPda(roomId: Uint8Array, programId?: PublicKey): PublicKey {
+  return PublicKey.findProgramAddressSync([s(SEEDS.room), roomId], pid(programId))[0];
+}
+
 export const PacketPDAs = {
   user: userPda,
   inbox: inboxPda,
@@ -86,4 +90,5 @@ export const PacketPDAs = {
   vault: vaultPda,
   key: keyPda,
   ata: associatedTokenAddress,
+  room: roomPda,
 };

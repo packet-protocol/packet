@@ -17,6 +17,16 @@ export interface OnDiskConfig {
     proverEndpoint: string;
   };
   cluster?: string;
+
+  /**
+   * BGW params artifact source for room/group messaging. Either a local
+   * directory (manifest.json + chunks/*.bin) or an HTTP-hosted manifest URL.
+   * Wired through configureDefaultBgwParams at room-command startup.
+   */
+  bgwParams?: {
+    dir?: string;
+    url?: string;
+  };
 }
 
 /**
@@ -32,6 +42,10 @@ export interface PacketCliConfig {
       proverEndpoint: string;
     };
     cluster?: PacketClientConfig["cluster"];
+    bgwParams?: {
+      dir?: string;
+      url?: string;
+    };
   };
   keypair: Keypair;
   client: PacketClient;

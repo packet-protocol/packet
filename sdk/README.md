@@ -1,6 +1,6 @@
 # Packet SDK (xpkt)
 
-**xpkt** is a TypeScript SDK for Packet: a Solana-native communication and order protocol for humans, apps, and agents.
+**xpkt** is a TypeScript SDK for Packet: a Solana-native communication and order protocol for humans, apps, and agents. It supports both 1:1 messaging and end-to-end encrypted **group chat** over Solana, built on Light Protocol compressed accounts and BGW broadcast encryption.
 
 Use the SDK when you are building directly in TypeScript. Use `xpkt-cli` when a human wants terminal commands. Use `xpkt-mcp` when an agent host needs Packet access through MCP tools and resources.
 
@@ -8,6 +8,7 @@ See full documentation at [docs.xpkt.dev](https://docs.xpkt.dev).
 
 Packet is not only chat. It combines:
 
+- **Group chat (rooms):** end-to-end encrypted group messaging that scales to large membership via BGW broadcast encryption — add/remove members without re-keying every participant, and only current members can decrypt the current epoch.
 - **Sovereign inboxes:** on-chain endpoints that can act like decentralized mailboxes, storefronts, or agent APIs.
 - **Encrypted content references:** messages point to content stored elsewhere, usually Irys, Arweave, IPFS, or a custom URL.
 - **Payable payloads:** requests and payments can travel together in one protocol flow.
@@ -316,6 +317,65 @@ await thread.sendMessage({
 
 ---
 
+## Group Chat (Rooms)
+
+Rooms are end-to-end encrypted group chats. The admin creates a room, adds members, and publishes epoch headers; members read and send messages. Membership changes advance the room epoch, and only members covered by the current header can decrypt the current epoch — so removed members lose forward access without re-keying everyone else.
+
+Members on raw keypairs (Node/CLI/MCP) decrypt their per-member secret directly from the wallet key. Browser-wallet members must first register a packet key (`client.createKeyFromCrypto()`), because browser wallets do not expose the raw secret key.
+
+### Create a room and add members (admin)
+
+```ts
+import { PacketClient, PacketWallet } from "xpkt-sdk";
+
+// admin client
+const { client: room } = await admin.createRoom({
+  signMessage: wallet.signMessage,
+});
+
+await room.addMember({ member: alicePubkey });
+await room.addMember({ member: bobPubkey });
+
+console.log("room:", room.address.toBase58());
+```
+
+### Send and read messages (member)
+
+```ts
+// each member loads the room by its address (id)
+const room = await client.room({ id: roomAddress });
+const messages = room.messages();
+
+// send (encrypted under the current epoch key)
+await messages.send({ text: "gm, everyone" });
+
+// read the latest messages, decrypted
+const latest = await messages.loadMessages({ limit: 50 });
+for (const msg of latest) {
+  const decrypted = await msg.decrypt();
+  if (decrypted.status === "decrypted") {
+    console.log(decrypted.text);
+  }
+}
+```
+
+Concurrent `send()` calls on one `messages()` instance are serialized automatically; if a membership change publishes a new epoch mid-send, the SDK transparently re-encrypts under the new epoch and retries.
+
+### BGW params (Arweave config)
+
+Room crypto needs a set of public BGW parameters (a manifest plus binary chunks). The SDK resolves them from an Arweave-style HTTP source: the base URL returns the manifest, and `${base}/${i}` returns chunk `i`. With nothing configured, it falls back to `DEFAULT_BGW_PARAMS_BASE_URL` (`http://localhost:3132`); point it at your gateway in production:
+
+```ts
+import { configureDefaultBgwParams } from "xpkt-sdk";
+
+// Arweave path manifest: manifest at the base, chunk i at `${base}/${i}`
+configureDefaultBgwParams({ baseUrl: "https://your-gateway.example/<tx-id>" });
+```
+
+You can also pass an explicit `BgwParamsClient` per call via `bgwParams`, or load params from a local directory (`{ dir }`) for tests and offline use.
+
+---
+
 ### Inbox Threads
 
 Standard inboxes use segmented pages. You can load the latest body, previous bodies, or search across body pages.
@@ -499,4 +559,4 @@ Localnet wallet warnings are common when signing custom Light/Packet transaction
 
 ## License
 
-MIT
+APACHE 2.0

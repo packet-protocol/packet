@@ -39,6 +39,14 @@ export const registerConfigInitCommand = (parent: Command): void => {
       "--prover <url>",
       "Optional Photon prover endpoint (defaults to --rpc)"
     )
+    .option(
+      "--bgw-params-dir <path>",
+      "BGW params artifact directory (manifest.json + chunks/*.bin) for room/group messaging"
+    )
+    .option(
+      "--bgw-params-url <url>",
+      "HTTP-hosted BGW params manifest.json URL for room/group messaging"
+    )
     .action(async (options) => {
       try {
         await SetUserConfig(options.privateKey, {
@@ -46,6 +54,8 @@ export const registerConfigInitCommand = (parent: Command): void => {
           keypairPath: options.keypair,
           compressionApiEndpoint: options.compressionApi,
           proverEndpoint: options.prover,
+          bgwParamsDir: options.bgwParamsDir,
+          bgwParamsUrl: options.bgwParamsUrl,
         });
 
         console.log(`Configuration written to ${ConfigPath}`);

@@ -1,6 +1,6 @@
 {
   "name": "xpkt-sdk",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "TypeScript SDK for Packet protocol",
   "type": "module",
   "sideEffects": false,
@@ -18,7 +18,7 @@
     }
   },
   "scripts": {
-    "build": "npm run clean && tsc -p tsconfig.json && rollup -c rollup.dts.config.mjs && rm -rf .types",
+    "build": "npm run clean && tsc -p tsconfig.json && node scripts/copy-wasm.mjs && rollup -c rollup.dts.config.mjs && rm -rf .types",
     "dev": "tsc -p tsconfig.json --watch",
     "clean": "rm -rf dist",
     "typecheck": "tsc -p tsconfig.json --noEmit",
@@ -38,7 +38,7 @@
     "sdk"
   ],
   "author": "@packetchat",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "engines": {
     "node": ">=20"
   },

@@ -7,6 +7,8 @@ export * from "./message"
 export * from "./payment"
 
 export * from "./thread"
+export * from "./room"
+export * from "./bgw"
 export * from "./transaction/client"
 export * from "./transaction/types"
 export * from "./wallet"

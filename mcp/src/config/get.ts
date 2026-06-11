@@ -31,6 +31,7 @@ export function GetUserConfig(): Promise<PacketMcpConfig> {
             const compressionApiEndpoint = getFromEnv("PACKET_COMPRESSION_API_ENDPOINT") || rpc;
             const proverEndpoint = getFromEnv("PACKET_PROVER_ENDPOINT") || rpc;
             const cluster = getFromEnvOrThrow("PACKET_CLUSTER");
+            const bgwParamsDir = getFromEnv("PACKET_BGW_PARAMS_DIR");
 
             // resolve wallet
             let keypair: Keypair;
@@ -63,6 +64,7 @@ export function GetUserConfig(): Promise<PacketMcpConfig> {
                     proverEndpoint: proverEndpoint,
                 },
                 cluster,
+                bgwParamsDir,
             };
 
             const wallet = DerivePacketWallet(keypair);
@@ -73,6 +75,7 @@ export function GetUserConfig(): Promise<PacketMcpConfig> {
                     rpc: effectiveConfig.rpc,
                     photonRpc: effectiveConfig.photonRpc,
                     cluster: effectiveConfig.cluster as PacketClientConfig["cluster"] || undefined,
+                    bgwParamsDir: effectiveConfig.bgwParamsDir,
                 },
                 keypair,
                 client,

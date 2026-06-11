@@ -185,4 +185,4 @@ npx -y xpkt-mcp
 
 ## License
 
-MIT
+Apache-2.0

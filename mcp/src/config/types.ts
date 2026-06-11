@@ -16,6 +16,8 @@ export interface InputConfig {
     proverEndpoint: string;
   };
   cluster?: string;
+  /** Optional local directory with a generated BGW params artifact (manifest.json + chunks/*.bin) for room tools. */
+  bgwParamsDir?: string;
 }
 
 /**
@@ -31,6 +33,8 @@ export interface PacketMcpConfig {
       proverEndpoint: string;
     };
     cluster?: PacketClientConfig["cluster"];
+    /** Optional local directory with a generated BGW params artifact for room tools. */
+    bgwParamsDir?: string;
   };
   keypair: Keypair;
   client: PacketClient;

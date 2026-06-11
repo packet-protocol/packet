@@ -222,36 +222,28 @@ export async function getExistingAccountProof(args: {
     base?: LightProofBase;
 }): Promise<LightProofBundle & {
     accountRootIndex: number;
+    /** Photon's verdict: leaf still in the output queue (true) or needs tree inclusion (false). */
+    accountProveByIndex: boolean;
 }> {
     const base = args.base ?? await createLightProofBase(args.rpc, args.programId, {
         outputStateTree: args.account.treeInfo.queue,
     });
     const newAddresses = args.newAddresses ?? [];
-    const proveByIndex = args.account.treeInfo.treeType === TreeType.StateV2;
 
-    if (proveByIndex && newAddresses.length === 0) {
-        return {
-            createAccountsProof: makeCreateAccountsProofFromValidity({
-                base,
-                compressedProof: null,
-                addressRootIndex: 0,
-            }),
-            packedAccounts: base.packedAccounts,
-            base,
-            accountRootIndex: 0,
-        };
-    }
-
+    // Always submit the account hash and let Photon decide whether the leaf is
+    // still provable by index (resident in the output queue) or needs a full
+    // inclusion proof (already batched into the tree). Hardcoding
+    // prove-by-index for StateV2 breaks once the queue batch containing the
+    // leaf is flushed: the on-chain check fails with
+    // InclusionProofByIndexFailed (account-compression error 14307).
     const proof = await args.rpc.getValidityProofV0(
-        proveByIndex
-            ? []
-            : [
-                {
-                    hash: args.account.hash,
-                    tree: args.account.treeInfo.tree,
-                    queue: args.account.treeInfo.queue,
-                },
-            ],
+        [
+            {
+                hash: args.account.hash,
+                tree: args.account.treeInfo.tree,
+                queue: args.account.treeInfo.queue,
+            },
+        ],
         newAddresses.map((address) => ({
             tree: base.addressTree,
             queue: base.addressQueue,
@@ -259,26 +251,24 @@ export async function getExistingAccountProof(args: {
         })),
     );
 
+    const proveByIndex = proof.proveByIndices?.[0] ?? false;
+
     if (!proveByIndex && proof.rootIndices[0] === undefined) {
         throw new Error("Missing account root index for existing account proof");
     }
 
     /**
-     * Pure mutation path can return no compressedProof.
-     * Existing-only update is still valid with proof null.
+     * Pure prove-by-index mutation can return no compressedProof.
      *
-     * But if we also prove new address non-inclusion, then missing proof is suspicious.
+     * But if we prove tree inclusion or new address non-inclusion, a missing
+     * proof is suspicious.
      */
-    if (newAddresses.length > 0 && !proof.compressedProof) {
+    if ((newAddresses.length > 0 || !proveByIndex) && !proof.compressedProof) {
         throw new Error("Missing compressed proof for existing account + new address proof");
     }
 
-    const addressRootIndex =
-        newAddresses.length > 0 && proveByIndex
-            ? proof.rootIndices[0]
-            : newAddresses.length > 0
-            ? proof.rootIndices[1]
-            : proof.rootIndices[0];
+    // rootIndices order: submitted account hashes first, then new addresses.
+    const addressRootIndex = newAddresses.length > 0 ? proof.rootIndices[1] : undefined;
 
     if (newAddresses.length > 0 && addressRootIndex === undefined) {
         throw new Error("Missing address root index for existing account proof");
@@ -293,6 +283,7 @@ export async function getExistingAccountProof(args: {
         packedAccounts: base.packedAccounts,
         base,
         accountRootIndex: proveByIndex ? 0 : proof.rootIndices[0],
+        accountProveByIndex: proveByIndex,
     };
 }
 
@@ -300,6 +291,13 @@ export function buildCompressedAccountMetaPacket(args: {
     base: LightProofBase;
     account: any;
     rootIndex: number;
+    /**
+     * Whether the validity proof proved this account by index. Must match the
+     * proof actually fetched — pass `accountProveByIndex` from
+     * {@link getExistingAccountProof}. Defaults to the legacy StateV2
+     * assumption for callers that haven't been migrated.
+     */
+    proveByIndex?: boolean;
 }): CompressedAccountMetaPacket {
     const merkleTreePubkeyIndex = args.base.packedAccounts.insertOrGet(
         args.account.treeInfo.tree,
@@ -312,7 +310,7 @@ export function buildCompressedAccountMetaPacket(args: {
     return {
         treeInfo: {
             rootIndex: args.rootIndex,
-            proveByIndex: args.account.treeInfo.treeType === TreeType.StateV2,
+            proveByIndex: args.proveByIndex ?? (args.account.treeInfo.treeType === TreeType.StateV2),
             merkleTreePubkeyIndex,
             queuePubkeyIndex,
             leafIndex: args.account.leafIndex,
@@ -357,6 +355,7 @@ export async function getCompressedPdaProofExistingFinalized(args: {
         base: proof.base,
         account: args.compressedAccount,
         rootIndex: proof.accountRootIndex,
+        proveByIndex: proof.accountProveByIndex,
     });
 
 

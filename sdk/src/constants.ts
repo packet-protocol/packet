@@ -12,6 +12,7 @@ export const SEEDS = {
   message: "msg",
   vault: "packet_vault",
   key: "key",
+  room: "room",
 } as const;
 
 export const PACKET_PROGRAM_ADDRESS = "A3YNvikE96zn2PYrbqRa8hheH99ks7qt22zQiUF8Ttao";

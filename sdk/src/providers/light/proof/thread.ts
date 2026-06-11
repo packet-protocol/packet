@@ -58,6 +58,7 @@ export async function getExistingThreadProof(args: {
         base: proof.base,
         account: threadAccount.compressedAccount,
         rootIndex: proof.accountRootIndex,
+        proveByIndex: proof.accountProveByIndex,
     });
 
     return {

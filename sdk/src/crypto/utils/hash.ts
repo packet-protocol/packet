@@ -12,3 +12,7 @@ export function hashSha256(bytes: Bytes): Bytes {
 export function hashLabel(label: string, bytes: Bytes): string {
   return `${label}:${hex(hashSha256(bytes))}`;
 }
+
+export function hexToBytes(hexStr: string): Uint8Array {
+  return new Uint8Array(Buffer.from(hexStr, "hex"));
+}

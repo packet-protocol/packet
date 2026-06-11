@@ -1,11 +1,5 @@
 import { type PACKET_PROGRAM_ID } from "../constants";
 
-/**
- * Program IDL in camelCase format in order to be used in JS/TS.
- *
- * Note that this is only a type helper and is not the actual IDL. The original
- * IDL can be found at `target/idl/packet.json`.
- */
 export type PacketIDL = {
   "address": PACKET_PROGRAM_ID | string,
   "metadata": {
@@ -2057,6 +2051,640 @@ export type PacketIDL = {
       ]
     },
     {
+      "name": "roomAddMember",
+      "discriminator": [
+        139,
+        246,
+        174,
+        26,
+        222,
+        35,
+        186,
+        220
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "sender",
+          "writable": true
+        },
+        {
+          "name": "room",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  109
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "roomId"
+              }
+            ]
+          }
+        },
+        {
+          "name": "permit",
+          "optional": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "eventAuthority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "roomId",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "roomAddMemberParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "roomCreate",
+      "discriminator": [
+        83,
+        227,
+        75,
+        208,
+        168,
+        171,
+        117,
+        249
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "sender",
+          "writable": true
+        },
+        {
+          "name": "room",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  109
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "roomId"
+              }
+            ]
+          }
+        },
+        {
+          "name": "permit",
+          "optional": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "eventAuthority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "roomId",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "paramsId",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "paramsRoot",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "roomPublishHeader",
+      "discriminator": [
+        132,
+        57,
+        42,
+        234,
+        129,
+        183,
+        166,
+        9
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "sender",
+          "writable": true
+        },
+        {
+          "name": "room",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  109
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "roomId"
+              }
+            ]
+          }
+        },
+        {
+          "name": "permit",
+          "optional": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "eventAuthority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "roomId",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "roomPublishHeaderParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "roomRemoveMember",
+      "discriminator": [
+        50,
+        69,
+        1,
+        243,
+        156,
+        18,
+        91,
+        71
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "sender",
+          "writable": true
+        },
+        {
+          "name": "room",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  109
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "roomId"
+              }
+            ]
+          }
+        },
+        {
+          "name": "permit",
+          "optional": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "eventAuthority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "roomId",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "roomRemoveMemberParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "roomSendMessage",
+      "discriminator": [
+        242,
+        169,
+        32,
+        201,
+        14,
+        3,
+        59,
+        154
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "sender",
+          "writable": true
+        },
+        {
+          "name": "room",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  109
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "roomId"
+              }
+            ]
+          }
+        },
+        {
+          "name": "permit",
+          "optional": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "eventAuthority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "roomId",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "roomSendMessageParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "roomStageRecipientPage",
+      "discriminator": [
+        77,
+        154,
+        223,
+        116,
+        226,
+        212,
+        245,
+        23
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "sender",
+          "writable": true
+        },
+        {
+          "name": "room",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  109
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "roomId"
+              }
+            ]
+          }
+        },
+        {
+          "name": "permit",
+          "optional": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "eventAuthority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "roomId",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "roomStageRecipientPageParams"
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "sendMsg",
       "discriminator": [
         78,
@@ -2508,6 +3136,19 @@ export type PacketIDL = {
       ]
     },
     {
+      "name": "room",
+      "discriminator": [
+        156,
+        199,
+        67,
+        27,
+        222,
+        23,
+        185,
+        94
+      ]
+    },
+    {
       "name": "user",
       "discriminator": [
         159,
@@ -2585,6 +3226,136 @@ export type PacketIDL = {
         28,
         110,
         55
+      ]
+    },
+    {
+      "name": "roomCreated",
+      "discriminator": [
+        9,
+        177,
+        128,
+        166,
+        26,
+        19,
+        14,
+        243
+      ]
+    },
+    {
+      "name": "roomEpochHeader",
+      "discriminator": [
+        187,
+        42,
+        102,
+        246,
+        93,
+        231,
+        151,
+        171
+      ]
+    },
+    {
+      "name": "roomHeaderPublished",
+      "discriminator": [
+        168,
+        205,
+        26,
+        116,
+        105,
+        216,
+        245,
+        136
+      ]
+    },
+    {
+      "name": "roomMember",
+      "discriminator": [
+        127,
+        146,
+        39,
+        153,
+        243,
+        115,
+        198,
+        230
+      ]
+    },
+    {
+      "name": "roomMemberAdded",
+      "discriminator": [
+        20,
+        172,
+        66,
+        42,
+        192,
+        130,
+        129,
+        223
+      ]
+    },
+    {
+      "name": "roomMemberRemoved",
+      "discriminator": [
+        152,
+        223,
+        204,
+        248,
+        73,
+        103,
+        8,
+        41
+      ]
+    },
+    {
+      "name": "roomMessage",
+      "discriminator": [
+        193,
+        164,
+        21,
+        31,
+        137,
+        6,
+        145,
+        241
+      ]
+    },
+    {
+      "name": "roomMessageSent",
+      "discriminator": [
+        231,
+        141,
+        18,
+        93,
+        109,
+        182,
+        171,
+        233
+      ]
+    },
+    {
+      "name": "roomRecipientPage",
+      "discriminator": [
+        146,
+        123,
+        172,
+        203,
+        233,
+        176,
+        244,
+        51
+      ]
+    },
+    {
+      "name": "roomRecipientPageStaged",
+      "discriminator": [
+        188,
+        209,
+        130,
+        126,
+        92,
+        18,
+        148,
+        164
       ]
     },
     {
@@ -2839,6 +3610,121 @@ export type PacketIDL = {
       "code": 6044,
       "name": "invalidAgentIdentity",
       "msg": "Invalid agent identity"
+    },
+    {
+      "code": 6045,
+      "name": "invalidEpoch",
+      "msg": "Invalid epoch"
+    },
+    {
+      "code": 6046,
+      "name": "invalidRecipientMode",
+      "msg": "Invalid recipient mode"
+    },
+    {
+      "code": 6047,
+      "name": "invalidMemberSlot",
+      "msg": "Invalid member slot"
+    },
+    {
+      "code": 6048,
+      "name": "invalidMember",
+      "msg": "Invalid member"
+    },
+    {
+      "code": 6049,
+      "name": "invalidMemberAccount",
+      "msg": "Invalid member account"
+    },
+    {
+      "code": 6050,
+      "name": "inactiveMember",
+      "msg": "Inactive member"
+    },
+    {
+      "code": 6051,
+      "name": "mutationRequiresHeader",
+      "msg": "Mutation requires the previous mutation to be covered by a header"
+    },
+    {
+      "code": 6052,
+      "name": "publicationOpen",
+      "msg": "A staged publication is open"
+    },
+    {
+      "code": 6053,
+      "name": "publicationNotOpen",
+      "msg": "No staged publication is open"
+    },
+    {
+      "code": 6054,
+      "name": "pendingPagesIncomplete",
+      "msg": "Staged pages incomplete"
+    },
+    {
+      "code": 6055,
+      "name": "recipientCheckpointRequired",
+      "msg": "Recipient checkpoint required"
+    },
+    {
+      "code": 6056,
+      "name": "invalidRecipientDescriptor",
+      "msg": "Invalid recipient descriptor"
+    },
+    {
+      "code": 6057,
+      "name": "descriptorTooLarge",
+      "msg": "Descriptor too large"
+    },
+    {
+      "code": 6058,
+      "name": "invalidDescriptorKind",
+      "msg": "Invalid descriptor kind"
+    },
+    {
+      "code": 6059,
+      "name": "invalidRecipientEncoding",
+      "msg": "Invalid recipient encoding"
+    },
+    {
+      "code": 6060,
+      "name": "invalidDeltaOp",
+      "msg": "Invalid delta op"
+    },
+    {
+      "code": 6061,
+      "name": "invalidStateTransition",
+      "msg": "Invalid recipient state transition"
+    },
+    {
+      "code": 6062,
+      "name": "memberNotInActiveHeader",
+      "msg": "Member not covered by the latest activated header"
+    },
+    {
+      "code": 6063,
+      "name": "invalidChainBreak",
+      "msg": "Invalid chain break"
+    },
+    {
+      "code": 6064,
+      "name": "invalidPageIndex",
+      "msg": "Invalid page index"
+    },
+    {
+      "code": 6065,
+      "name": "pageTooLarge",
+      "msg": "Page too large"
+    },
+    {
+      "code": 6066,
+      "name": "sendEpochChanged",
+      "msg": "Room epoch changed while the message was in flight"
+    },
+    {
+      "code": 6067,
+      "name": "arithmeticOverflow",
+      "msg": "Arithmetic overflow"
     }
   ],
   "types": [
@@ -3145,6 +4031,218 @@ export type PacketIDL = {
                 "name": "packedStateTreeInfo"
               }
             }
+          },
+          {
+            "name": "outputStateTreeIndex",
+            "docs": [
+              "Output merkle tree index."
+            ],
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "compressedAccountUpdateInfo",
+      "generics": [
+        {
+          "kind": "type",
+          "name": "t"
+        }
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "treeInfo",
+            "type": {
+              "defined": {
+                "name": "packedStateTreeInfo"
+              }
+            }
+          },
+          {
+            "name": "accountData",
+            "type": {
+              "generic": "t"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "compressedAccountsProof",
+      "generics": [
+        {
+          "kind": "type",
+          "name": "t"
+        }
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "proof",
+            "docs": [
+              "The validity proof."
+            ],
+            "type": {
+              "defined": {
+                "name": "validityProof"
+              }
+            }
+          },
+          {
+            "name": "addressTreeInfo",
+            "docs": [
+              "Single packed address tree info (all accounts use same tree)."
+            ],
+            "type": {
+              "defined": {
+                "name": "packedAddressTreeInfo"
+              }
+            }
+          },
+          {
+            "name": "systemAccountsOffset",
+            "docs": [
+              "Offset in remaining_accounts where Light system accounts start."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "outputStateTreeIndex",
+            "docs": [
+              "Output merkle tree index."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "update",
+            "docs": [
+              "updated account info to return to the client."
+            ],
+            "type": {
+              "defined": {
+                "name": "compressedAccountUpdateInfo",
+                "generics": [
+                  {
+                    "kind": "type",
+                    "type": {
+                      "generic": "t"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "compressedAccountsProofOptionalUpdate",
+      "generics": [
+        {
+          "kind": "type",
+          "name": "t"
+        }
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "proof",
+            "docs": [
+              "The validity proof."
+            ],
+            "type": {
+              "defined": {
+                "name": "validityProof"
+              }
+            }
+          },
+          {
+            "name": "addressTreeInfo",
+            "docs": [
+              "Single packed address tree info (all accounts use same tree)."
+            ],
+            "type": {
+              "defined": {
+                "name": "packedAddressTreeInfo"
+              }
+            }
+          },
+          {
+            "name": "systemAccountsOffset",
+            "docs": [
+              "Offset in remaining_accounts where Light system accounts start."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "outputStateTreeIndex",
+            "docs": [
+              "Output merkle tree index."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "update",
+            "docs": [
+              "Optional updated account info to return to the client."
+            ],
+            "type": {
+              "option": {
+                "defined": {
+                  "name": "compressedAccountUpdateInfo",
+                  "generics": [
+                    {
+                      "kind": "type",
+                      "type": {
+                        "generic": "t"
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "compressedCreateAccountsProof",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "proof",
+            "docs": [
+              "The validity proof."
+            ],
+            "type": {
+              "defined": {
+                "name": "validityProof"
+              }
+            }
+          },
+          {
+            "name": "addressTreeInfo",
+            "docs": [
+              "Single packed address tree info (all accounts use same tree)."
+            ],
+            "type": {
+              "defined": {
+                "name": "packedAddressTreeInfo"
+              }
+            }
+          },
+          {
+            "name": "systemAccountsOffset",
+            "docs": [
+              "Offset in remaining_accounts where Light system accounts start."
+            ],
+            "type": "u8"
           },
           {
             "name": "outputStateTreeIndex",
@@ -3991,6 +5089,9 @@ export type PacketIDL = {
             "name": "arweave"
           },
           {
+            "name": "packetChat"
+          },
+          {
             "name": "other",
             "fields": [
               "u16"
@@ -4204,6 +5305,1086 @@ export type PacketIDL = {
                 "name": "ed25519Permit"
               }
             }
+          }
+        ]
+      }
+    },
+    {
+      "name": "room",
+      "docs": [
+        "Room PDA. Fields are grouped by alignment (u64s, u32s, u16s, u8s, explicit",
+        "padding, then 32-byte arrays) so there are no implicit pad bytes; the layout",
+        "is pinned by the compile-time size assertion below."
+      ],
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "version",
+            "docs": [
+              "Version of the account."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "padding0",
+            "docs": [
+              "Padding to make the next field 8-byte aligned."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                6
+              ]
+            }
+          },
+          {
+            "name": "admin",
+            "docs": [
+              "Admin of the room."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "globalLen",
+            "docs": [
+              "Total messages sent (last assigned global_seq)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "currentEpoch",
+            "docs": [
+              "Current BGW crypto epoch. Increments only when an EpochHeader is",
+              "published (activation)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "memberVersion",
+            "docs": [
+              "Increments on every membership mutation."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "latestHeaderMemberVersion",
+            "docs": [
+              "Member version covered by the latest activated header."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "recipientCheckpointEpoch",
+            "docs": [
+              "Epoch of the last recipient checkpoint (root chain anchor)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "chainStartEpoch",
+            "docs": [
+              "Epoch where the current key-chain segment began."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "pendingEpoch",
+            "docs": [
+              "Epoch of the open staged publication (current_epoch + 1 while open)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "currentBucket",
+            "docs": [
+              "Message ordering state."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "nextSlot",
+            "docs": [
+              "1-based next member slot."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "recipientExplicitCount",
+            "docs": [
+              "Explicit slot count of the current recipient state."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "recipientAssignedUntilSlot",
+            "docs": [
+              "Highest slot ever activated (recipient chain mirror)."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "recipientDeltaDepth",
+            "docs": [
+              "Delta depth since the last checkpoint."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "pendingPagesTotal",
+            "docs": [
+              "Total pages of the open staged publication."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "pendingPagesDone",
+            "docs": [
+              "Pages staged so far for the open publication."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "currentBucketLen",
+            "type": "u8"
+          },
+          {
+            "name": "recipientMode",
+            "docs": [
+              "RecipientMode of the current recipient state."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "recipientEncoding",
+            "docs": [
+              "RecipientEncoding of the last checkpoint."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "publicationOpen",
+            "docs": [
+              "1 while a staged (two-phase) publication is open."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "padding1",
+            "docs": [
+              "Padding to make the following 32-byte array block 8-byte aligned."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                6
+              ]
+            }
+          },
+          {
+            "name": "roomId",
+            "docs": [
+              "Unique identifier for the room. Can be derived from external data by clients."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "latestHeaderHash",
+            "docs": [
+              "Latest EpochHeader hash (domain \"xpkt-bgw-epoch-header-v2\")."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "paramsId",
+            "docs": [
+              "Global params artifact identity."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "paramsRoot",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "recipientStateRoot",
+            "docs": [
+              "Current recipient root-chain state root."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "pendingPagesHash",
+            "docs": [
+              "Running page chain hash of the open staged publication."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "roomAddMemberParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "proof",
+            "type": {
+              "defined": {
+                "name": "compressedAccountsProofOptionalUpdate",
+                "generics": [
+                  {
+                    "kind": "type",
+                    "type": {
+                      "defined": {
+                        "name": "roomMember"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "member",
+            "type": "pubkey"
+          },
+          {
+            "name": "bgwMemberSecret",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "roomCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "room",
+            "type": "pubkey"
+          },
+          {
+            "name": "roomId",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "paramsId",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "paramsRoot",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "roomEpochHeader",
+      "docs": [
+        "Activated BGW epoch header.",
+        "",
+        "Address derivation: `[\"room-header\", room, epoch_le]`."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "discriminator",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "version",
+            "type": "u16"
+          },
+          {
+            "name": "room",
+            "type": "pubkey"
+          },
+          {
+            "name": "epoch",
+            "type": "u64"
+          },
+          {
+            "name": "memberVersion",
+            "type": "u64"
+          },
+          {
+            "name": "headerBindingRoot",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "descriptorKind",
+            "docs": [
+              "[RecipientDescriptorKind]."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "recipientMode",
+            "docs": [
+              "[RecipientMode] of the state after this header."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "recipientEncoding",
+            "docs": [
+              "[RecipientEncoding] for checkpoints; Empty for Reuse/Delta."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "deltaOp",
+            "docs": [
+              "[RecipientDeltaOp]; None unless `descriptor_kind` is Delta."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "deltaSlot",
+            "docs": [
+              "0 unless `descriptor_kind` is Delta."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "deltaDepth",
+            "docs": [
+              "Delta depth after this header; 0 for checkpoints."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "assignedUntilSlot",
+            "type": "u32"
+          },
+          {
+            "name": "explicitCount",
+            "type": "u32"
+          },
+          {
+            "name": "chainStartEpoch",
+            "type": "u64"
+          },
+          {
+            "name": "recipientStateRoot",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "headerHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "descriptorBytes",
+            "docs": [
+              "Inline checkpoint payload; pages hash (32B) for External; empty for Reuse/Delta."
+            ],
+            "type": "bytes"
+          },
+          {
+            "name": "headerBytes",
+            "docs": [
+              "Opaque BGW core and wrapped chain key (client-defined)."
+            ],
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "roomHeaderPublished",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "room",
+            "type": "pubkey"
+          },
+          {
+            "name": "roomId",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "headerAddress",
+            "type": "pubkey"
+          },
+          {
+            "name": "epoch",
+            "type": "u64"
+          },
+          {
+            "name": "memberVersion",
+            "type": "u64"
+          },
+          {
+            "name": "descriptorKind",
+            "type": "u8"
+          },
+          {
+            "name": "recipientMode",
+            "type": "u8"
+          },
+          {
+            "name": "chainStartEpoch",
+            "type": "u64"
+          },
+          {
+            "name": "chainBreak",
+            "type": "bool"
+          },
+          {
+            "name": "headerHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "roomMember",
+      "docs": [
+        "Membership of a room owner.",
+        "",
+        "Address derivation: `[\"room-member\", room, owner]`."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "discriminator",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "version",
+            "type": "u16"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "room",
+            "type": "pubkey"
+          },
+          {
+            "name": "status",
+            "docs": [
+              "0 = active, 1 = removed."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "slot",
+            "type": "u32"
+          },
+          {
+            "name": "joinedMemberVersion",
+            "docs": [
+              "Member version of the mutation that created or last re-activated this",
+              "member. The member may only send while",
+              "`joined_member_version <= room.latest_header_member_version`."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "secret",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "roomMemberAdded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "room",
+            "type": "pubkey"
+          },
+          {
+            "name": "roomId",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "member",
+            "type": "pubkey"
+          },
+          {
+            "name": "memberRoomAccount",
+            "type": "pubkey"
+          },
+          {
+            "name": "slot",
+            "type": "u32"
+          },
+          {
+            "name": "memberVersion",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "roomMemberRemoved",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "room",
+            "type": "pubkey"
+          },
+          {
+            "name": "roomId",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "member",
+            "type": "pubkey"
+          },
+          {
+            "name": "memberRoomAccount",
+            "type": "pubkey"
+          },
+          {
+            "name": "slot",
+            "type": "u32"
+          },
+          {
+            "name": "memberVersion",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "roomMessage",
+      "docs": [
+        "Room chat message stored as a compressed account.",
+        "",
+        "Address derivation: `[\"room-message\", room, client_msg_id]`."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "discriminator",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "version",
+            "type": "u16"
+          },
+          {
+            "name": "room",
+            "docs": [
+              "Room PDA this message belongs to. Kept in the account data (not only the",
+              "address seeds) to allow memcmp filtering by room and bucket."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "cryptoEpoch",
+            "type": "u64"
+          },
+          {
+            "name": "globalSeq",
+            "type": "u64"
+          },
+          {
+            "name": "bucket",
+            "type": "u32"
+          },
+          {
+            "name": "bucketIndex",
+            "type": "u8"
+          },
+          {
+            "name": "sender",
+            "type": "pubkey"
+          },
+          {
+            "name": "memberSlot",
+            "type": "u32"
+          },
+          {
+            "name": "clientMsgId",
+            "type": {
+              "array": [
+                "u8",
+                64
+              ]
+            }
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "messageType",
+            "type": {
+              "defined": {
+                "name": "messageType"
+              }
+            }
+          },
+          {
+            "name": "content",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "roomMessageSent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "room",
+            "type": "pubkey"
+          },
+          {
+            "name": "roomId",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "sender",
+            "type": "pubkey"
+          },
+          {
+            "name": "messageAddress",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "roomPublishHeaderParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "proof",
+            "type": {
+              "defined": {
+                "name": "compressedCreateAccountsProof"
+              }
+            }
+          },
+          {
+            "name": "epoch",
+            "docs": [
+              "Must be `room.current_epoch + 1`."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "memberVersion",
+            "type": "u64"
+          },
+          {
+            "name": "headerBindingRoot",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "descriptorKind",
+            "type": "u8"
+          },
+          {
+            "name": "recipientMode",
+            "type": "u8"
+          },
+          {
+            "name": "recipientEncoding",
+            "type": "u8"
+          },
+          {
+            "name": "deltaOp",
+            "type": "u8"
+          },
+          {
+            "name": "deltaSlot",
+            "type": "u32"
+          },
+          {
+            "name": "assignedUntilSlot",
+            "type": "u32"
+          },
+          {
+            "name": "explicitCount",
+            "type": "u32"
+          },
+          {
+            "name": "chainBreak",
+            "type": "bool"
+          },
+          {
+            "name": "descriptorBytes",
+            "type": "bytes"
+          },
+          {
+            "name": "headerBytes",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "roomRecipientPage",
+      "docs": [
+        "Staged recipient page: a byte chunk of the canonical checkpoint",
+        "`descriptor_bytes`. Readers concatenate page payloads in index order to",
+        "rebuild the descriptor.",
+        "",
+        "Address derivation: `[\"room-rpage\", room, epoch_le, page_index_le]`."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "discriminator",
+            "type": {
+              "array": [
+                "u8",
+                8
+              ]
+            }
+          },
+          {
+            "name": "version",
+            "type": "u16"
+          },
+          {
+            "name": "room",
+            "type": "pubkey"
+          },
+          {
+            "name": "epoch",
+            "docs": [
+              "Pending epoch this page belongs to."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "pageIndex",
+            "type": "u16"
+          },
+          {
+            "name": "pagesTotal",
+            "type": "u16"
+          },
+          {
+            "name": "payloadHash",
+            "docs": [
+              "sha256 of `payload`."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "payload",
+            "docs": [
+              "At most `ROOM_MAX_PAGE_BYTES`."
+            ],
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "roomRecipientPageStaged",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "room",
+            "type": "pubkey"
+          },
+          {
+            "name": "roomId",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "pageAddress",
+            "type": "pubkey"
+          },
+          {
+            "name": "epoch",
+            "type": "u64"
+          },
+          {
+            "name": "pageIndex",
+            "type": "u16"
+          },
+          {
+            "name": "pagesTotal",
+            "type": "u16"
+          },
+          {
+            "name": "payloadHash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "roomRemoveMemberParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "proof",
+            "type": {
+              "defined": {
+                "name": "compressedAccountsProof",
+                "generics": [
+                  {
+                    "kind": "type",
+                    "type": {
+                      "defined": {
+                        "name": "roomMember"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "member",
+            "type": "pubkey"
+          },
+          {
+            "name": "bgwMemberSecret",
+            "type": "bytes"
+          }
+        ]
+      }
+    },
+    {
+      "name": "roomSendMessageParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "proof",
+            "docs": [
+              "Proof for compressed member account input and new Message."
+            ],
+            "type": {
+              "defined": {
+                "name": "compressedAccountsProof",
+                "generics": [
+                  {
+                    "kind": "type",
+                    "type": {
+                      "defined": {
+                        "name": "roomMember"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "message",
+            "type": {
+              "defined": {
+                "name": "messageInput"
+              }
+            }
+          },
+          {
+            "name": "messageId",
+            "type": {
+              "array": [
+                "u8",
+                64
+              ]
+            }
+          },
+          {
+            "name": "expectedCryptoEpoch",
+            "docs": [
+              "Epoch the client encrypted the body under. Must equal",
+              "`room.current_epoch` at landing time; see the guard in the handler."
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "roomStageRecipientPageParams",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "proof",
+            "docs": [
+              "Create or update the page compressed account."
+            ],
+            "type": {
+              "defined": {
+                "name": "compressedAccountsProofOptionalUpdate",
+                "generics": [
+                  {
+                    "kind": "type",
+                    "type": {
+                      "defined": {
+                        "name": "roomRecipientPage"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "name": "pageIndex",
+            "type": "u16"
+          },
+          {
+            "name": "pagesTotal",
+            "type": "u16"
+          },
+          {
+            "name": "payload",
+            "docs": [
+              "<= ROOM_MAX_PAGE_BYTES, non-empty."
+            ],
+            "type": "bytes"
           }
         ]
       }

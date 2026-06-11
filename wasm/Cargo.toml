@@ -1,0 +1,28 @@
+[package]
+name = "xpkt-bgw-bls12-wasm"
+version = "0.2.0"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = []
+
+[dependencies]
+wasm-bindgen = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
+thiserror = "1"
+sha2 = "0.10"
+hex = "0.4"
+# BLS12-381-only backend. Arkworks keeps the paper formula mapping explicit.
+ark-std = { version = "0.5", default-features = false, features = ["std"] }
+ark-ff = { version = "0.5", default-features = false, features = ["std"] }
+ark-ec = { version = "0.5", default-features = false, features = ["std"] }
+ark-serialize = { version = "0.5", default-features = false, features = ["std"] }
+ark-bls12-381 = { version = "0.5", default-features = false, features = ["curve", "scalar_field", "std"] }
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3"

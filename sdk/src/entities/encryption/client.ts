@@ -358,6 +358,21 @@ export class PacketEncryptionClient {
 
     static async LoadReaderForOwner(
         client: PacketClient,
+        params: {
+            ownerWallet: PublicKey | string,
+            fallbackToWalletDerived?: boolean,
+        },
+    ): Promise<PacketReaderInput> {
+        return (await this.LoadReaderInfoForOwner(client, params)).reader;
+    }
+
+    /**
+     * Like LoadReaderForOwner, but also reports which key model the reader
+     * uses: the owner's REGISTERED packet key, or the wallet-derived
+     * ed25519→x25519 fallback (decryptable only with the raw wallet keypair).
+     */
+    static async LoadReaderInfoForOwner(
+        client: PacketClient,
         {
             ownerWallet,
             fallbackToWalletDerived = true
@@ -365,7 +380,7 @@ export class PacketEncryptionClient {
             ownerWallet: PublicKey | string,
             fallbackToWalletDerived?: boolean,
         },
-    ): Promise<PacketReaderInput> {
+    ): Promise<{ reader: PacketReaderInput; source: "registered" | "wallet-derived" }> {
         var wallet = typeof ownerWallet === "string"
             ? new PublicKey(ownerWallet)
             : ownerWallet;
@@ -381,20 +396,17 @@ export class PacketEncryptionClient {
         }
 
         if (key) {
-            return key.Reader;
+            return { reader: key.Reader, source: "registered" };
         }
 
         if (!fallbackToWalletDerived) {
             throw new Error("Key not found for owner wallet: " + wallet.toBase58());
         }
 
-        const reader = client.crypto.reader({
-            ownerWallet: wallet,
-            keyAlg: AsymmetricEncryptionAlgorithm.SOLANA_ED25519_X25519,
-            publicKey: wallet.toBytes(),
-        });
-
-        return reader;
+        return {
+            reader: PacketEncryptionClient.LoadWalletDerivedReader(wallet),
+            source: "wallet-derived",
+        };
     }
 
     static LoadWalletDerivedReader(ownerWallet: PublicKey | string): PacketReaderInput {

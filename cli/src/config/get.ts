@@ -70,6 +70,7 @@ export function GetUserConfig(options: LoadOptions = {}): PacketCliConfig {
       rpc: effectiveConfig.rpc,
       photonRpc: effectiveConfig.photonRpc,
       cluster: effectiveConfig.cluster as PacketClientConfig["cluster"] || undefined,
+      bgwParams: effectiveConfig.bgwParams,
     },
     keypair,
     client,
@@ -119,5 +120,15 @@ function parseTomlSync(raw: string): OnDiskConfig {
           : rpc,
     },
     cluster: typeof parsed.cluster === "string" ? parsed.cluster : undefined,
+    bgwParams: parseBgwParams(parsed.bgw_params),
   };
+}
+
+function parseBgwParams(value: unknown): OnDiskConfig["bgwParams"] {
+  if (!value || typeof value !== "object") return undefined;
+  const map = value as TOML.JsonMap;
+  const dir = typeof map.dir === "string" ? map.dir : undefined;
+  const url = typeof map.url === "string" ? map.url : undefined;
+  if (!dir && !url) return undefined;
+  return { dir, url };
 }

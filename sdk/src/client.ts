@@ -25,6 +25,14 @@ import type { CreateUserKeyParams } from "./entities/key/types";
 import { MessageEventsClient, UserClient, type CreateUserParams } from "./entities";
 import type { PacketIxOptions, PacketTxOptions, WithTxOptions } from "./entities/transaction/types";
 import { AnchorCpiEventClient } from "./entities/events/cpi-events";
+import { BgwBls12381WasmEngine } from "./entities/wasm/xpkt-bgw-bls12/engine";
+import { RoomClient } from "./entities/room/client/room";
+import { RoomAdminClient } from "./entities/room/client/admin";
+import { getRoomMembershipsForOwner } from "./entities/room/account/member";
+import { GetRoomsByAdmin } from "./entities/room/account/room";
+import type { BgwParamsClient } from "./entities/bgw/client/params";
+import type { PacketSignMessage } from "./crypto/packet/seed";
+import type { Bytes } from "./types/common";
 
 /**
  * PacketClient is the main entry point for interacting with the Packet.
@@ -50,6 +58,9 @@ export class PacketClient {
     readonly cluster: "mainnet" | "devnet";
     readonly programId: anchor.web3.PublicKey;
     readonly cpiEvents: AnchorCpiEventClient;
+
+    _bgwEngine?: BgwBls12381WasmEngine;
+    #bgwEnginePromise?: Promise<BgwBls12381WasmEngine>;
 
     defaultTxOptions?: PacketTxOptions;
 
@@ -110,6 +121,34 @@ export class PacketClient {
 
     get photonRpc(): Readonly<PhotonRpcConfig> | undefined {
         return this.#photonRpc;
+    }
+
+    /**
+     * Sync accessor (backward compatible): throws if the engine has not been
+     * loaded yet. Prefer `await client.loadBgwEngine()`.
+     */
+    get bgwEngine(): BgwBls12381WasmEngine {
+        if (!this._bgwEngine) {
+            throw new Error("BgwBls12381WasmEngine not initialized. Call `await client.loadBgwEngine()` first.");
+        }
+        return this._bgwEngine;
+    }
+
+    /**
+     * Lazily load (and cache) the room-agnostic BGW WASM engine.
+     *
+     * BGW *params* intentionally do NOT live on PacketClient (multiple rooms
+     * may use differing params). Pass a BgwParamsClient per call/room, or
+     * configure a process-wide default via `configureDefaultBgwParams(...)`
+     * and resolve it with `resolveBgwParams(engine)`.
+     */
+    async loadBgwEngine(): Promise<BgwBls12381WasmEngine> {
+        if (this._bgwEngine) return this._bgwEngine;
+        this.#bgwEnginePromise ??= BgwBls12381WasmEngine.load().then((engine) => {
+            this._bgwEngine = engine;
+            return engine;
+        });
+        return this.#bgwEnginePromise;
     }
 
     updateWallet(wallet: PacketWallet): this {
@@ -254,6 +293,74 @@ export class PacketClient {
             params: inboxParams,
             options,
         });
+    };
+
+    // -- Room --
+    /**
+     * Load a reader-side room client by room PDA address (PublicKey/base58) or
+     * 32-byte roomId. Room state lives on the returned RoomClient, not here.
+     */
+    room = async (params: {
+        id: PublicKey | Bytes | string;
+        bgwParams?: BgwParamsClient;
+    }) => {
+        const id = typeof params.id === "string" ? new PublicKey(params.id) : params.id;
+        return RoomClient.Load({
+            client: this,
+            id,
+            bgwParams: params.bgwParams,
+        });
+    };
+
+    /**
+     * Recover the admin client for an existing room (re-derives the admin
+     * secret from `seed` or `signMessage` and reconstructs recipient state).
+     */
+    roomAdmin = async (params: {
+        roomId?: Bytes;
+        address?: PublicKey;
+        seed?: Bytes;
+        signMessage?: PacketSignMessage;
+        origin?: string;
+        bgwParams?: BgwParamsClient;
+    }) => {
+        return RoomAdminClient.Load({
+            client: this,
+            ...params,
+        });
+    };
+
+    createRoom = async (params: WithTxOptions<{
+        roomId?: Bytes;
+        signMessage: PacketSignMessage;
+        origin?: string;
+        bgwParams?: BgwParamsClient;
+    }>) => {
+        const { options, bgwParams, ...roomParams } = params;
+        return RoomAdminClient.Create({
+            client: this,
+            params: roomParams,
+            options,
+            bgwParams,
+        });
+    };
+
+    /**
+     * Rooms a wallet is a member of (defaults to the connected wallet).
+     * Active-only by default; pass `activeOnly: false` to include rooms the
+     * wallet was removed from. Each result carries its `room`, `slot`, `status`.
+     */
+    roomMemberships = async (params: { owner?: PublicKey; activeOnly?: boolean } = {}) => {
+        return getRoomMembershipsForOwner({
+            client: this,
+            owner: params.owner ?? this.walletPublicKey,
+            activeOnly: params.activeOnly,
+        });
+    };
+
+    /** Rooms administered by a wallet (defaults to the connected wallet). */
+    roomsByAdmin = async (admin: PublicKey = this.walletPublicKey) => {
+        return GetRoomsByAdmin({ client: this, admin });
     };
 
     // -- Activity --

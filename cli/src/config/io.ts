@@ -91,6 +91,14 @@ function toTomlString(config: OnDiskConfig): string {
       prover_endpoint: config.photonRpc.proverEndpoint,
     },
     cluster: config.cluster,
+    ...(config.bgwParams && (config.bgwParams.dir || config.bgwParams.url)
+      ? {
+          bgw_params: {
+            ...(config.bgwParams.dir ? { dir: config.bgwParams.dir } : {}),
+            ...(config.bgwParams.url ? { url: config.bgwParams.url } : {}),
+          },
+        }
+      : {}),
   };
 
   return header + TOML.stringify(document as TOML.JsonMap);
@@ -133,5 +141,16 @@ function parseTomlConfig(raw: string): OnDiskConfig {
           ? photon.prover_endpoint
           : rpc,
     },
+    cluster: typeof parsed.cluster === "string" ? parsed.cluster : undefined,
+    bgwParams: parseBgwParamsConfig(parsed.bgw_params),
   };
+}
+
+function parseBgwParamsConfig(value: unknown): OnDiskConfig["bgwParams"] {
+  if (!value || typeof value !== "object") return undefined;
+  const map = value as TOML.JsonMap;
+  const dir = typeof map.dir === "string" ? map.dir : undefined;
+  const url = typeof map.url === "string" ? map.url : undefined;
+  if (!dir && !url) return undefined;
+  return { dir, url };
 }

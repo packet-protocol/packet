@@ -58,6 +58,20 @@ export class KeyClient {
         return this;
     }
 
+    async loadRetrying({ retries = 3, delay = 250, }: { retries?: number, delay?: number,  } = {}): Promise<this> {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    return await this.load();
+                } catch (error) {
+                    if (i === retries - 1) {
+                        throw error;
+                    }
+                    await new Promise((resolve) => setTimeout(resolve, delay));
+                }
+            }
+            return this;
+        }
+
     async refresh(): Promise<this> {
         return this.load();
     }
@@ -120,7 +134,7 @@ export class KeyClient {
         const owner = params.options?.owner ?? params.client.walletPublicKey;
         const client = new KeyClient(params.client, owner);
 
-        await client.load();
+        await client.loadRetrying();
 
         return {
             receipt: signatures,

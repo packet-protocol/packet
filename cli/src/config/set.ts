@@ -9,6 +9,10 @@ export interface SetUserConfigOptions {
   compressionApiEndpoint?: string;
   proverEndpoint?: string;
   keypairPath?: string;
+  /** BGW params artifact local directory for room/group messaging. */
+  bgwParamsDir?: string;
+  /** BGW params artifact HTTP manifest URL for room/group messaging. */
+  bgwParamsUrl?: string;
 }
 
 /**
@@ -81,6 +85,21 @@ export async function SetUserConfig(
     cluster = "mainnet";
   }
 
+  if (options.bgwParamsDir && options.bgwParamsUrl) {
+    throw new Error(
+      "--bgw-params-dir and --bgw-params-url are mutually exclusive. Pass only one."
+    );
+  }
+
+  // Preserve an existing BGW params source unless the user overrides it.
+  const bgwParams =
+    options.bgwParamsDir || options.bgwParamsUrl
+      ? {
+          dir: options.bgwParamsDir,
+          url: options.bgwParamsUrl,
+        }
+      : existingConfig?.bgwParams;
+
   // Build config payload
   const config: OnDiskConfig = {
     schemaVersion: ConfigSchemaVersion,
@@ -92,6 +111,7 @@ export async function SetUserConfig(
       proverEndpoint: options.proverEndpoint ?? options.rpc,
     },
     cluster,
+    bgwParams,
   };
 
   // Persist 
