@@ -1,4 +1,4 @@
-import { InboxKind } from "../types";
+import { InboxKind } from "../types.js";
 
 export const NumberToInboxKind = (number: number): InboxKind => {
     switch (number) {

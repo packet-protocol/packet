@@ -1,10 +1,10 @@
 import { Connection, PublicKey } from "@solana/web3.js";
-import type { PacketProgram } from "../../../providers/program";
-import { HandleTxPipeline } from "../../../utils/pipeline";
-import { CreateEscrowWithdrawPipeline } from "../pipeline/escrow-withdraw";
-import type { Thread } from "../types";
+import type { PacketProgram } from "../../../providers/program.js";
+import { HandleTxPipeline } from "../../../utils/pipeline.js";
+import { CreateEscrowWithdrawPipeline } from "../pipeline/escrow-withdraw.js";
+import type { Thread } from "../types.js";
 import type { Rpc } from "@lightprotocol/stateless.js";
-import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types.js";
 
 export const EscrowWithdrawTx = async (
     rpc: Rpc,

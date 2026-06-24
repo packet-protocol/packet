@@ -1,14 +1,14 @@
-import type { PacketClient } from "../../../client";
-import type { Message } from "../types";
-import * as Pda from "../../../pda";
-import { GetMessageAccount, MessageAccountToMessage } from "../account/get";
-import type { ThreadClient } from "../../thread/client/thread";
+import type { PacketClient } from "../../../client.js";
+import type { Message } from "../types.js";
+import * as Pda from "../../../pda.js";
+import { GetMessageAccount, MessageAccountToMessage } from "../account/get.js";
+import type { ThreadClient } from "../../thread/client/thread.js";
 import {
     loadPacketMessageContent,
     parseLoadedPacketMessageContent,
     type PacketLoadedContent,
     type ParsedPacketMessageContent,
-} from "../content";
+} from "../content.js";
 import type { PublicKey } from "@solana/web3.js";
 
 export type MessageContentLoadResult = PacketLoadedContent;

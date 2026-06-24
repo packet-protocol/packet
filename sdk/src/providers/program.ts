@@ -1,7 +1,7 @@
 import * as anchor from "@anchor-lang/core";
-import type { PacketIDL } from "../idl/packet.idl";
-import {PACKET_IDL_JSON} from "../idl/packet.idl.json";
-import type { PacketWallet } from "../entities/wallet";
+import type { PacketIDL } from "../idl/packet.idl.js";
+import {PACKET_IDL_JSON} from "../idl/packet.idl.json.js";
+import type { PacketWallet } from "../entities/wallet/index.js";
 
 /**
  * Create anchor provider

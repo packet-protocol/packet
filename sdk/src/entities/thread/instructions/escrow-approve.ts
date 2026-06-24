@@ -1,9 +1,9 @@
 import { PublicKey } from "@solana/web3.js";
-import type { PacketProgram } from "../../../providers/program";
-import type { Thread } from "../types";
-import { getThreadMutationProof } from "../../../providers/light/proof/thread";
+import type { PacketProgram } from "../../../providers/program.js";
+import type { Thread } from "../types.js";
+import { getThreadMutationProof } from "../../../providers/light/proof/thread.js";
 import type { Rpc } from "@lightprotocol/stateless.js";
-import type { PacketIxOptions } from "../../transaction/types";
+import type { PacketIxOptions } from "../../transaction/types.js";
 
 export const EscrowApproveIx = async (
     rpc: Rpc,

@@ -3,10 +3,10 @@ import {
     TransactionInstruction,
 } from "@solana/web3.js";
 
-import type { PacketProgram } from "../../../providers/program";
-import type { CreateUserParams } from "../types";
-import { assertUserStringLimits } from "../utils";
-import type { PacketIxOptions } from "../../transaction/types";
+import type { PacketProgram } from "../../../providers/program.js";
+import type { CreateUserParams } from "../types.js";
+import { assertUserStringLimits } from "../utils.js";
+import type { PacketIxOptions } from "../../transaction/types.js";
 
 export async function CreateUserIx(
     signer: PublicKey,

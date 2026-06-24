@@ -1,5 +1,5 @@
 import { sha256 } from "@noble/hashes/sha2";
-import type { Bytes } from "../../types/common";
+import type { Bytes } from "../../types/common.js";
 
 export function hex(bytes: Bytes): string {
   return Buffer.from(bytes).toString("hex");

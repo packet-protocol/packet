@@ -1,15 +1,15 @@
 import { x25519 } from "@noble/curves/ed25519";
 import tweetnacl from "tweetnacl";
 
-import type { Bytes } from "../../../types/common";
-import type { PacketKeyPair } from "../../types/common";
-import { AsymmetricEncryptionAlgorithm } from "../../types/asymmetric";
-import { derive32 } from "../../utils/kdf";
+import type { Bytes } from "../../../types/common.js";
+import type { PacketKeyPair } from "../../types/common.js";
+import { AsymmetricEncryptionAlgorithm } from "../../types/asymmetric.js";
+import { derive32 } from "../../utils/kdf.js";
 import {
     ed25519PublicKeyToX25519,
     ed25519SecretKeyToX25519,
-} from "../../utils/ed25519-x25159";
-import type { RecipientKeyAdapter } from "./types";
+} from "../../utils/ed25519-x25159.js";
+import type { RecipientKeyAdapter } from "./types.js";
 
 export class NativeX25519RecipientKeyAdapter
     implements RecipientKeyAdapter<AsymmetricEncryptionAlgorithm.X25519> {

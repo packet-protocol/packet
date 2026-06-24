@@ -1,0 +1,15 @@
+{
+  "name": "xpkt-bgw-bls12-wasm",
+  "type": "module",
+  "version": "0.2.0",
+  "files": [
+    "xpkt_bgw_bls12_wasm_bg.wasm",
+    "xpkt_bgw_bls12_wasm.js",
+    "xpkt_bgw_bls12_wasm.d.ts"
+  ],
+  "main": "xpkt_bgw_bls12_wasm.js",
+  "types": "xpkt_bgw_bls12_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

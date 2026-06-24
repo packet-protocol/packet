@@ -1,7 +1,7 @@
 import type * as anchor from "@anchor-lang/core";
 import type { TransactionInstruction } from "@solana/web3.js";
-import type { PacketWallet } from "../entities/wallet";
-import type { PacketTxOptions } from "../entities/transaction/types";
+import type { PacketWallet } from "../entities/wallet/index.js";
+import type { PacketTxOptions } from "../entities/transaction/types.js";
 
 export type PacketClientConfig = {
     wallet?: PacketWallet;

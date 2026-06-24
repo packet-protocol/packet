@@ -1,9 +1,9 @@
-import type { Bytes } from "../../types/common";
-import type { BodyEncoding } from "../types/common";
+import type { Bytes } from "../../types/common.js";
+import type { BodyEncoding } from "../types/common.js";
 import {
     type Encrypted,
     type SymmetricEncryptionAlgorithm,
-} from "../types/symmetric";
+} from "../types/symmetric.js";
 
 export abstract class BaseSymmetricSuite<
     TAlg extends SymmetricEncryptionAlgorithm = SymmetricEncryptionAlgorithm,

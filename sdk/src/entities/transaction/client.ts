@@ -6,9 +6,9 @@ import type {
     TransactionSignature,
     VersionedTransaction,
 } from "@solana/web3.js";
-import { PacketWallet } from "../wallet";
+import { PacketWallet } from "../wallet/index.js";
 import type { Wallet } from "@anchor-lang/core";
-import { sleep } from "../../utils/helpers";
+import { sleep } from "../../utils/helpers.js";
 
 export type SubmitAndConfirmOptions = {
     commitment?: Commitment;

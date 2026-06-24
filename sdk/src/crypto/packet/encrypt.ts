@@ -1,24 +1,24 @@
 import { randomBytes } from "@noble/hashes/utils";
 
-import type { Bytes } from "../../types/common";
-import { Aes256GcmSuite } from "../symmetric/aes256gcm";
+import type { Bytes } from "../../types/common.js";
+import { Aes256GcmSuite } from "../symmetric/aes256gcm.js";
 
 import type {
     PacketEncryptedBody,
     PacketReaderInput,
     ReaderEntry,
-} from "../types/packet";
+} from "../types/packet.js";
 import {
     type KeyDerivationAlgorithm,
-} from "../types/asymmetric";
+} from "../types/asymmetric.js";
 
-import { SymmetricEncryptionAlgorithm } from "../types/symmetric";
-import type { BodyEncoding } from "../types/common";
+import { SymmetricEncryptionAlgorithm } from "../types/symmetric.js";
+import type { BodyEncoding } from "../types/common.js";
 
-import { hashLabel } from "../utils/hash";
-import { utf8 } from "../../utils/encoding";
+import { hashLabel } from "../utils/hash.js";
+import { utf8 } from "../../utils/encoding.js";
 
-import { getKeyWrapSuite } from "./suites";
+import { getKeyWrapSuite } from "./suites.js";
 
 export type EncryptPacketMessageOptions = {
     /**     

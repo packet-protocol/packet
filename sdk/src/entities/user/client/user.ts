@@ -1,17 +1,17 @@
 import type { PublicKey } from "@solana/web3.js";
 
-import type { PacketClient } from "../../../client";
-import { PacketTransactionClient } from "../../transaction/client";
-import { CreateUserTx } from "../transactions/create";
-import { EditUserTx } from "../transactions/edit";
-import { GetUserAccount } from "../account/get";
+import type { PacketClient } from "../../../client.js";
+import { PacketTransactionClient } from "../../transaction/client.js";
+import { CreateUserTx } from "../transactions/create.js";
+import { EditUserTx } from "../transactions/edit.js";
+import { GetUserAccount } from "../account/get.js";
 import type {
     CreateUserParams,
     EditUserParams,
     PacketUser,
-} from "../types";
-import type { TxReceiptWithClient } from "../../../types/client";
-import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
+} from "../types.js";
+import type { TxReceiptWithClient } from "../../../types/client.js";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types.js";
 
 export class UserClient {
     private loadedUser?: PacketUser;

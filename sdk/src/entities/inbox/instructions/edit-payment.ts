@@ -1,11 +1,11 @@
 import { Connection, PublicKey, TransactionInstruction } from "@solana/web3.js";
-import type { PacketProgram } from "../../../providers/program";
-import type { InboxPaymentParams } from "./create";
-import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "../../../constants";
-import { CheckIfAssociatedTokenAccountExists } from "../../../providers/token/helpers";
-import { CreateAssociatedTokenAccountIx, CreateTokenAccountIx } from "../../../providers/token/instructions";
-import * as Pda from "../../../pda";
-import type { PacketIxOptions } from "../../transaction/types";
+import type { PacketProgram } from "../../../providers/program.js";
+import type { InboxPaymentParams } from "./create.js";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID } from "../../../constants.js";
+import { CheckIfAssociatedTokenAccountExists } from "../../../providers/token/helpers.js";
+import { CreateAssociatedTokenAccountIx, CreateTokenAccountIx } from "../../../providers/token/instructions.js";
+import * as Pda from "../../../pda.js";
+import type { PacketIxOptions } from "../../transaction/types.js";
 
 export const EditInboxPaymentIx = async (
     connection: Connection,

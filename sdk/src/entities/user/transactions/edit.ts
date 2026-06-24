@@ -3,11 +3,11 @@ import {
     PublicKey,
 } from "@solana/web3.js";
 
-import type { PacketProgram } from "../../../providers/program";
-import type { EditUserParams } from "../types";
-import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
-import { EditUserPipeline } from "../pipeline/edit";
-import { HandleTxPipeline } from "../../..";
+import type { PacketProgram } from "../../../providers/program.js";
+import type { EditUserParams } from "../types.js";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types.js";
+import { EditUserPipeline } from "../pipeline/edit.js";
+import { HandleTxPipeline } from "../../../index.js";
 
 export async function EditUserTx(
     connection: Connection,

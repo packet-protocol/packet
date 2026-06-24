@@ -2,12 +2,12 @@ import { PublicKey } from "@solana/web3.js";
 import type BN from "bn.js";
 import * as anchor from "@anchor-lang/core";
 
-import type { PacketClient } from "../../../client";
-import type { PacketProgram } from "../../../providers/program";
-import { getMultipleCompressedAccountsByAddressChunked } from "../../../providers/light/compressed";
-import { roomRecipientPageAddress } from "../utils/address";
-import type { RoomRecipientPageAccountData, RoomRecipientPageData } from "../type";
-import { getRoomCompressedAccount } from "../instructions/proofs";
+import type { PacketClient } from "../../../client.js";
+import type { PacketProgram } from "../../../providers/program.js";
+import { getMultipleCompressedAccountsByAddressChunked } from "../../../providers/light/compressed.js";
+import { roomRecipientPageAddress } from "../utils/address.js";
+import type { RoomRecipientPageAccountData, RoomRecipientPageData } from "../type/index.js";
+import { getRoomCompressedAccount } from "../instructions/proofs.js";
 
 export function DecodeRoomRecipientPageAccountData(
     program: PacketProgram,
@@ -45,11 +45,13 @@ export const RoomRecipientPageAccountToRoomRecipientPage = (
 export const GetRoomRecipientPageAccount = async (
     client: PacketClient,
     room: PublicKey,
+    era: BN | number,
     epoch: BN | number,
     pageIndex: number,
 ): Promise<RoomRecipientPageData | null> => {
     const address = roomRecipientPageAddress({
         room,
+        era,
         epoch,
         pageIndex,
         programId: client.program.programId,
@@ -76,6 +78,7 @@ export const GetRoomRecipientPageAccount = async (
 export const GetRoomRecipientPages = async (
     client: PacketClient,
     room: PublicKey,
+    era: BN | number,
     epoch: BN | number,
     pagesTotal: number,
     accountBatchSize?: number,
@@ -89,6 +92,7 @@ export const GetRoomRecipientPages = async (
     for (let pageIndex = 0; pageIndex < pagesTotal; pageIndex++) {
         addresses.push(roomRecipientPageAddress({
             room,
+            era,
             epoch,
             pageIndex,
             programId: client.program.programId,

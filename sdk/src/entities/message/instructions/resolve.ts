@@ -1,8 +1,8 @@
 import { Connection, PublicKey, TransactionInstruction } from "@solana/web3.js";
 import BN from "bn.js";
 
-import type { MessageType } from "../types";
-import type { ThreadInfo } from "../../thread/types";
+import type { MessageType } from "../types.js";
+import type { ThreadInfo } from "../../thread/types.js";
 
 import {
     ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -10,19 +10,19 @@ import {
     TOKEN_PROGRAM_ID,
     TokenProgramTypeToProgramId,
     WSOL_ID,
-} from "../../../constants";
+} from "../../../constants.js";
 
-import * as Pda from "../../../pda";
-import { MessageTypeToAnchorEnum } from "../utils/helpers";
-import { InboxKind, type Inbox } from "../../inbox/types";
+import * as Pda from "../../../pda.js";
+import { MessageTypeToAnchorEnum } from "../utils/helpers.js";
+import { InboxKind, type Inbox } from "../../inbox/types.js";
 import {
     CheckIfAssociatedTokenAccountExists,
-} from "../../../providers/token/helpers";
+} from "../../../providers/token/helpers.js";
 import {
     CreateAssociatedTokenAccountIx,
     EnsureWrappedSolAmountForAtaIx,
-} from "../../../providers/token/instructions";
-import type { PacketProgram } from "../../..";
+} from "../../../providers/token/instructions.js";
+import type { PacketProgram } from "../../../index.js";
 
 export type CreateMessageInputAndAccountsParams = {
     messageType: MessageType;

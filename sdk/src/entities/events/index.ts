@@ -1,2 +1,2 @@
-export * from "./types";
-export * from "./cpi-events";
+export * from "./types.js";
+export * from "./cpi-events.js";

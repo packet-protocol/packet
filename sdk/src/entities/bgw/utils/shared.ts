@@ -1,7 +1,7 @@
 import { sha256 } from "@noble/hashes/sha2";
-import { utf8 } from "../../../utils/encoding";
-import { concatBytes, u64be } from "../../../utils/bytes";
-import type { BN } from "../../..";
+import { utf8 } from "../../../utils/encoding.js";
+import { concatBytes, u64be } from "../../../utils/bytes.js";
+import type { BN } from "../../../index.js";
 
 export function headerAad(args: {
   roomId: Uint8Array;

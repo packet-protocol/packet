@@ -1,4 +1,4 @@
-import type { BodyEncoding } from "../../crypto/types/common";
+import type { BodyEncoding } from "../../crypto/types/common.js";
 
 export type PacketMail = {
     subject?: string;

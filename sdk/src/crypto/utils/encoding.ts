@@ -1,6 +1,6 @@
-import type { Bytes } from "../../types/common";
-import { toBase64, fromBase64, utf8, text } from "../../utils/encoding";
-import type { BodyEncoding } from "../types/common";
+import type { Bytes } from "../../types/common.js";
+import { toBase64, fromBase64, utf8, text } from "../../utils/encoding.js";
+import type { BodyEncoding } from "../types/common.js";
 
 type EncodedFields<T extends Record<string, Bytes>> = {
     [K in keyof T]: string;

@@ -1,11 +1,11 @@
 import { PublicKey } from "@solana/web3.js";
-import type { PacketProgram } from "../../../providers/program";
+import type { PacketProgram } from "../../../providers/program.js";
 
-import type { PipelineBase } from "../../../types/client";
-import type { CreateUserKeyParams } from "../types";
+import type { PipelineBase } from "../../../types/client.js";
+import type { CreateUserKeyParams } from "../types.js";
 import type { Rpc } from "@lightprotocol/stateless.js";
-import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
-import { CreateKeyIx } from "../instructions/create";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types.js";
+import { CreateKeyIx } from "../instructions/create.js";
 
 export type CreateKeyPipelineResult = {
     pipeline: PipelineBase

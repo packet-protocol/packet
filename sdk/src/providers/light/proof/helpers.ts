@@ -11,7 +11,7 @@ import {
     type ValidityProof,
 } from "@lightprotocol/stateless.js";
 
-import type { CompressedAccountMetaPacket } from "./types";
+import type { CompressedAccountMetaPacket } from "./types.js";
 
 export type CreateAccountsProofTs = {
     proof: { 0: ValidityProof | null };

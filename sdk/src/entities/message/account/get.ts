@@ -1,10 +1,10 @@
 import * as anchor from "@anchor-lang/core";
 import { bn, type Rpc } from "@lightprotocol/stateless.js";
 import { type PublicKey } from "@solana/web3.js";
-import type { PacketProgram } from "../../../providers/program";
-import type { PacketIDL } from "../../../idl/packet.idl";
-import type { Message } from "../types";
-import { AnchorEnumToMessageType } from "../utils/helpers";
+import type { PacketProgram } from "../../../providers/program.js";
+import type { PacketIDL } from "../../../idl/packet.idl.js";
+import type { Message } from "../types.js";
+import { AnchorEnumToMessageType } from "../utils/helpers.js";
 
 export const GetMessageAccount = async (
     rpc: Rpc,

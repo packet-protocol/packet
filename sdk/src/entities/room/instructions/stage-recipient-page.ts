@@ -2,17 +2,20 @@ import type { Connection, PublicKey } from "@solana/web3.js";
 import { type Rpc } from "@lightprotocol/stateless.js";
 import type BN from "bn.js";
 
-import type { PacketProgram } from "../../../providers/program";
-import type { PacketIxOptions } from "../../transaction/types";
-import type { Bytes } from "../../../types/common";
-import * as Pda from "../../../pda";
-import { roomRecipientPageAddress } from "../utils/address";
-import type { RoomRecipientPageAccountData } from "../type";
-import { getRoomCreateOrUpdateAccountProof } from "./proofs";
+import type { PacketProgram } from "../../../providers/program.js";
+import type { PacketIxOptions } from "../../transaction/types.js";
+import type { Bytes } from "../../../types/common.js";
+import * as Pda from "../../../pda.js";
+import { roomRecipientPageAddress } from "../utils/address.js";
+import type { RoomRecipientPageAccountData } from "../type/index.js";
+import { getRoomCreateOrUpdateAccountProof } from "./proofs.js";
 
 export type RoomStageRecipientPageIxParams = {
     /* 32 byte */
     roomId: Bytes;
+
+    /** Room generation (`room.era`). */
+    era: BN | number;
 
     /**
      * Pending epoch the page belongs to (room.currentEpoch + 1).
@@ -41,6 +44,7 @@ export const RoomStageRecipientPageIx = async (
 
     const pageAddress = roomRecipientPageAddress({
         room,
+        era: params.era,
         epoch: params.epoch,
         pageIndex: params.pageIndex,
         programId: program.programId,

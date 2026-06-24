@@ -1,5 +1,5 @@
-import type { BodyEncoding } from "./common";
-import type { SymmetricEncryptionAlgorithm } from "./symmetric";
+import type { BodyEncoding } from "./common.js";
+import type { SymmetricEncryptionAlgorithm } from "./symmetric.js";
 
 export enum AsymmetricEncryptionAlgorithm {
     X25519 = "X25519",

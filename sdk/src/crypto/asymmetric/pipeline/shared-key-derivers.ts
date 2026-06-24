@@ -3,9 +3,9 @@ import { hkdf } from "@noble/hashes/hkdf";
 import { sha256 } from "@noble/hashes/sha2";
 import tweetnacl from "tweetnacl";
 
-import type { Bytes } from "../../../types/common";
-import { KeyDerivationAlgorithm } from "../../types/asymmetric";
-import type { SharedKeyDeriver } from "./types";
+import type { Bytes } from "../../../types/common.js";
+import { KeyDerivationAlgorithm } from "../../types/asymmetric.js";
+import type { SharedKeyDeriver } from "./types.js";
 
 export class HkdfSha256SharedKeyDeriver
     implements SharedKeyDeriver<KeyDerivationAlgorithm.HKDF_SHA256> {

@@ -1,17 +1,17 @@
-import type { Bytes } from "../../types/common";
+import type { Bytes } from "../../types/common.js";
 
-import { Aes256GcmSuite } from "../symmetric/aes256gcm";
+import { Aes256GcmSuite } from "../symmetric/aes256gcm.js";
 
-import type { PacketEncryptedBody } from "../types/packet";
-import type { PacketKeyPair } from "../types/common";
+import type { PacketEncryptedBody } from "../types/packet.js";
+import type { PacketKeyPair } from "../types/common.js";
 
-import { AsymmetricEncryptionAlgorithm } from "../types/asymmetric";
-import { SymmetricEncryptionAlgorithm } from "../types/symmetric";
+import { AsymmetricEncryptionAlgorithm } from "../types/asymmetric.js";
+import { SymmetricEncryptionAlgorithm } from "../types/symmetric.js";
 
-import { findReaderEntry } from "./reader";
-import { text } from "../../utils/encoding";
+import { findReaderEntry } from "./reader.js";
+import { text } from "../../utils/encoding.js";
 
-import { getKeyWrapSuiteForWrappedKey } from "./suites";
+import { getKeyWrapSuiteForWrappedKey } from "./suites.js";
 
 type DecryptPacketParams = {
     body: PacketEncryptedBody;

@@ -1,23 +1,23 @@
 import { PublicKey } from "@solana/web3.js";
 
-import type { PacketClient } from "../../../client";
-import { PacketTransactionClient } from "../../transaction/client";
-import { CreateKeyTx } from "../transactions/create";
-import { EditKeyTx } from "../transactions/edit";
-import { GetUserKeyAccount } from "../account/get";
+import type { PacketClient } from "../../../client.js";
+import { PacketTransactionClient } from "../../transaction/client.js";
+import { CreateKeyTx } from "../transactions/create.js";
+import { EditKeyTx } from "../transactions/edit.js";
+import { GetUserKeyAccount } from "../account/get.js";
 import {
     userKeyToReader,
     keyTypeToReaderAlgorithm,
-} from "../utils";
+} from "../utils.js";
 import {
     PacketKeyType,
     type CreateUserKeyParams,
     type EditUserKeyParams,
     type UserDecryptionKey,
     type UserKeyReader,
-} from "../types";
-import type { TxReceiptWithClient } from "../../../types/client";
-import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
+} from "../types.js";
+import type { TxReceiptWithClient } from "../../../types/client.js";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types.js";
 
 export class KeyClient {
     private loadedKey?: UserDecryptionKey;

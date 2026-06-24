@@ -1,25 +1,25 @@
 import { PublicKey } from "@solana/web3.js";
-import * as Pda from "../../../pda";
-import type { PacketClient } from "../../../client";
-import type { Thread } from "../types";
-import { GetThreadAccount, ThreadAccountToThread } from "../account/get";
-import { MessageClient } from "../../message/client/message";
-import type { SendMsgPaymentParams, DisabledPayment } from "../../message/instructions/resolve";
-import type { MessageType } from "../../message/types";
-import { randomThreadId } from "../../../utils/bytes";
-import type { Inbox } from "../../inbox/types";
-import type { InboxClient } from "../../inbox/client/inbox";
-import { CreateThreadTx } from "../transactions/create";
-import { PacketTransactionClient } from "../../transaction/client";
-import type { TxReceiptWithClient } from "../../../types/client";
-import { SendMsgTx } from "../../message/transactions/send";
-import type { PacketIDL } from "../../../idl/packet.idl";
+import * as Pda from "../../../pda.js";
+import type { PacketClient } from "../../../client.js";
+import type { Thread } from "../types.js";
+import { GetThreadAccount, ThreadAccountToThread } from "../account/get.js";
+import { MessageClient } from "../../message/client/message.js";
+import type { SendMsgPaymentParams, DisabledPayment } from "../../message/instructions/resolve.js";
+import type { MessageType } from "../../message/types.js";
+import { randomThreadId } from "../../../utils/bytes.js";
+import type { Inbox } from "../../inbox/types.js";
+import type { InboxClient } from "../../inbox/client/inbox.js";
+import { CreateThreadTx } from "../transactions/create.js";
+import { PacketTransactionClient } from "../../transaction/client.js";
+import type { TxReceiptWithClient } from "../../../types/client.js";
+import { SendMsgTx } from "../../message/transactions/send.js";
+import type { PacketIDL } from "../../../idl/packet.idl.js";
 import * as anchor from "@anchor-lang/core";
-import { EscrowWithdrawTx } from "../transactions/escrow-withdraw";
-import { EscrowApproveTx } from "../transactions/escrow-approve";
+import { EscrowWithdrawTx } from "../transactions/escrow-withdraw.js";
+import { EscrowApproveTx } from "../transactions/escrow-approve.js";
 import BN from "bn.js";
-import { NO_INBOX } from "../../../constants";
-import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
+import { NO_INBOX } from "../../../constants.js";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types.js";
 export type SendMsgParams = {
     messageType: MessageType,
     content: string,
@@ -89,7 +89,7 @@ export class ThreadClient {
         params: CreateThreadParams,
         options?: PacketIxOptions & PacketTxOptions,
     }): Promise<TxReceiptWithClient<ThreadClient>> => {
-        const { InboxClient: IC } = await import("../../inbox/client/inbox");
+        const { InboxClient: IC } = await import("../../inbox/client/inbox.js");
         const threadId = params.params.threadId ?? randomThreadId();
         const address = Pda.threadPda(threadId, params.client.programId);
 
@@ -252,7 +252,7 @@ export class ThreadClient {
     private async loadInbox(params?: { inbox?: Inbox | InboxClient }) {
         const threadInboxId = this.Thread.inboxId;
         if (threadInboxId && !threadInboxId.eq(NO_INBOX) && !this.inbox) {
-            const { InboxClient: IC } = await import("../../inbox/client/inbox");
+            const { InboxClient: IC } = await import("../../inbox/client/inbox.js");
             let inbox = params?.inbox;
             const inboxAddress = Pda.inboxPda(threadInboxId, this.Thread.to, this.client.programId);
 

@@ -1,12 +1,12 @@
 import { Rpc } from "@lightprotocol/stateless.js";
 import { Connection, PublicKey } from "@solana/web3.js";
-import type { PacketProgram } from "../../../providers/program";
-import { SendMsgIx } from "../instructions/send";
-import type { CreateMessageInputAndAccountsParams } from "../instructions/resolve";
-import type { PipelineBase } from "../../../types/client";
-import { InboxClient, InboxKind } from "../../inbox";
-import { ArchiveInboxIx } from "../../inbox/instructions/archive";
-import type { PacketIxOptions } from "../../transaction/types";
+import type { PacketProgram } from "../../../providers/program.js";
+import { SendMsgIx } from "../instructions/send.js";
+import type { CreateMessageInputAndAccountsParams } from "../instructions/resolve.js";
+import type { PipelineBase } from "../../../types/client.js";
+import { InboxClient, InboxKind } from "../../inbox/index.js";
+import { ArchiveInboxIx } from "../../inbox/instructions/archive.js";
+import type { PacketIxOptions } from "../../transaction/types.js";
 
 export type SendMsgPipelineResult = {
     pipeline: PipelineBase

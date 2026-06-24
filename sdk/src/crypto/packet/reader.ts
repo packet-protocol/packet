@@ -1,10 +1,10 @@
-import type { Bytes } from "../../types/common";
+import type { Bytes } from "../../types/common.js";
 import type {
     PacketEncryptedBody,
     ReaderEntry,
-} from "../types/packet";
-import { AsymmetricEncryptionAlgorithm } from "../types/asymmetric";
-import { hashLabel } from "../utils/hash";
+} from "../types/packet.js";
+import { AsymmetricEncryptionAlgorithm } from "../types/asymmetric.js";
+import { hashLabel } from "../utils/hash.js";
 
 export function findReaderEntry(
     body: PacketEncryptedBody,

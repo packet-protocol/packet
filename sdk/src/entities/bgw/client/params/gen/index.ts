@@ -1,8 +1,8 @@
-import { hex } from "../../../../../crypto/utils/hash";
-import { BgwBls12381WasmEngine } from "../../../../wasm/xpkt-bgw-bls12/engine";
-import type { BgwBinaryParamsManifest } from "../../../types/params";
-import { DEFAULT_BGW_PARAMS_CAPACITY } from "../../../constants";
-import { encodeBgwBinaryParamsChunk, makeBgwParamsId, makeChunkMeta } from "./codec";
+import { hex } from "../../../../../crypto/utils/hash.js";
+import { BgwBls12381WasmEngine } from "../../../../wasm/xpkt-bgw-bls12/engine.js";
+import type { BgwBinaryParamsManifest } from "../../../types/params.js";
+import { DEFAULT_BGW_PARAMS_CAPACITY } from "../../../constants.js";
+import { encodeBgwBinaryParamsChunk, makeBgwParamsId, makeChunkMeta } from "./codec.js";
 import BN from "bn.js";
 
 export type BgwParamsGeneratorProgress = {

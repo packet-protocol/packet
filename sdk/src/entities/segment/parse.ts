@@ -1,4 +1,4 @@
-import type { Segment, SegmentSlot } from "./types";
+import type { Segment, SegmentSlot } from "./types.js";
 
 export const THREAD_ID_BYTES = 4;
 

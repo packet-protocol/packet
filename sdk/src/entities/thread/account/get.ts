@@ -1,13 +1,13 @@
 import * as anchor from "@anchor-lang/core";
 import { bn, type Rpc } from "@lightprotocol/stateless.js";
-import type { PacketProgram } from "../../../providers/program";
+import type { PacketProgram } from "../../../providers/program.js";
 import { PublicKey } from "@solana/web3.js";
-import type { Thread, ThreadAccountData } from "../types";
-import { ParseThreadEscrowInfoOption } from "../../payment/parse";
+import type { Thread, ThreadAccountData } from "../types.js";
+import { ParseThreadEscrowInfoOption } from "../../payment/parse.js";
 import {
     getMultipleCompressedAccountsByAddressChunked,
-} from "../../../providers/light/compressed";
-import * as Pda from "../../../pda";
+} from "../../../providers/light/compressed.js";
+import * as Pda from "../../../pda.js";
 
 
 

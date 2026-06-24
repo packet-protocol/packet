@@ -1,2 +1,2 @@
-export * from "./inbox-body-page"
-export * from "./inbox"
+export * from "./inbox-body-page.js"
+export * from "./inbox.js"

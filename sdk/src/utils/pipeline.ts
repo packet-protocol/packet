@@ -9,7 +9,7 @@ import {
     VersionedTransaction,
 } from "@solana/web3.js";
 
-import type { PipelineBase } from "../types/client";
+import type { PipelineBase } from "../types/client.js";
 
 const MAX_COMPUTE_UNITS_PER_TX = 1_400_000;
 

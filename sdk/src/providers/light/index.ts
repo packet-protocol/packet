@@ -1,8 +1,8 @@
 import type * as anchor from "@anchor-lang/core";
 import { createRpc, type Rpc } from "@lightprotocol/stateless.js";
-import type { PacketClientConfig } from "../../types/client";
+import type { PacketClientConfig } from "../../types/client.js";
 
-export * from "./proof";
+export * from "./proof/index.js";
 
 type LightConnection = anchor.web3.Connection | string;
 

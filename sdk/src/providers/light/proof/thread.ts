@@ -1,9 +1,9 @@
 import { PublicKey } from "@solana/web3.js";
 import { type PackedAccounts, type Rpc } from "@lightprotocol/stateless.js";
 
-import type { PacketProgram } from "../../program";
-import * as Pda from "../../../pda";
-import { GetThreadAccount } from "../../../entities/thread/account/get";
+import type { PacketProgram } from "../../program.js";
+import * as Pda from "../../../pda.js";
+import { GetThreadAccount } from "../../../entities/thread/account/get.js";
 import {
     buildCompressedAccountMetaPacket,
     finalizeLightProof,
@@ -12,12 +12,12 @@ import {
     type FinalizedLightProof,
     type LightProofBase,
     type LightProofBundleWithMeta,
-} from "./helpers";
+} from "./helpers.js";
 import type {
     CompressedAccountMeta,
     CompressedAccountMetaPacket,
-} from "./types";
-import type { ThreadAccountData } from "../../../entities/thread/types";
+} from "./types.js";
+import type { ThreadAccountData } from "../../../entities/thread/types.js";
 
 export type ExistingThreadProofResult = {
     threadAddress: PublicKey;

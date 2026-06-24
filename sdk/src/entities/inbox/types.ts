@@ -1,8 +1,8 @@
 import type { AccountInfo, Finality, PublicKey } from "@solana/web3.js";
-import type { Segment } from "../segment/types";
-import type { PaymentRule } from "../payment/types";
+import type { Segment } from "../segment/types.js";
+import type { PaymentRule } from "../payment/types.js";
 import type BN from "bn.js";
-import type { InboxClient } from "../..";
+import type { InboxClient } from "../../index.js";
 
 export interface Inbox {
     address: PublicKey,

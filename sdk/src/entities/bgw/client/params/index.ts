@@ -1,10 +1,10 @@
-import type { BgwBls12381WasmEngine } from "../../../wasm/xpkt-bgw-bls12/engine";
-import type { BgwBinaryParamsChunkMeta, BgwBinaryParamsManifest, BgwDecapsulateSparseMaterial, BgwEncapsulateSparseMaterial, BgwParamsChunkLoader, BgwParamsManifestLoader, BgwRangeMaterial, BgwRecipientPlan, DecodedBgwBinaryParamsChunk } from "../../types/params";
-import { hex, hexToBytes } from "../../../../crypto/utils/hash";
+import type { BgwBls12381WasmEngine } from "../../../wasm/xpkt-bgw-bls12/engine.js";
+import type { BgwBinaryParamsChunkMeta, BgwBinaryParamsManifest, BgwDecapsulateSparseMaterial, BgwEncapsulateSparseMaterial, BgwParamsChunkLoader, BgwParamsManifestLoader, BgwRangeMaterial, BgwRecipientPlan, DecodedBgwBinaryParamsChunk } from "../../types/params.js";
+import { hex, hexToBytes } from "../../../../crypto/utils/hash.js";
 import { sha256 } from "@noble/hashes/sha2";
-import { pushNonEmpty, requireSlot, uniqueSorted } from "../../utils";
-import { chunkIndexForPower, decodeBgwBinaryParamsChunk } from "./gen/codec";
-import { concatBytes2, toBN } from "../../../../utils/bytes";
+import { pushNonEmpty, requireSlot, uniqueSorted } from "../../utils/index.js";
+import { chunkIndexForPower, decodeBgwBinaryParamsChunk } from "./gen/codec.js";
+import { concatBytes2, toBN } from "../../../../utils/bytes.js";
 import BN from "bn.js";
 
 // node:fs / node:path are imported lazily inside InitLocal only so the module

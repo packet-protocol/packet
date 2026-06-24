@@ -1,10 +1,10 @@
 import { Rpc } from "@lightprotocol/stateless.js";
 import { Connection, PublicKey } from "@solana/web3.js";
-import type { PacketProgram } from "../../../providers/program";
-import { SendMsgPipeline } from "../pipeline/send";
-import type { CreateMessageInputAndAccountsParams } from "../instructions/resolve";
-import { HandleTxPipeline } from "../../../utils/pipeline";
-import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
+import type { PacketProgram } from "../../../providers/program.js";
+import { SendMsgPipeline } from "../pipeline/send.js";
+import type { CreateMessageInputAndAccountsParams } from "../instructions/resolve.js";
+import { HandleTxPipeline } from "../../../utils/pipeline.js";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types.js";
 
 export const SendMsgTx = async (
     connection: Connection,

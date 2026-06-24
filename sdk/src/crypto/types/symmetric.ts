@@ -1,4 +1,4 @@
-import type { BodyEncoding } from "./common";
+import type { BodyEncoding } from "./common.js";
 
 export enum SymmetricEncryptionAlgorithm {
     A256GCM = "A256GCM",

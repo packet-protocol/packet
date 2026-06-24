@@ -1,4 +1,4 @@
-import { type PACKET_PROGRAM_ID } from "../constants";
+import { type PACKET_PROGRAM_ID } from "../constants.js";
 
 export type PacketIDL = {
   "address": PACKET_PROGRAM_ID | string,
@@ -2373,6 +2373,102 @@ export type PacketIDL = {
       ]
     },
     {
+      "name": "roomReinitRoot",
+      "discriminator": [
+        127,
+        37,
+        144,
+        3,
+        102,
+        78,
+        112,
+        149
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "sender",
+          "writable": true
+        },
+        {
+          "name": "room",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  111,
+                  111,
+                  109
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "roomId"
+              }
+            ]
+          }
+        },
+        {
+          "name": "permit",
+          "optional": true
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "eventAuthority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  95,
+                  95,
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program"
+        }
+      ],
+      "args": [
+        {
+          "name": "roomId",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "roomRemoveMember",
       "discriminator": [
         50,
@@ -3252,6 +3348,19 @@ export type PacketIDL = {
         231,
         151,
         171
+      ]
+    },
+    {
+      "name": "roomEraReset",
+      "discriminator": [
+        84,
+        69,
+        220,
+        115,
+        1,
+        244,
+        53,
+        175
       ]
     },
     {
@@ -5350,6 +5459,18 @@ export type PacketIDL = {
             "type": "pubkey"
           },
           {
+            "name": "era",
+            "docs": [
+              "Room generation. Era 0 is the original room. A poisoned room can be",
+              "reset (`room_reinit_root`) to a fresh root state; each reset bumps `era`.",
+              "`era` is folded into every room compressed-account address seed",
+              "(header / member / message / page), so a new era gets a clean,",
+              "never-used compressed-address namespace while the room PDA / `room_id`",
+              "(the room identity) stay the same."
+            ],
+            "type": "u64"
+          },
+          {
             "name": "globalLen",
             "docs": [
               "Total messages sent (last assigned global_seq)."
@@ -5768,6 +5889,38 @@ export type PacketIDL = {
       }
     },
     {
+      "name": "roomEraReset",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "room",
+            "type": "pubkey"
+          },
+          {
+            "name": "roomId",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "era",
+            "docs": [
+              "The new era. The previous era's compressed accounts are abandoned."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "admin",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
       "name": "roomHeaderPublished",
       "type": {
         "kind": "struct",
@@ -5830,7 +5983,7 @@ export type PacketIDL = {
       "docs": [
         "Membership of a room owner.",
         "",
-        "Address derivation: `[\"room-member\", room, owner]`."
+        "Address derivation: `[\"room-member\", room, era, owner]`."
       ],
       "type": {
         "kind": "struct",
@@ -5873,6 +6026,17 @@ export type PacketIDL = {
               "Member version of the mutation that created or last re-activated this",
               "member. The member may only send while",
               "`joined_member_version <= room.latest_header_member_version`."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "era",
+            "docs": [
+              "Room generation (`room.era`) this membership belongs to. Kept in the",
+              "account data (not only the address seed) at a FIXED offset (87) so a",
+              "Photon memcmp can filter members by era directly — making the room-wide",
+              "member scan era-correct after a `room_reinit_root` reset. Set on create;",
+              "re-activation (`activate`) stays in the same era and does not touch it."
             ],
             "type": "u64"
           },

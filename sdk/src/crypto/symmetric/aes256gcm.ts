@@ -1,9 +1,9 @@
 import { concatBytes, randomBytes } from "@noble/hashes/utils";
-import type { Bytes } from "../../types/common";
-import { SymmetricEncryptionAlgorithm, type A256GCMEncrypted } from "../types/symmetric";
-import { BaseSymmetricSuite } from "./base";
-import type { BodyEncoding } from "../types/common";
-import { PacketEncoder } from "../utils/encoding";
+import type { Bytes } from "../../types/common.js";
+import { SymmetricEncryptionAlgorithm, type A256GCMEncrypted } from "../types/symmetric.js";
+import { BaseSymmetricSuite } from "./base.js";
+import type { BodyEncoding } from "../types/common.js";
+import { PacketEncoder } from "../utils/encoding.js";
 
 export class Aes256GcmSuite extends BaseSymmetricSuite<SymmetricEncryptionAlgorithm.A256GCM> {
     readonly alg = SymmetricEncryptionAlgorithm.A256GCM as const;

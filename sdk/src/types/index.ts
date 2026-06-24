@@ -1,2 +1,2 @@
-export * from "./client"
-export * from "./common"
+export * from "./client.js"
+export * from "./common.js"

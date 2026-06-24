@@ -8,7 +8,7 @@ import type {
     PacketEncryptedBody,
     PacketReaderInput,
     SymmetricEncryptionAlgorithm,
-} from "../../crypto";
+} from "../../crypto/index.js";
 
 export const PACKET_ENCRYPTED_BODY_PREFIX = "packet:enc:v1:";
 

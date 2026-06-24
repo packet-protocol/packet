@@ -1,5 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
-import { TokenProgramType } from "./entities/payment/types";
+import { TokenProgramType } from "./entities/payment/types.js";
 import { BN } from "bn.js";
 
 export const SEEDS = {

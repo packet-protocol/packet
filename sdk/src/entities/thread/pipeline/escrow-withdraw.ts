@@ -1,15 +1,15 @@
 import { Connection, PublicKey, TransactionInstruction } from "@solana/web3.js";
-import type { PacketProgram } from "../../../providers/program";
-import type { PipelineBase } from "../../../types/client";
-import { EscrowWithdrawIx } from "../instructions/escrow-withdraw";
-import type { Thread } from "../types";
-import { associatedTokenAddress } from "../../../pda";
-import { CheckIfAssociatedTokenAccountExists } from "../../../providers/token/helpers";
-import { CreateAssociatedTokenAccountIx, WSolCloseAccountIx } from "../../../providers/token/instructions";
-import { TokenProgramType } from "../../payment";
-import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, WSOL_ID } from "../../../constants";
+import type { PacketProgram } from "../../../providers/program.js";
+import type { PipelineBase } from "../../../types/client.js";
+import { EscrowWithdrawIx } from "../instructions/escrow-withdraw.js";
+import type { Thread } from "../types.js";
+import { associatedTokenAddress } from "../../../pda.js";
+import { CheckIfAssociatedTokenAccountExists } from "../../../providers/token/helpers.js";
+import { CreateAssociatedTokenAccountIx, WSolCloseAccountIx } from "../../../providers/token/instructions.js";
+import { TokenProgramType } from "../../payment/index.js";
+import { TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID, WSOL_ID } from "../../../constants.js";
 import type { Rpc } from "@lightprotocol/stateless.js";
-import type { PacketIxOptions } from "../../transaction/types";
+import type { PacketIxOptions } from "../../transaction/types.js";
 
 export type CreateEscrowWithdrawPipelineResult = {
     pipeline: PipelineBase

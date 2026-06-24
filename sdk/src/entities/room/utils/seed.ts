@@ -1,10 +1,10 @@
 import { sha256 } from "@noble/hashes/sha2";
 import { hkdf } from "@noble/hashes/hkdf";
 import { PublicKey } from "@solana/web3.js";
-import { normalizeWalletAddress, type PacketSignMessage } from "../../../crypto/packet/seed";
-import type { Bytes } from "../../../types";
-import { utf8 } from "../../../utils/encoding";
-import { bytesToHex } from "../../../utils/bytes";
+import { normalizeWalletAddress, type PacketSignMessage } from "../../../crypto/packet/seed.js";
+import type { Bytes } from "../../../types/index.js";
+import { utf8 } from "../../../utils/encoding.js";
+import { bytesToHex } from "../../../utils/bytes.js";
 
 export type DerivePacketRoomAdminSeedInput = {
     roomId: Bytes;

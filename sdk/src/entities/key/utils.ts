@@ -1,8 +1,8 @@
 import {
     AsymmetricEncryptionAlgorithm,
     type PacketReaderInput,
-} from "../../crypto";
-import { PacketKeyType, type PacketKeyTypeInput, type UserDecryptionKey } from "./types";
+} from "../../crypto/index.js";
+import { PacketKeyType, type PacketKeyTypeInput, type UserDecryptionKey } from "./types.js";
 
 export function keyTypeToAnchor(keyType: PacketKeyTypeInput): any {
     if (typeof keyType === "object" && "other" in keyType) {

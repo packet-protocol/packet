@@ -3,11 +3,11 @@ import {
     PublicKey,
 } from "@solana/web3.js";
 
-import type { PacketProgram } from "../../../providers/program";
-import type { CreateUserParams } from "../types";
-import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
-import { CreateUserPipeline } from "../pipeline/create";
-import { HandleTxPipeline } from "../../..";
+import type { PacketProgram } from "../../../providers/program.js";
+import type { CreateUserParams } from "../types.js";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types.js";
+import { CreateUserPipeline } from "../pipeline/create.js";
+import { HandleTxPipeline } from "../../../index.js";
 
 export async function CreateUserTx(
     connection: Connection,

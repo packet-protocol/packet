@@ -1,7 +1,7 @@
 import type { Connection, PublicKey } from "@solana/web3.js";
-import type { PacketIxOptions, PacketProgram } from "../../..";
-import type { Bytes } from "../../../types/common";
-import * as Pda from "../../../pda";
+import type { PacketIxOptions, PacketProgram } from "../../../index.js";
+import type { Bytes } from "../../../types/common.js";
+import * as Pda from "../../../pda.js";
 
 export type CreateRoomIxParams = {
     /* 32 byte */

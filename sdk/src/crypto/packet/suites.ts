@@ -1,10 +1,10 @@
 import {
     AsymmetricEncryptionAlgorithm,
     type WrappedKey,
-} from "../types/asymmetric";
-import type { BaseCryptoSuite } from "../asymmetric/base";
+} from "../types/asymmetric.js";
+import type { BaseCryptoSuite } from "../asymmetric/base.js";
 
-import { X25519KeyWrapSuite, SolanaEd25519X25519KeyWrapSuite } from "../asymmetric/suites";
+import { X25519KeyWrapSuite, SolanaEd25519X25519KeyWrapSuite } from "../asymmetric/suites/index.js";
 
 /**
  * Packet-level suite registry.

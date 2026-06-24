@@ -1,5 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
-import { PACKET_PROGRAM_ID, SEEDS, ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID } from "./constants";
+import { PACKET_PROGRAM_ID, SEEDS, ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID } from "./constants.js";
 import { u32Le, u64Le } from "./utils/bytes.js";
 import BN from "bn.js";
 import { batchAddressTree, deriveAddressSeedV2, deriveAddressV2 } from "@lightprotocol/stateless.js";

@@ -1,12 +1,13 @@
 import BN from "bn.js";
-import type { PacketClient } from "../../../client";
+import type { PacketClient } from "../../../client.js";
 import type { PublicKey } from "@solana/web3.js";
 import bs58 from "bs58";
-import type { PacketProgram } from "../../../providers/program";
-import type { RoomMemberAccountData, RoomMemberData } from "../type";
+import type { PacketProgram } from "../../../providers/program.js";
+import type { RoomMemberAccountData, RoomMemberData } from "../type/index.js";
 import * as anchor from "@anchor-lang/core";
-import { roomMemberAddress, ROOM_MEMBER_LIGHT_DISCRIMINATOR } from "../utils/address";
-import { getRoomCompressedAccount } from "../instructions/proofs";
+import { roomMemberAddress, ROOM_MEMBER_LIGHT_DISCRIMINATOR } from "../utils/address.js";
+import { getRoomCompressedAccount } from "../instructions/proofs.js";
+import { GetRoomAccount } from "./room.js";
 
 /**
  * RoomMember borsh layout (Photon memcmp offsets):
@@ -17,17 +18,25 @@ import { getRoomCompressedAccount } from "../instructions/proofs";
  * - status (u8)              @ 74
  * - slot (u32)               @ 75
  * - joined_member_version    @ 79 (u64)
- * - secret (vec len u32)     @ 87
+ * - era (u64)                @ 87
+ * - secret (vec len u32)     @ 95
  */
 const ROOM_MEMBER_OWNER_OFFSET = 10;
 const ROOM_MEMBER_ROOM_OFFSET = 42;
 const ROOM_MEMBER_STATUS_OFFSET = 74;
+const ROOM_MEMBER_ERA_OFFSET = 87;
 
 const ACTIVE_STATUS_BASE58 = bs58.encode(new Uint8Array([0]));
+
+/** Encode a u64 era as 8-byte little-endian, base58 (Photon memcmp `bytes`). */
+function eraMemcmpBytes(era: BN | number): string {
+    return bs58.encode(new BN(era).toArrayLike(Buffer, "le", 8));
+}
 
 async function getCompressedActiveMemberAccountsForRoom(params: {
     client: PacketClient;
     room: PublicKey;
+    era: BN | number;
     cursor?: string;
     limit?: number;
 }) {
@@ -61,6 +70,13 @@ async function getCompressedActiveMemberAccountsForRoom(params: {
                         bytes: ACTIVE_MEMBER_TYPE_BASE58,
                         encoding: "base58",
                     },
+                },
+                {
+                    memcmp: {
+                        offset: ROOM_MEMBER_ERA_OFFSET,
+                        bytes: eraMemcmpBytes(params.era),
+                        encoding: "base58",
+                    },
                 }
             ],
         },
@@ -69,10 +85,28 @@ async function getCompressedActiveMemberAccountsForRoom(params: {
     return result;
 }
 
+/**
+ * Active RoomMember accounts for the room's CURRENT era, discovered via Photon
+ * memcmp on the `room` data field + active status + `era` (at fixed offset
+ * {@link ROOM_MEMBER_ERA_OFFSET}). The era is read from the Room account so the
+ * scan is era-correct after a `room_reinit_root` reset — prior-era members are
+ * never returned and no SDK post-filter is needed. Pass `era` to scan a
+ * specific era instead of the room's current one.
+ */
 export const getActiveMemberAccountsForRoom = async (params: {
     client: PacketClient;
     room: PublicKey;
+    era?: BN | number;
 }) => {
+    let era = params.era;
+    if (era === undefined) {
+        const room = await GetRoomAccount(params.client.program, params.room);
+        if (!room) {
+            throw new Error(`Room does not exist: ${params.room.toBase58()}`);
+        }
+        era = room.era;
+    }
+
     let cursor: string | undefined = undefined;
     const accounts: RoomMemberAccountData[] = [];
 
@@ -80,6 +114,7 @@ export const getActiveMemberAccountsForRoom = async (params: {
         const result = await getCompressedActiveMemberAccountsForRoom({
             client: params.client,
             room: params.room,
+            era,
             cursor,
         });
 
@@ -128,8 +163,12 @@ export const getRoomMembershipsForOwner = async (params: {
 
         for (const item of result.items) {
             const decoded = DecodeMemberAccountData(params.client.program, item.data.data);
+            // `era` is in the account data, so the member address
+            // (["room-member", room, era, owner]) is derivable without a Room
+            // fetch and is correct for the era this account was created under.
             const address = roomMemberAddress({
                 room: decoded.room,
+                era: decoded.era,
                 owner: params.owner,
                 programId: params.client.program.programId,
             });
@@ -170,18 +209,21 @@ export const RoomMemberAccountToRoomMemberData = (
         status: account.status,
         slot: account.slot,
         joinedMemberVersion: account.joinedMemberVersion,
+        era: account.era,
         secret: Uint8Array.from(account.secret),
     };
 };
 
-/** Fetch a single member by its seed-derived compressed address (["room-member", room, owner]). */
+/** Fetch a single member by its seed-derived compressed address (["room-member", room, era, owner]). */
 export const GetRoomMemberAccount = async (
     client: PacketClient,
     room: PublicKey,
+    era: BN | number,
     owner: PublicKey,
 ): Promise<RoomMemberData | null> => {
     const address = roomMemberAddress({
         room,
+        era,
         owner,
         programId: client.program.programId,
     });

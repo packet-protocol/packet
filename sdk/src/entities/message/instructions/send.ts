@@ -8,19 +8,19 @@ import {
     type Rpc,
 } from "@lightprotocol/stateless.js";
 
-import type { PacketProgram } from "../../../providers/program";
-import * as Pda from "../../../pda";
+import type { PacketProgram } from "../../../providers/program.js";
+import * as Pda from "../../../pda.js";
 
 import {
     ResolveMessageInputAndAccounts,
     resolveThreadReceiver,
     type CreateMessageInputAndAccountsParams,
-} from "./resolve";
+} from "./resolve.js";
 
 import {
     getSendMessageProof,
-} from "../../../providers/light/proof/send-message";
-import type { PacketIxOptions } from "../../transaction/types";
+} from "../../../providers/light/proof/send-message.js";
+import type { PacketIxOptions } from "../../transaction/types.js";
 
 
 export const SendMsgIx = async (

@@ -1,6 +1,6 @@
 import { Connection, Keypair, SolanaJSONRPCError, TransactionInstruction, type PublicKey } from "@solana/web3.js";
-import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, WSOL_ID } from "../../constants";
-import { associatedTokenAddress } from "../../pda";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID, WSOL_ID } from "../../constants.js";
+import { associatedTokenAddress } from "../../pda.js";
 import * as anchor from "@anchor-lang/core";
 import BN from "bn.js";
 

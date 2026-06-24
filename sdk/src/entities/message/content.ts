@@ -1,13 +1,14 @@
-import { text, utf8 } from "../../utils/encoding";
-import { isTextualMime, parsePacketEnvelopeText, type ParsedPacketEnvelopeText } from "../envelope";
-import { MessageType } from "./types";
+import { text, utf8 } from "../../utils/encoding.js";
+import { isTextualMime, parsePacketEnvelopeText, type ParsedPacketEnvelopeText } from "../envelope/index.js";
+import { MessageType } from "./types.js";
 
 export const PACKET_IRYS_GATEWAY = "https://gateway.irys.xyz";
 export const PACKET_IPFS_GATEWAY = "https://ipfs.io/ipfs";
 export const PACKET_ARWEAVE_GATEWAY = "https://arweave.net";
+export const PACKET_CHAT_GATEWAY = "https://api.packet.chat/message";
 
 export type PacketSendContentType = "auto" | PacketMessageContentKind;
-export type PacketMessageContentKind = "text" | "url" | "irys" | "ipfs" | "arweave";
+export type PacketMessageContentKind = "text" | "url" | "irys" | "ipfs" | "arweave" | "packetchat";
 export type PacketMessageContentSource =
     | "text"
     | "url"
@@ -70,6 +71,8 @@ export function messageTypeForPacketContent(type: PacketMessageContentKind): Mes
             return MessageType.Irys;
         case "arweave":
             return MessageType.Arweave;
+        case "packetchat":
+            return MessageType.PacketChat;
     }
 }
 
@@ -85,6 +88,8 @@ export function packetContentKindForMessageType(messageType: MessageType | numbe
             return "irys";
         case MessageType.Arweave:
             return "arweave";
+        case MessageType.PacketChat:
+            return "packetchat";
         default:
             return undefined;
     }
@@ -176,9 +181,24 @@ export function resolvePacketSendContent(input: string, contentType?: string): P
     return { type: "text", content: raw, source: "text" };
 }
 
+/** The message id inside a PacketChat pointer — a full URL (`…/message/{id}`), a
+ * `/message/{id}` path, or a bare id. */
+const PACKET_CHAT_MESSAGE_RE = /(?:^|\/)message\/([^\s/?#]+)/i;
+
 export function appendPacketGatewayIfNeeded(messageType: MessageType | number | undefined, rawContent: string): string {
     const raw = rawContent.trim();
     if (!raw) return raw;
+
+    // PacketChat: ALWAYS route through the configured gateway (before the generic
+    // URL_RE check below), so the stored pointer's host — e.g. api.packet.chat — is
+    // redirected to PACKET_CHAT_GATEWAY (a local backend during testing). Without this
+    // the SDK would fetch the literal pointer host, or (for a bare id) skip fetching
+    // and try to decode the pointer string itself as the room-blob envelope.
+    if (messageType === MessageType.PacketChat) {
+        const id = raw.match(PACKET_CHAT_MESSAGE_RE)?.[1] ?? raw.split("/").filter(Boolean).pop() ?? raw;
+        return `${PACKET_CHAT_GATEWAY}/${id}`;
+    }
+
     if (URL_RE.test(raw) || /^ipfs:\/\//i.test(raw) || /^ar:\/\//i.test(raw)) return raw;
 
     switch (messageType) {

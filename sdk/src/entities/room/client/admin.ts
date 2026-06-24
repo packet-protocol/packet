@@ -1,27 +1,28 @@
 import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
 
-import type { PacketClient } from "../../../client";
-import { PacketTransactionClient } from "../../transaction/client";
-import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
-import { derivePacketRoomAdminSeed, type DerivePacketRoomAdminSeedInput } from "../utils/seed";
-import type { PacketSignMessage } from "../../../crypto/packet/seed";
-import type { Bytes } from "../../../types";
-import type { PacketReaderInput } from "../../../crypto";
-import * as Pda from "../../../pda";
-import { bytesEqual } from "../../../utils/bytes";
-import type { BgwBls12381AdminSecret, BgwBls12381RoomPublicKey } from "../../wasm/xpkt-bgw-bls12/types";
-import type { BgwParamsClient } from "../../bgw/client/params";
-import { resolveBgwParams } from "../../bgw/client/params/default";
-import { CreateRoomTx } from "../transactions/create";
-import { RoomAddMemberTx } from "../transactions/add-member";
-import { RoomRemoveMemberTx } from "../transactions/remove-member";
-import { RoomPublishHeaderTx } from "../transactions/publish-header";
-import { RoomStageRecipientPageTx } from "../transactions/stage-recipient-page";
-import type { Room } from "../type";
-import { GetRoomAccount } from "../account/room";
-import { GetRoomMemberAccount, getActiveMemberAccountsForRoom } from "../account/member";
-import { headerAad, headerBindingRootFromMemberRoot } from "../../bgw/utils/shared";
+import type { PacketClient } from "../../../client.js";
+import { PacketTransactionClient } from "../../transaction/client.js";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types.js";
+import { derivePacketRoomAdminSeed, type DerivePacketRoomAdminSeedInput } from "../utils/seed.js";
+import type { PacketSignMessage } from "../../../crypto/packet/seed.js";
+import type { Bytes } from "../../../types/index.js";
+import type { PacketReaderInput } from "../../../crypto/index.js";
+import * as Pda from "../../../pda.js";
+import { bytesEqual } from "../../../utils/bytes.js";
+import type { BgwBls12381AdminSecret, BgwBls12381RoomPublicKey } from "../../wasm/xpkt-bgw-bls12/types.js";
+import type { BgwParamsClient } from "../../bgw/client/params/index.js";
+import { resolveBgwParams } from "../../bgw/client/params/default.js";
+import { CreateRoomTx } from "../transactions/create.js";
+import { RoomAddMemberTx } from "../transactions/add-member.js";
+import { RoomRemoveMemberTx } from "../transactions/remove-member.js";
+import { RoomPublishHeaderTx } from "../transactions/publish-header.js";
+import { RoomStageRecipientPageTx } from "../transactions/stage-recipient-page.js";
+import { RoomReinitRootTx } from "../transactions/reinit-root.js";
+import type { Room } from "../type/index.js";
+import { GetRoomAccount } from "../account/room.js";
+import { GetRoomMemberAccount, getActiveMemberAccountsForRoom } from "../account/member.js";
+import { headerAad, headerBindingRootFromMemberRoot } from "../../bgw/utils/shared.js";
 import {
     applyDelta,
     initialRecipientState,
@@ -30,15 +31,15 @@ import {
     stateFromCheckpoint,
     type RecipientDescriptorPlan,
     type RecipientState,
-} from "../../bgw/recipient";
+} from "../../bgw/recipient.js";
 import {
     RECIPIENT_CHECKPOINT_INTERVAL,
     RecipientDeltaOp,
     RecipientDescriptorKind,
     ROOM_CHAIN_MAX,
     type RecipientDeltaOpId,
-} from "../../bgw/constants";
-import { PacketEncryptionClient } from "../../encryption/client";
+} from "../../bgw/constants.js";
+import { PacketEncryptionClient } from "../../encryption/client.js";
 import {
     chainIndexForEpoch,
     chainKeyAtIndex,
@@ -46,8 +47,8 @@ import {
     encryptBgwMemberSecret,
     segmentTip,
     wrapRoomChainKey,
-} from "../utils/crypto";
-import { reconstructRoomRecipientState } from "./room";
+} from "../utils/crypto.js";
+import { reconstructRoomRecipientState } from "./room.js";
 
 export type CreateRoomParams = {
     /* 32 byte random value */
@@ -95,6 +96,29 @@ export type RoomMemberKeySource = "registered" | "wallet-derived";
 export type RoomAddMemberResult = RoomMemberMutationResult & {
     /** Which key model the member secret was encrypted to. */
     memberKey: RoomMemberKeySource;
+};
+
+export type RoomResetMemberResult = {
+    member: PublicKey;
+    /** Slot the member was (re)assigned in the new era (1-based, in input order). */
+    slot: number;
+    /** Which key model the member's new-era secret was encrypted to. */
+    memberKey: RoomMemberKeySource;
+};
+
+/**
+ * Result of {@link RoomAdminClient.resetRoomToRoot}: the room's new era, the
+ * members re-seeded into it, and every signature produced (the reset tx, then
+ * the per-member add + header txs in order).
+ */
+export type RoomResetResult = {
+    room: PublicKey;
+    /** The new era (previous era + 1). */
+    era: BN;
+    /** Members re-added as the starting members of the new era, in input order. */
+    members: RoomResetMemberResult[];
+    /** reset tx signature(s), then each member's add + header tx signatures, in order. */
+    signatures: string[];
 };
 
 /**
@@ -343,7 +367,7 @@ export class RoomAdminClient {
     }): Promise<RoomAddMemberResult> {
         const room = await this.#gateCheckedRoom();
 
-        const existing = await GetRoomMemberAccount(this.client, this.address, params.member);
+        const existing = await GetRoomMemberAccount(this.client, this.address, room.era, params.member);
         if (existing && existing.status === 0) {
             throw new Error(`${params.member.toBase58()} is already an active member of this room`);
         }
@@ -399,6 +423,7 @@ export class RoomAdminClient {
             this.client.program,
             {
                 roomId: this.roomId,
+                era: room.era,
                 member: params.member,
                 bgwMemberSecret,
             },
@@ -428,9 +453,9 @@ export class RoomAdminClient {
         member: PublicKey;
         options?: PacketIxOptions & PacketTxOptions;
     }): Promise<RoomMemberMutationResult> {
-        await this.#gateCheckedRoom();
+        const room = await this.#gateCheckedRoom();
 
-        const existing = await GetRoomMemberAccount(this.client, this.address, params.member);
+        const existing = await GetRoomMemberAccount(this.client, this.address, room.era, params.member);
         if (!existing) {
             throw new Error(`${params.member.toBase58()} is not a member of this room`);
         }
@@ -449,6 +474,7 @@ export class RoomAdminClient {
             this.client.program,
             {
                 roomId: this.roomId,
+                era: room.era,
                 member: params.member,
                 // The (still encrypted) envelope stays on the removed member account.
                 bgwMemberSecret: existing.secret,
@@ -470,6 +496,120 @@ export class RoomAdminClient {
             slot: existing.slot,
             signatures: [...mutationSignatures, ...header.signatures],
             header,
+        };
+    }
+
+    /**
+     * Completely reset a poisoned room to its root ("genesis") state in a NEW
+     * era, re-seeding the given members as the STARTING members of that era.
+     *
+     * A room's capacity / epoch / per-member key state is baked into the room
+     * derivation and the on-chain header chain, so a room created in a bad state
+     * cannot be repaired in place. This is the single recovery entry point:
+     *
+     *  1. `room_reinit_root` — bump `room.era` and reset every epoch / header /
+     *     recipient / message-ordering mirror back to genesis (epoch 0,
+     *     member_version 0, empty recipient set, publication closed). The room
+     *     PDA / `roomId` / `admin` / BGW params are preserved.
+     *  2. For each starting member, in order, run the normal add-member flow
+     *     under the bumped era: this creates a FRESH per-era member account at
+     *     `["room-member", room, newEra, owner]` with a newly derived BGW slot
+     *     key, and publishes the covering header. The first add publishes the
+     *     new era's genesis (epoch 1, chain-break) header.
+     *
+     * IMPORTANT (what a reset is, and is not):
+     *  - It does NOT mutate the old era's accounts. Room headers / members /
+     *    messages are Light Protocol compressed accounts whose addresses are
+     *    single-init and derived from `[..., room, era, ...]`; the only way to
+     *    re-establish a clean epoch-1 root for the same room identity is a new
+     *    era with a fresh compressed-address namespace. The old era's accounts
+     *    remain in the tree but are unreferenced (this is the point — the
+     *    poisoned/undecryptable state is abandoned).
+     *  - Members are necessarily re-keyed: each gets a new slot (1..n in input
+     *    order) and a fresh BGW user secret for the new era, re-encrypted to
+     *    their key. Members re-join automatically; no member action is required.
+     *
+     * @param params.members Starting members for the new era, in the desired
+     *   slot order. When omitted, the current era's active members are
+     *   discovered from chain (best-effort; pass an explicit set for a
+     *   deterministic membership and slot order).
+     */
+    async resetRoomToRoot(params: {
+        members?: PublicKey[];
+        /** Forwarded to each {@link addMember}: always wallet-derive the secret. */
+        skipKeyCheck?: boolean;
+        options?: PacketIxOptions & PacketTxOptions;
+    } = {}): Promise<RoomResetResult> {
+        await this.refresh();
+
+        // Resolve the starting member set BEFORE the reset (deduped, order
+        // preserved). Explicit set wins; otherwise discover the current era's
+        // active members from chain.
+        let members: PublicKey[];
+        if (params.members) {
+            members = params.members;
+        } else {
+            const active = await getActiveMemberAccountsForRoom({
+                client: this.client,
+                room: this.address,
+                era: this.Room.era,
+            });
+            // Order by the original slot so the new-era slots track the old order.
+            members = active
+                .sort((a, b) => a.slot - b.slot)
+                .map((m) => new PublicKey(m.owner));
+        }
+        const seen = new Set<string>();
+        members = members.filter((m) => {
+            const k = m.toBase58();
+            if (seen.has(k)) return false;
+            seen.add(k);
+            return true;
+        });
+
+        const optionsOverride = params.options ?? this.client.defaultTxOptions ?? {};
+        if (!optionsOverride.lookupTables) {
+            optionsOverride.lookupTables = await this.client.loadLookupTables();
+        }
+
+        const signatures: string[] = [];
+
+        // 1. Reset the room to a fresh root state in a new era.
+        const resetTx = await RoomReinitRootTx(
+            this.client.connection,
+            this.client.walletPublicKey,
+            this.client.program,
+            { roomId: this.roomId },
+            optionsOverride,
+        );
+        const resetClient = new PacketTransactionClient(this.client.connection);
+        resetClient.addTransaction(...resetTx);
+        signatures.push(...await resetClient.submitAndConfirm(this.client.wallet, optionsOverride?.options));
+
+        // Adopt the new era + genesis local state.
+        await this.refresh();
+        this.#state = initialRecipientState(this.address);
+        const era = this.Room.era;
+
+        // 2. Re-seed the members under the new era. addMember derives a fresh
+        // per-era member account + BGW slot key and publishes the covering
+        // header; the first add publishes the new era's genesis header.
+        const seededMembers: RoomResetMemberResult[] = [];
+        for (const member of members) {
+            const added = await this.addMember({
+                member,
+                skipKeyCheck: params.skipKeyCheck,
+                options: params.options,
+            });
+            seededMembers.push({ member, slot: added.slot, memberKey: added.memberKey });
+            signatures.push(...added.signatures);
+        }
+
+        return {
+            room: this.address,
+            era,
+            members: seededMembers,
+            signatures,
         };
     }
 
@@ -559,7 +699,7 @@ export class RoomAdminClient {
             explicitSlots: covered.explicitSlots,
         }));
 
-        const members = await getActiveMemberAccountsForRoom({ client: this.client, room: this.address });
+        const members = await getActiveMemberAccountsForRoom({ client: this.client, room: this.address, era: room.era });
         const currentActive = new Set(members.map((m) => m.slot));
 
         const added = [...currentActive].filter((slot) => !coveredActive.has(slot));
@@ -793,6 +933,7 @@ export class RoomAdminClient {
                     this.client.program,
                     {
                         roomId: this.roomId,
+                        era: room.era,
                         epoch,
                         pageIndex,
                         pagesTotal: pages.length,
@@ -813,6 +954,7 @@ export class RoomAdminClient {
             this.client.program,
             {
                 roomId: this.roomId,
+                era: room.era,
                 epoch,
                 memberVersion,
                 headerBindingRoot,
@@ -847,4 +989,51 @@ export class RoomAdminClient {
             signatures,
         };
     }
+}
+
+/**
+ * One-call recovery of a poisoned room: load the room's admin client and reset
+ * the room to its root state in a new era, re-seeding the existing members as
+ * the starting members. Thin wrapper over {@link RoomAdminClient.Load} +
+ * {@link RoomAdminClient.resetRoomToRoot} — see that method for the full
+ * semantics and the "what a reset is / is not" caveats.
+ *
+ * Identify the room by `roomId` or `address`, and authorize as admin via an
+ * explicit `seed` or the wallet `signMessage` derivation (same as
+ * `RoomAdminClient.Load`). When `members` is omitted the current era's active
+ * members are discovered from chain.
+ */
+export async function resetRoomToRoot(params: {
+    client: PacketClient;
+    /** 32-byte room id (or pass `address`). */
+    roomId?: Bytes;
+    /** Room PDA address (or pass `roomId`). */
+    address?: PublicKey;
+    /** 32-byte admin seed. Either this or `signMessage`. */
+    seed?: Bytes;
+    /** Wallet signMessage for derivePacketRoomAdminSeed (with optional `origin`). */
+    signMessage?: PacketSignMessage;
+    origin?: string;
+    bgwParams?: BgwParamsClient;
+    /** Starting members for the new era, in slot order. Discovered from chain when omitted. */
+    members?: PublicKey[];
+    /** Forwarded to each add-member: always wallet-derive the member secret. */
+    skipKeyCheck?: boolean;
+    options?: PacketIxOptions & PacketTxOptions;
+}): Promise<RoomResetResult> {
+    const admin = await RoomAdminClient.Load({
+        client: params.client,
+        roomId: params.roomId,
+        address: params.address,
+        seed: params.seed,
+        signMessage: params.signMessage,
+        origin: params.origin,
+        bgwParams: params.bgwParams,
+    });
+
+    return admin.resetRoomToRoot({
+        members: params.members,
+        skipKeyCheck: params.skipKeyCheck,
+        options: params.options,
+    });
 }

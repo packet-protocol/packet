@@ -1,6 +1,6 @@
 import { sha512 } from "@noble/hashes/sha2";
 
-import type { Bytes } from "../../types/common";
+import type { Bytes } from "../../types/common.js";
 
 const P = (1n << 255n) - 19n;
 

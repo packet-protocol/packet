@@ -4,7 +4,7 @@ import type {
     PacketEnvelopeValue,
     PacketMail,
     ParsedPacketEnvelopeText,
-} from "./types";
+} from "./types.js";
 
 type BuilderState =
     | { kind: "empty" }

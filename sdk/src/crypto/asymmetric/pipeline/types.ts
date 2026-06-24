@@ -1,11 +1,11 @@
-import type { Bytes } from "../../../types/common";
-import type { BodyEncoding, PacketKeyPair } from "../../types/common";
+import type { Bytes } from "../../../types/common.js";
+import type { BodyEncoding, PacketKeyPair } from "../../types/common.js";
 import {
     type AsymmetricEncryptionAlgorithm,
     type KeyDerivationAlgorithm,
     type WrappedKey,
-} from "../../types/asymmetric";
-import type { SymmetricEncryptionAlgorithm } from "../../types/symmetric";
+} from "../../types/asymmetric.js";
+import type { SymmetricEncryptionAlgorithm } from "../../types/symmetric.js";
 
 export type SharedKeyContext = {
     alg: AsymmetricEncryptionAlgorithm;

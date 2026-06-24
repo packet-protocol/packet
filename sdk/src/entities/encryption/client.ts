@@ -12,11 +12,11 @@ import {
     type DerivePacketSeedInput,
     type PacketCryptoIdentity,
     type PacketDerivedCryptoIdentity,
-} from "../../crypto/packet";
+} from "../../crypto/packet/index.js";
 
-import { AsymmetricEncryptionAlgorithm, type PacketEncryptedBody, type PacketKeyPair, type PacketReaderInput } from "../../crypto";
-import { PACKET_ENCRYPTED_BODY_PREFIX, type PacketCryptoIdentityInput, type PacketDecryptParams, type PacketEncryptionReader, type PacketEncryptParams, type PacketMaybeDecryptResult } from "./types";
-import type { PacketClient } from "../..";
+import { AsymmetricEncryptionAlgorithm, type PacketEncryptedBody, type PacketKeyPair, type PacketReaderInput } from "../../crypto/index.js";
+import { PACKET_ENCRYPTED_BODY_PREFIX, type PacketCryptoIdentityInput, type PacketDecryptParams, type PacketEncryptionReader, type PacketEncryptParams, type PacketMaybeDecryptResult } from "./types.js";
+import type { PacketClient } from "../../index.js";
 
 function normalizeIdentity(input: PacketCryptoIdentityInput): PacketCryptoIdentity {
     if ("keyPair" in input) {

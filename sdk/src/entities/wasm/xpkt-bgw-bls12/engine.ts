@@ -17,8 +17,26 @@ const SCHEME_ID = "xpkt-bgw-admin-v1-bls12-381";
 
 async function loadWasm(): Promise<BgwBls12381WasmModule> {
     try {
-        const mod = (await import("./pkg/xpkt_bgw_bls12_wasm.js")) as BgwBls12381WasmModule;
+        // Browser / web worker → the wasm-pack `--target web` build (ESM, no node
+        // `fs`). A bundler (Vite/webpack) bundles the glue and emits the `_bg.wasm`
+        // asset; the default export initializes it (it locates the wasm via
+        // `new URL('..._bg.wasm', import.meta.url)`, which bundlers rewrite).
+        const isBrowser =
+            typeof window !== "undefined" ||
+            typeof (globalThis as { importScripts?: unknown }).importScripts === "function";
+        if (isBrowser) {
+            const mod = (await import("./pkg-web/xpkt_bgw_bls12_wasm.js")) as unknown as
+                BgwBls12381WasmModule & { default: (input?: unknown) => Promise<unknown> };
+            // Initialize (fetch + instantiate the wasm) before any export is called.
+            await mod.default();
+            return mod;
+        }
 
+        // Node → the `--target nodejs` build (CommonJS + `require('fs')`, auto-inits
+        // on import). Referenced via a variable + @vite-ignore so browser bundlers
+        // never try to analyze its node-only `require('fs')`/`__dirname`.
+        const nodeEntry = "./pkg/xpkt_bgw_bls12_wasm.js";
+        const mod = (await import(/* @vite-ignore */ nodeEntry)) as BgwBls12381WasmModule;
         return mod;
     } catch (err) {
         throw new Error(

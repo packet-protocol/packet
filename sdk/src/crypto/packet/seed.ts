@@ -3,8 +3,8 @@ import { sha256 } from "@noble/hashes/sha2";
 import { hkdf } from "@noble/hashes/hkdf";
 import { PublicKey } from "@solana/web3.js";
 
-import type { Bytes } from "../../types/common";
-import { bytesToHex, concatBytes, utf8 } from "../../utils";
+import type { Bytes } from "../../types/common.js";
+import { bytesToHex, concatBytes, utf8 } from "../../utils/index.js";
 
 const DEFAULT_ARGON2_MEMORY_KIB = 19 * 1024;
 

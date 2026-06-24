@@ -1,10 +1,10 @@
 import { Rpc } from "@lightprotocol/stateless.js";
 import { AddressLookupTableAccount, Connection, PublicKey } from "@solana/web3.js";
-import type { PacketProgram } from "../../../providers/program";
-import { CreateThreadPipeline } from "../pipeline/create";
-import type { CreateMessageInputAndAccountsParams } from "../../message/instructions/resolve";
-import { HandleTxPipeline } from "../../../utils/pipeline";
-import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
+import type { PacketProgram } from "../../../providers/program.js";
+import { CreateThreadPipeline } from "../pipeline/create.js";
+import type { CreateMessageInputAndAccountsParams } from "../../message/instructions/resolve.js";
+import { HandleTxPipeline } from "../../../utils/pipeline.js";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types.js";
 
 export const CreateThreadTx = async (
     connection: Connection,

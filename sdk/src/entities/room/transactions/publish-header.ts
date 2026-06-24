@@ -1,10 +1,10 @@
 import { type Connection, type PublicKey } from "@solana/web3.js";
 import { type Rpc } from "@lightprotocol/stateless.js";
-import type { PacketProgram } from "../../../providers/program";
-import { type RoomPublishHeaderIxParams } from "../instructions/publish-header";
-import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
-import { HandleTxPipeline } from "../../..";
-import { RoomPublishHeaderPipeline } from "../pipeline/publish-header";
+import type { PacketProgram } from "../../../providers/program.js";
+import { type RoomPublishHeaderIxParams } from "../instructions/publish-header.js";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types.js";
+import { HandleTxPipeline } from "../../../index.js";
+import { RoomPublishHeaderPipeline } from "../pipeline/publish-header.js";
 
 export const RoomPublishHeaderTx = async (
     connection: Connection,

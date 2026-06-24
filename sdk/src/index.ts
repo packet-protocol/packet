@@ -1,12 +1,12 @@
-export * from "./core"
-export * from "./crypto"
-export * from "./entities"
-export * from "./providers"
-export * from "./types"
-export * from "./utils"
-export * from "./client"
-export * from "./constants"
-export { PacketPDAs } from "./pda"
+export * from "./core/index.js"
+export * from "./crypto/index.js"
+export * from "./entities/index.js"
+export * from "./providers/index.js"
+export * from "./types/index.js"
+export * from "./utils/index.js"
+export * from "./client.js"
+export * from "./constants.js"
+export { PacketPDAs } from "./pda.js"
 
 import BN from "bn.js";
 export { BN };

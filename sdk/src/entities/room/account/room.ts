@@ -1,7 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
-import type { PacketClient } from "../../../client";
-import type { PacketProgram } from "../../../providers/program";
-import type { Room, RoomAccountData } from "../type";
+import type { PacketClient } from "../../../client.js";
+import type { PacketProgram } from "../../../providers/program.js";
+import type { Room, RoomAccountData } from "../type/index.js";
 
 /** On-chain byte offset of Room.admin (8 discriminator + 2 version + 6 padding). */
 export const ROOM_ADMIN_OFFSET = 16;
@@ -30,6 +30,8 @@ export const RoomAccountToRoom = (
         admin: account.admin,
 
         version: account.version,
+
+        era: account.era,
 
         currentBucketLen: account.currentBucketLen,
         currentBucket: account.currentBucket,

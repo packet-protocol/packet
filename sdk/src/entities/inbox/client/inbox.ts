@@ -2,22 +2,22 @@ import { PublicKey, type AccountInfo, type Context } from "@solana/web3.js";
 import BN from "bn.js";
 import * as anchor from "@anchor-lang/core";
 
-import type { PacketClient } from "../../../client";
-import * as Pda from "../../../pda";
-import { ClientCache } from "../../../core/cache";
+import type { PacketClient } from "../../../client.js";
+import * as Pda from "../../../pda.js";
+import { ClientCache } from "../../../core/cache.js";
 
-import type { CreateInboxParams, InboxPaymentParams } from "../instructions/create";
-import { CreateInboxTx } from "../transactions/create";
-import { GetInboxAccount, GetInboxMetadata, InboxAccountToInbox } from "../account/get";
-import type { Inbox, InboxChangedEvent, InboxMetadata, ListenInboxEventsParams } from "../types";
-import { InboxBodyPageClient } from "./inbox-body-page";
-import { PacketTransactionClient } from "../../transaction/client";
-import { ThreadClient, type SendFirstMsgParams } from "../../thread/client/thread";
-import type { DisabledPayment, SendMsgPaymentParams } from "../../message/instructions/resolve";
-import type { TxReceiptWithClient } from "../../../types/client";
-import { EditInboxPaymentTx } from "../transactions/edit-payment";
-import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
-import type { PacketEventSubscription } from "../../events/types";
+import type { CreateInboxParams, InboxPaymentParams } from "../instructions/create.js";
+import { CreateInboxTx } from "../transactions/create.js";
+import { GetInboxAccount, GetInboxMetadata, InboxAccountToInbox } from "../account/get.js";
+import type { Inbox, InboxChangedEvent, InboxMetadata, ListenInboxEventsParams } from "../types.js";
+import { InboxBodyPageClient } from "./inbox-body-page.js";
+import { PacketTransactionClient } from "../../transaction/client.js";
+import { ThreadClient, type SendFirstMsgParams } from "../../thread/client/thread.js";
+import type { DisabledPayment, SendMsgPaymentParams } from "../../message/instructions/resolve.js";
+import type { TxReceiptWithClient } from "../../../types/client.js";
+import { EditInboxPaymentTx } from "../transactions/edit-payment.js";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types.js";
+import type { PacketEventSubscription } from "../../events/types.js";
 
 export type CreateThreadForInboxParams = SendFirstMsgParams & {
     threadId?: number;

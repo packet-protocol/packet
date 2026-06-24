@@ -4,35 +4,35 @@ import {
     makeAnchorProvider,
     makeProgram,
     type PacketProgram,
-} from "./providers/program";
+} from "./providers/program.js";
 import type { Rpc } from "@lightprotocol/stateless.js";
-import type { PacketClientConfig, PhotonRpcConfig } from "./types/client";
-import { makeLightRpc } from "./providers/light";
-import { PacketWallet } from "./entities/wallet";
-import { ThreadClient, type CreateThreadParams } from "./entities/thread/client/thread";
-import { InboxClient } from "./entities/inbox/client/inbox";
-import { ActivityClient } from "./entities/activity/client";
+import type { PacketClientConfig, PhotonRpcConfig } from "./types/client.js";
+import { makeLightRpc } from "./providers/light/index.js";
+import { PacketWallet } from "./entities/wallet/index.js";
+import { ThreadClient, type CreateThreadParams } from "./entities/thread/client/thread.js";
+import { InboxClient } from "./entities/inbox/client/inbox.js";
+import { ActivityClient } from "./entities/activity/client/index.js";
 import BN from "bn.js";
-import type { CreateInboxParams } from "./entities/inbox/instructions/create";
-import { fetchAddressLookupTable } from "./providers/lut/packet-lut";
-import { PACKET_LOOK_UP_TABLE, PACKET_LOOK_UP_TABLE_DEVNET, PACKET_PROGRAM_ID } from "./constants";
-import type { Inbox } from "./entities/inbox";
-import type { Thread } from "./entities/thread";
-import { PacketEncryptionClient, type PacketCryptoIdentityInput } from "./entities/encryption";
-import type { DerivePacketSeedInput, PacketDerivedCryptoIdentity, PacketReaderInput } from "./crypto";
-import { KeyClient } from "./entities/key/client/key";
-import type { CreateUserKeyParams } from "./entities/key/types";
-import { MessageEventsClient, UserClient, type CreateUserParams } from "./entities";
-import type { PacketIxOptions, PacketTxOptions, WithTxOptions } from "./entities/transaction/types";
-import { AnchorCpiEventClient } from "./entities/events/cpi-events";
-import { BgwBls12381WasmEngine } from "./entities/wasm/xpkt-bgw-bls12/engine";
-import { RoomClient } from "./entities/room/client/room";
-import { RoomAdminClient } from "./entities/room/client/admin";
-import { getRoomMembershipsForOwner } from "./entities/room/account/member";
-import { GetRoomsByAdmin } from "./entities/room/account/room";
-import type { BgwParamsClient } from "./entities/bgw/client/params";
-import type { PacketSignMessage } from "./crypto/packet/seed";
-import type { Bytes } from "./types/common";
+import type { CreateInboxParams } from "./entities/inbox/instructions/create.js";
+import { fetchAddressLookupTable } from "./providers/lut/packet-lut.js";
+import { PACKET_LOOK_UP_TABLE, PACKET_LOOK_UP_TABLE_DEVNET, PACKET_PROGRAM_ID } from "./constants.js";
+import type { Inbox } from "./entities/inbox/index.js";
+import type { Thread } from "./entities/thread/index.js";
+import { PacketEncryptionClient, type PacketCryptoIdentityInput } from "./entities/encryption/index.js";
+import type { DerivePacketSeedInput, PacketDerivedCryptoIdentity, PacketReaderInput } from "./crypto/index.js";
+import { KeyClient } from "./entities/key/client/key.js";
+import type { CreateUserKeyParams } from "./entities/key/types.js";
+import { MessageEventsClient, UserClient, type CreateUserParams } from "./entities/index.js";
+import type { PacketIxOptions, PacketTxOptions, WithTxOptions } from "./entities/transaction/types.js";
+import { AnchorCpiEventClient } from "./entities/events/cpi-events.js";
+import { BgwBls12381WasmEngine } from "./entities/wasm/xpkt-bgw-bls12/engine.js";
+import { RoomClient } from "./entities/room/client/room.js";
+import { RoomAdminClient } from "./entities/room/client/admin.js";
+import { getRoomMembershipsForOwner } from "./entities/room/account/member.js";
+import { GetRoomsByAdmin } from "./entities/room/account/room.js";
+import type { BgwParamsClient } from "./entities/bgw/client/params/index.js";
+import type { PacketSignMessage } from "./crypto/packet/seed.js";
+import type { Bytes } from "./types/common.js";
 
 /**
  * PacketClient is the main entry point for interacting with the Packet.

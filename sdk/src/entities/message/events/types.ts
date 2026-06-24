@@ -1,5 +1,5 @@
 import type { Finality, PublicKey } from "@solana/web3.js";
-import type { MessageClient } from "../client/message";
+import type { MessageClient } from "../client/message.js";
 
 
 export type MessageListenerFilter = {

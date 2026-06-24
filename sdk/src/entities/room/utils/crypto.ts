@@ -37,9 +37,9 @@ import { randomBytes } from "@noble/hashes/utils";
 import { x25519 } from "@noble/curves/ed25519";
 import tweetnacl from "tweetnacl";
 
-import type { Bytes } from "../../../types/common";
-import { concatBytes, toBN, u32be, u64be, u64Le } from "../../../utils/bytes";
-import { utf8, text, toBase64, fromBase64 } from "../../../utils/encoding";
+import type { Bytes } from "../../../types/common.js";
+import { concatBytes, toBN, u32be, u64be, u64Le } from "../../../utils/bytes.js";
+import { utf8, text, toBase64, fromBase64 } from "../../../utils/encoding.js";
 import {
     ROOM_BLOB_AAD_DOMAIN,
     ROOM_BLOB_KEY_DOMAIN,
@@ -48,19 +48,19 @@ import {
     ROOM_CHAIN_TIP_DOMAIN,
     ROOM_MESSAGE_AAD_DOMAIN,
     ROOM_MESSAGE_KEY_DOMAIN,
-} from "../../bgw/constants";
-import type { BgwRecipientMode } from "../../bgw/types/params";
-import type { BgwBls12381UserSecret } from "../../wasm/xpkt-bgw-bls12/types";
+} from "../../bgw/constants.js";
+import type { BgwRecipientMode } from "../../bgw/types/params.js";
+import type { BgwBls12381UserSecret } from "../../wasm/xpkt-bgw-bls12/types.js";
 import {
     NativeX25519RecipientKeyAdapter,
     SolanaEd25519X25519RecipientKeyAdapter,
-} from "../../../crypto/asymmetric/pipeline/recipient-adapters";
+} from "../../../crypto/asymmetric/pipeline/recipient-adapters.js";
 import {
     HkdfSha256SharedKeyDeriver,
     NaclBoxBeforeSharedKeyDeriver,
-} from "../../../crypto/asymmetric/pipeline/shared-key-derivers";
-import { AsymmetricEncryptionAlgorithm } from "../../../crypto/types/asymmetric";
-import type { PacketCryptoIdentity, PacketReaderInput } from "../../../crypto";
+} from "../../../crypto/asymmetric/pipeline/shared-key-derivers.js";
+import { AsymmetricEncryptionAlgorithm } from "../../../crypto/types/asymmetric.js";
+import type { PacketCryptoIdentity, PacketReaderInput } from "../../../crypto/index.js";
 
 // ---------------------------------------------------------------------------
 // Epoch-key backward hash chain (segments)

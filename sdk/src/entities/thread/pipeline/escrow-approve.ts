@@ -1,11 +1,11 @@
 import { PublicKey } from "@solana/web3.js";
-import type { PacketProgram } from "../../../providers/program";
+import type { PacketProgram } from "../../../providers/program.js";
 
-import type { PipelineBase } from "../../../types/client";
-import type { Thread } from "../types";
-import { EscrowApproveIx } from "../instructions/escrow-approve";
+import type { PipelineBase } from "../../../types/client.js";
+import type { Thread } from "../types.js";
+import { EscrowApproveIx } from "../instructions/escrow-approve.js";
 import type { Rpc } from "@lightprotocol/stateless.js";
-import type { PacketIxOptions } from "../../transaction/types";
+import type { PacketIxOptions } from "../../transaction/types.js";
 
 export type EscrowApprovePipelineResult = {
     pipeline: PipelineBase

@@ -1,9 +1,9 @@
 import { type Connection, type PublicKey } from "@solana/web3.js";
-import type { PacketProgram } from "../../../providers/program";
-import { type CreateInboxParams } from "../instructions/create";
-import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
-import { CreateInboxPipeline } from "../pipeline/create";
-import { HandleTxPipeline } from "../../..";
+import type { PacketProgram } from "../../../providers/program.js";
+import { type CreateInboxParams } from "../instructions/create.js";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types.js";
+import { CreateInboxPipeline } from "../pipeline/create.js";
+import { HandleTxPipeline } from "../../../index.js";
 
 export const CreateInboxTx = async (
     connection: Connection,

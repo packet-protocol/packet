@@ -1,5 +1,5 @@
 import type { AddressLookupTableAccount, PublicKey } from "@solana/web3.js";
-import type { SubmitAndConfirmOptions } from "./client";
+import type { SubmitAndConfirmOptions } from "./client.js";
 
 export type PacketTxOptions = {
     /**

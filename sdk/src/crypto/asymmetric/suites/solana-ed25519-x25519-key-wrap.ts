@@ -1,21 +1,21 @@
 import {
     AsymmetricEncryptionAlgorithm,
     KeyDerivationAlgorithm,
-} from "../../types/asymmetric";
-import { SymmetricEncryptionAlgorithm } from "../../types/symmetric";
+} from "../../types/asymmetric.js";
+import { SymmetricEncryptionAlgorithm } from "../../types/symmetric.js";
 
-import { KeyWrapPipelineSuite } from "../pipeline/key-wrap-suite";
+import { KeyWrapPipelineSuite } from "../pipeline/key-wrap-suite.js";
 import {
     SolanaEd25519X25519RecipientKeyAdapter,
-} from "../pipeline/recipient-adapters";
+} from "../pipeline/recipient-adapters.js";
 import {
     HkdfSha256SharedKeyDeriver,
     NaclBoxBeforeSharedKeyDeriver,
-} from "../pipeline/shared-key-derivers";
+} from "../pipeline/shared-key-derivers.js";
 import {
     Aes256GcmKeyWrapCipher,
     XSalsa20Poly1305KeyWrapCipher,
-} from "../pipeline/key-wrap-ciphers";
+} from "../pipeline/key-wrap-ciphers.js";
 
 export class SolanaEd25519X25519KeyWrapSuite extends KeyWrapPipelineSuite<
     AsymmetricEncryptionAlgorithm.SOLANA_ED25519_X25519

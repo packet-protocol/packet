@@ -3,12 +3,12 @@ import BN from "bn.js";
 import bs58 from "bs58";
 import * as anchor from "@anchor-lang/core";
 
-import type { PacketClient } from "../../../client";
-import type { PacketProgram } from "../../../providers/program";
-import { u32Le } from "../../../utils/bytes";
-import type { RoomMessageAccountData, RoomMessageData } from "../type";
-import { getRoomCompressedAccount } from "../instructions/proofs";
-import { ROOM_MESSAGE_LIGHT_DISCRIMINATOR } from "../utils/address";
+import type { PacketClient } from "../../../client.js";
+import type { PacketProgram } from "../../../providers/program.js";
+import { u32Le } from "../../../utils/bytes.js";
+import type { RoomMessageAccountData, RoomMessageData } from "../type/index.js";
+import { getRoomCompressedAccount } from "../instructions/proofs.js";
+import { ROOM_MESSAGE_LIGHT_DISCRIMINATOR } from "../utils/address.js";
 
 /**
  * RoomMessage borsh layout (Photon memcmp offsets, computed from the IDL):

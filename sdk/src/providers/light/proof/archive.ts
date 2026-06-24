@@ -4,7 +4,7 @@ import { type Rpc } from "@lightprotocol/stateless.js";
 import {
     finalizeLightProof,
     getNewAddressProof,
-} from "./helpers";
+} from "./helpers.js";
 
 export async function getInboxArchiveProof(args: {
     rpc: Rpc;

@@ -1,8 +1,8 @@
 import { Connection, PublicKey } from "@solana/web3.js";
-import type { PacketProgram } from "../../../providers/program";
-import { CreateRoomIx, type CreateRoomIxParams } from "../instructions/create";
-import type { PipelineBase } from "../../../types/client";
-import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
+import type { PacketProgram } from "../../../providers/program.js";
+import { CreateRoomIx, type CreateRoomIxParams } from "../instructions/create.js";
+import type { PipelineBase } from "../../../types/client.js";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types.js";
 
 export type CreateRoomPipelineResult = {
     pipeline: PipelineBase

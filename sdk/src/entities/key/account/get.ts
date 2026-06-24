@@ -1,10 +1,10 @@
 import { PublicKey } from "@solana/web3.js";
 import { bn, type Rpc } from "@lightprotocol/stateless.js";
 
-import type { PacketProgram } from "../../../providers/program";
-import * as Pda from "../../../pda";
-import { anchorKeyTypeToPacketKeyType } from "../utils";
-import type { UserDecryptionKey } from "../types";
+import type { PacketProgram } from "../../../providers/program.js";
+import * as Pda from "../../../pda.js";
+import { anchorKeyTypeToPacketKeyType } from "../utils.js";
+import type { UserDecryptionKey } from "../types.js";
 
 type LoadedCompressedKey = {
     address: PublicKey;

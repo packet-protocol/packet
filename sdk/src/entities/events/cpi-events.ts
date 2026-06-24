@@ -8,8 +8,8 @@ import type {
 import * as anchor from "@anchor-lang/core";
 import { Buffer } from "buffer";
 import bs58 from "bs58";
-import { sleep } from "../../utils/helpers";
-import type { AnchorCpiDecodedEvent, AnchorCpiEventContext, AnchorCpiEventListenerParams, AnchorCpiEventSubscription } from "./types";
+import { sleep } from "../../utils/helpers.js";
+import type { AnchorCpiDecodedEvent, AnchorCpiEventContext, AnchorCpiEventListenerParams, AnchorCpiEventSubscription } from "./types.js";
 
 type InternalListener = {
     id: number;

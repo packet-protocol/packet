@@ -1,33 +1,33 @@
 import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
 
-import type { PacketClient } from "../../../client";
-import type { Bytes } from "../../../types/common";
-import { text, utf8 } from "../../../utils/encoding";
-import { toBN } from "../../../utils/bytes";
-import { ClientCache } from "../../../core/cache";
-import { PacketTransactionClient } from "../../transaction/client";
-import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
-import { MessageType } from "../../message/types";
-import type { RoomMessageData } from "../type";
-import { roomMessageAddress } from "../utils/address";
+import type { PacketClient } from "../../../client.js";
+import type { Bytes } from "../../../types/common.js";
+import { text, utf8 } from "../../../utils/encoding.js";
+import { toBN } from "../../../utils/bytes.js";
+import { ClientCache } from "../../../core/cache.js";
+import { PacketTransactionClient } from "../../transaction/client.js";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types.js";
+import { MessageType } from "../../message/types.js";
+import type { RoomMessageData } from "../type/index.js";
+import { roomMessageAddress } from "../utils/address.js";
 import {
     GetRoomMessageAccount,
     GetRoomMessagesBucket,
     GetRoomMessagesByRoom,
     ROOM_MESSAGE_BUCKET_SIZE,
-} from "../account/message";
-import { RoomSendMessageTx } from "../transactions/send-message";
+} from "../account/message.js";
+import { RoomSendMessageTx } from "../transactions/send-message.js";
 import {
     encryptRoomMessageContent,
     randomClientMsgId,
-} from "../utils/crypto";
-import { RoomMessageClient, type RoomMessageDecryptResult } from "./message";
-import type { RoomClient } from "./room";
+} from "../utils/crypto.js";
+import { RoomMessageClient, type RoomMessageDecryptResult } from "./message.js";
+import type { RoomClient } from "./room.js";
 import type {
     PacketLoadedContent,
     ParsedPacketMessageContent,
-} from "../../message/content";
+} from "../../message/content.js";
 
 export type RoomSendMessageParams =
     | { text: string; content?: never; messageType?: never }
@@ -291,6 +291,7 @@ export class RoomMessagesClient {
                 this.client.program,
                 {
                     roomId,
+                    era: this.roomClient.Room.era,
                     clientMsgId,
                     message: {
                         messageType,
@@ -318,6 +319,7 @@ export class RoomMessagesClient {
 
             const address = roomMessageAddress({
                 room: this.roomClient.address,
+                era: this.roomClient.Room.era,
                 clientMsgId,
                 programId: this.client.program.programId,
             });
@@ -349,6 +351,7 @@ export class RoomMessagesClient {
             ? ref
             : roomMessageAddress({
                 room: this.roomClient.address,
+                era: this.roomClient.Room.era,
                 clientMsgId: ref,
                 programId: this.client.program.programId,
             });

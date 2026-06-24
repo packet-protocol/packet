@@ -4,11 +4,11 @@ import {
 } from "@solana/web3.js";
 import type { Rpc } from "@lightprotocol/stateless.js";
 
-import type { PacketProgram } from "../../../providers/program";
-import type { CreateUserKeyParams } from "../types";
-import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
-import { HandleTxPipeline } from "../../..";
-import { CreateKeyPipeline } from "../pipeline/create";
+import type { PacketProgram } from "../../../providers/program.js";
+import type { CreateUserKeyParams } from "../types.js";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types.js";
+import { HandleTxPipeline } from "../../../index.js";
+import { CreateKeyPipeline } from "../pipeline/create.js";
 
 export async function CreateKeyTx(
     connection: Connection,

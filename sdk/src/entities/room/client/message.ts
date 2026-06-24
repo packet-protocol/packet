@@ -1,24 +1,25 @@
 import type { PublicKey } from "@solana/web3.js";
 
-import type { PacketClient } from "../../../client";
-import type { Bytes } from "../../../types/common";
-import { text } from "../../../utils/encoding";
+import type { PacketClient } from "../../../client.js";
+import type { Bytes } from "../../../types/common.js";
+import { text } from "../../../utils/encoding.js";
 import {
     loadPacketMessageContent,
     parseLoadedPacketMessageContent,
     type PacketLoadedContent,
     type ParsedPacketMessageContent,
-} from "../../message/content";
-import { AnchorEnumToMessageType } from "../../message/utils/helpers";
-import type { RoomMessageData } from "../type";
-import { GetRoomMessageAccount } from "../account/message";
+} from "../../message/content.js";
+import { AnchorEnumToMessageType } from "../../message/utils/helpers.js";
+import { MessageType } from "../../message/types.js";
+import type { RoomMessageData } from "../type/index.js";
+import { GetRoomMessageAccount } from "../account/message.js";
 import {
     decodeRoomBlobEnvelope,
     decryptRoomMessageContent,
     isRoomBlobEnvelope,
     roomBlobEnvelopeEpoch,
-} from "../utils/crypto";
-import type { RoomClient } from "./room";
+} from "../utils/crypto.js";
+import type { RoomClient } from "./room.js";
 
 export type RoomMessageContentLoadResult = PacketLoadedContent;
 
@@ -193,6 +194,22 @@ export class RoomMessageClient {
 
         if (epochKey.status !== "ok") {
             this.decrypted = { status: "locked" };
+            return this.decrypted;
+        }
+
+        // PacketChat keeps the on-chain `content` PLAINTEXT (it's the public pointer
+        // `https://api.packet.chat/message/{id}`); the privacy lives entirely in the
+        // off-chain room-blob envelope at that pointer. So there is NO on-chain content
+        // layer to decrypt — running the AES path would fail. We still required
+        // recipient status above (a non-member reads "locked"); loadContent() then
+        // fetches the plaintext pointer and loadParsedContent/decryptLoadedBody decodes
+        // the off-chain envelope with the same epoch key.
+        if (AnchorEnumToMessageType(message.messageType) === MessageType.PacketChat) {
+            this.decrypted = {
+                status: "decrypted",
+                content: message.content,
+                text: tryText(message.content),
+            };
             return this.decrypted;
         }
 

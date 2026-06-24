@@ -9,8 +9,8 @@
  */
 
 import BN from "bn.js";
-import { concatBytes } from "../../utils/bytes";
-import { RecipientEncoding, type RecipientEncodingId } from "./constants";
+import { concatBytes } from "../../utils/bytes.js";
+import { RecipientEncoding, type RecipientEncodingId } from "./constants.js";
 
 const U32_MAX = 0xffffffff;
 

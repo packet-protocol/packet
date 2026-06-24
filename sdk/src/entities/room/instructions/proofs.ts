@@ -2,7 +2,7 @@ import { PublicKey } from "@solana/web3.js";
 import { bn, type Rpc } from "@lightprotocol/stateless.js";
 import * as anchor from "@anchor-lang/core";
 
-import type { PacketProgram } from "../../../providers/program";
+import type { PacketProgram } from "../../../providers/program.js";
 import {
     buildCompressedAccountMetaPacket,
     finalizeLightProof,
@@ -10,8 +10,8 @@ import {
     getNewAddressProof,
     type CreateAccountsProofTs,
     type LightAccountMetas,
-} from "../../../providers/light/proof/helpers";
-import type { CompressedAccountMetaPacket } from "../../../providers/light/proof/types";
+} from "../../../providers/light/proof/helpers.js";
+import type { CompressedAccountMetaPacket } from "../../../providers/light/proof/types.js";
 
 /**
  * Shared validity-proof builders for the room compressed flows.

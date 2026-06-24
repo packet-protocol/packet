@@ -25,7 +25,6 @@
 //! - denominator = e(denom_base, C0)
 //! - K           = numerator / denominator
 //!
-//! The construction and its security model are documented in CRYPTOGRAPHY.md.
 
 use ark_bls12_381::{Bls12_381, Fr, G1Affine, G1Projective, G2Affine, G2Projective};
 use ark_ec::{

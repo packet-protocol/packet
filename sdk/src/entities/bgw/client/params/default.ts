@@ -9,10 +9,10 @@
  * back to the Arweave-style default at DEFAULT_BGW_PARAMS_BASE_URL.
  */
 
-import { BgwParamsClient } from "./index";
-import type { BgwBinaryParamsChunkMeta } from "../../types/params";
-import type { BgwBls12381WasmEngine } from "../../../wasm/xpkt-bgw-bls12/engine";
-import { DEFAULT_BGW_PARAMS_BASE_URL, DEFAULT_BGW_PARAMS_CAPACITY } from "../../constants";
+import { BgwParamsClient } from "./index.js";
+import type { BgwBinaryParamsChunkMeta } from "../../types/params.js";
+import type { BgwBls12381WasmEngine } from "../../../wasm/xpkt-bgw-bls12/engine.js";
+import { DEFAULT_BGW_PARAMS_BASE_URL, DEFAULT_BGW_PARAMS_CAPACITY } from "../../constants.js";
 
 export type BgwDefaultParamsSource =
     /** Local directory containing manifest.json and chunks/*.bin (BgwParamsClient.InitLocal). */

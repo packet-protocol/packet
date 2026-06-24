@@ -1,9 +1,9 @@
 import BN from "bn.js";
 import type { PublicKey } from "@solana/web3.js";
-import type { PacketClient } from "../../../client";
-import { SegmentPageClient } from "../../segment/client";
-import { GetInboxArchiveAccount } from "../account/get";
-import * as Pda from "../../../pda";
+import type { PacketClient } from "../../../client.js";
+import { SegmentPageClient } from "../../segment/client.js";
+import { GetInboxArchiveAccount } from "../account/get.js";
+import * as Pda from "../../../pda.js";
 
 export type InboxBodyPageKind = "live" | "archive";
 

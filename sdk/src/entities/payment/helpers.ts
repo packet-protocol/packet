@@ -1,4 +1,4 @@
-import { TokenProgramType } from "./types";
+import { TokenProgramType } from "./types.js";
 
 export const ParsePaymentRuleTokenProgram = (tokenProgram: any): TokenProgramType => {
     switch (tokenProgram) {

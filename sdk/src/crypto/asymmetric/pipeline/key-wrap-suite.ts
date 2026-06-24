@@ -1,22 +1,22 @@
 import { x25519 } from "@noble/curves/ed25519";
 import { randomBytes } from "@noble/hashes/utils";
 
-import type { Bytes } from "../../../types/common";
-import type { BodyEncoding, PacketKeyPair } from "../../types/common";
+import type { Bytes } from "../../../types/common.js";
+import type { BodyEncoding, PacketKeyPair } from "../../types/common.js";
 import {
     type AsymmetricEncryptionAlgorithm,
     type KeyDerivationAlgorithm,
     type WrappedKey,
-} from "../../types/asymmetric";
-import type { SymmetricEncryptionAlgorithm } from "../../types/symmetric";
-import { utf8 } from "../../../utils/encoding";
-import { PacketEncoder } from "../../utils/encoding";
-import { BaseCryptoSuite } from "../base";
+} from "../../types/asymmetric.js";
+import type { SymmetricEncryptionAlgorithm } from "../../types/symmetric.js";
+import { utf8 } from "../../../utils/encoding.js";
+import { PacketEncoder } from "../../utils/encoding.js";
+import { BaseCryptoSuite } from "../base.js";
 import type {
     KeyWrapCipher,
     RecipientKeyAdapter,
     SharedKeyDeriver,
-} from "./types";
+} from "./types.js";
 
 export type KeyWrapSuiteOptions = {
     encoding?: BodyEncoding;

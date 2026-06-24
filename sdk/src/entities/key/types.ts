@@ -1,5 +1,5 @@
 import type { PublicKey } from "@solana/web3.js";
-import type { PacketReaderInput } from "../../crypto";
+import type { PacketReaderInput } from "../../crypto/index.js";
 
 export enum PacketKeyType {
     X25519 = "x25519",

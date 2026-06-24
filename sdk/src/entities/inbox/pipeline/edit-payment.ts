@@ -1,9 +1,9 @@
 import { Connection, PublicKey } from "@solana/web3.js";
-import type { PacketProgram } from "../../../providers/program";
-import { type InboxPaymentParams } from "../instructions/create";
-import type { PipelineBase } from "../../../types/client";
-import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
-import { EditInboxPaymentIx } from "../instructions/edit-payment";
+import type { PacketProgram } from "../../../providers/program.js";
+import { type InboxPaymentParams } from "../instructions/create.js";
+import type { PipelineBase } from "../../../types/client.js";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types.js";
+import { EditInboxPaymentIx } from "../instructions/edit-payment.js";
 
 export type EditInboxPaymentPipelineResult = {
     pipeline: PipelineBase

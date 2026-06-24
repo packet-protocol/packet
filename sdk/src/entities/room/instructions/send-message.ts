@@ -2,20 +2,23 @@ import type { Connection, PublicKey } from "@solana/web3.js";
 import { type Rpc } from "@lightprotocol/stateless.js";
 import type BN from "bn.js";
 
-import type { PacketProgram } from "../../../providers/program";
-import type { PacketIxOptions } from "../../transaction/types";
-import type { Bytes } from "../../../types/common";
-import { toBN } from "../../../utils/bytes";
-import * as Pda from "../../../pda";
-import { MessageType } from "../../message/types";
-import { MessageTypeToAnchorEnum } from "../../message/utils/helpers";
-import { roomMemberAddress, roomMessageAddress } from "../utils/address";
-import type { RoomMemberAccountData } from "../type";
-import { getRoomUpdateAccountProof } from "./proofs";
+import type { PacketProgram } from "../../../providers/program.js";
+import type { PacketIxOptions } from "../../transaction/types.js";
+import type { Bytes } from "../../../types/common.js";
+import { toBN } from "../../../utils/bytes.js";
+import * as Pda from "../../../pda.js";
+import { MessageType } from "../../message/types.js";
+import { MessageTypeToAnchorEnum } from "../../message/utils/helpers.js";
+import { roomMemberAddress, roomMessageAddress } from "../utils/address.js";
+import type { RoomMemberAccountData } from "../type/index.js";
+import { getRoomUpdateAccountProof } from "./proofs.js";
 
 export type RoomSendMessageIxParams = {
     /* 32 byte */
     roomId: Bytes;
+
+    /** Room generation (`room.era`). */
+    era: BN | number;
 
     /** 64 byte random client message id (compressed address seed). */
     clientMsgId: Bytes;
@@ -51,12 +54,14 @@ export const RoomSendMessageIx = async (
     // The program binds the member account to the sender via the seed-derived address.
     const memberAddress = roomMemberAddress({
         room,
+        era: params.era,
         owner: sender,
         programId: program.programId,
     });
 
     const messageAddress = roomMessageAddress({
         room,
+        era: params.era,
         clientMsgId: params.clientMsgId,
         programId: program.programId,
     });

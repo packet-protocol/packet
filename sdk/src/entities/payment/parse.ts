@@ -1,6 +1,6 @@
-import type { ThreadEscrowInfo } from "../thread/types";
-import { ParsePaymentRuleTokenProgram } from "./helpers";
-import type { Escrow, Payment, PaymentRule } from "./types";
+import type { ThreadEscrowInfo } from "../thread/types.js";
+import { ParsePaymentRuleTokenProgram } from "./helpers.js";
+import type { Escrow, Payment, PaymentRule } from "./types.js";
 
 export const ParsePaymentRuleOption = (payment: any): PaymentRule | null => {
     if (!payment) return null;

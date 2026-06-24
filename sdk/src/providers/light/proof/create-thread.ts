@@ -1,13 +1,13 @@
 import { PublicKey } from "@solana/web3.js";
 import { type PackedAccounts, type Rpc } from "@lightprotocol/stateless.js";
 
-import * as Pda from "../../../pda";
+import * as Pda from "../../../pda.js";
 import {
     finalizeLightProof,
     getNewAddressProof,
     type FinalizedLightProof,
     type LightProofBundleWithMeta,
-} from "./helpers";
+} from "./helpers.js";
 
 
 export type CreateThreadAtomicProofResult = LightProofBundleWithMeta<{

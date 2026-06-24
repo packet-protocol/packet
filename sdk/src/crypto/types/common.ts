@@ -1,4 +1,4 @@
-import type { Bytes } from "../../types/common";
+import type { Bytes } from "../../types/common.js";
 
 export type BodyEncoding = "base64" | "utf8";
 

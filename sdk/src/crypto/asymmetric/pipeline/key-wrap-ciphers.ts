@@ -1,12 +1,12 @@
 import tweetnacl from "tweetnacl";
 
-import type { Bytes } from "../../../types/common";
-import type { BodyEncoding } from "../../types/common";
-import type { WrappedKey } from "../../types/asymmetric";
-import { SymmetricEncryptionAlgorithm } from "../../types/symmetric";
-import { PacketEncoder } from "../../utils/encoding";
-import { Aes256GcmSuite } from "../../symmetric/aes256gcm";
-import type { KeyWrapCipher, SealResult } from "./types";
+import type { Bytes } from "../../../types/common.js";
+import type { BodyEncoding } from "../../types/common.js";
+import type { WrappedKey } from "../../types/asymmetric.js";
+import { SymmetricEncryptionAlgorithm } from "../../types/symmetric.js";
+import { PacketEncoder } from "../../utils/encoding.js";
+import { Aes256GcmSuite } from "../../symmetric/aes256gcm.js";
+import type { KeyWrapCipher, SealResult } from "./types.js";
 import { randomBytes } from "crypto";
 
 export class Aes256GcmKeyWrapCipher

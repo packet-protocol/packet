@@ -1,10 +1,10 @@
 import { Connection, PublicKey } from "@solana/web3.js";
-import type { PacketProgram } from "../../../providers/program";
-import { HandleTxPipeline } from "../../../utils/pipeline";
-import { EscrowApprovePipeline } from "../pipeline/escrow-approve";
-import type { Thread } from "../types";
+import type { PacketProgram } from "../../../providers/program.js";
+import { HandleTxPipeline } from "../../../utils/pipeline.js";
+import { EscrowApprovePipeline } from "../pipeline/escrow-approve.js";
+import type { Thread } from "../types.js";
 import type { Rpc } from "@lightprotocol/stateless.js";
-import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types.js";
 
 export const EscrowApproveTx = async (
     rpc: Rpc,

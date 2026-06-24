@@ -1,11 +1,11 @@
 import { PublicKey } from "@solana/web3.js";
-import type { PacketProgram } from "../../../providers/program";
+import type { PacketProgram } from "../../../providers/program.js";
 
-import type { PipelineBase } from "../../../types/client";
-import type { EditUserKeyParams } from "../types";
+import type { PipelineBase } from "../../../types/client.js";
+import type { EditUserKeyParams } from "../types.js";
 import type { Rpc } from "@lightprotocol/stateless.js";
-import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
-import { EditKeyIx } from "../instructions/edit";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types.js";
+import { EditKeyIx } from "../instructions/edit.js";
 
 export type EditKeyPipelineResult = {
     pipeline: PipelineBase

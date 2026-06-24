@@ -5,9 +5,9 @@ import {
     normalizeWalletAddress,
     type DerivePacketSeedInput,
     type DerivedPacketSeed,
-} from "./seed";
-import { AsymmetricEncryptionAlgorithm, type PacketKeyPair, type PacketReaderInput } from "../types";
-import { getKeyWrapSuite } from "./suites";
+} from "./seed.js";
+import { AsymmetricEncryptionAlgorithm, type PacketKeyPair, type PacketReaderInput } from "../types/index.js";
+import { getKeyWrapSuite } from "./suites.js";
 
 export type PacketCryptoIdentity = {
     /**

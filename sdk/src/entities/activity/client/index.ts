@@ -1,20 +1,20 @@
 import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
 
-import type { PacketClient } from "../../../client";
-import { ClientCache } from "../../../core/cache";
-import type { TxReceiptWithClient } from "../../../types/client";
-import { NO_INBOX } from "../../../constants";
-import * as Pda from "../../../pda";
+import type { PacketClient } from "../../../client.js";
+import { ClientCache } from "../../../core/cache.js";
+import type { TxReceiptWithClient } from "../../../types/client.js";
+import { NO_INBOX } from "../../../constants.js";
+import * as Pda from "../../../pda.js";
 
-import type { Inbox } from "../../inbox/types";
-import type { InboxClient } from "../../inbox/client/inbox";
-import { ThreadClient } from "../../thread/client/thread";
+import type { Inbox } from "../../inbox/types.js";
+import type { InboxClient } from "../../inbox/client/inbox.js";
+import { ThreadClient } from "../../thread/client/thread.js";
 import {
     DecodeThreadOwnerAccountItem,
     type DecodedThreadAccount,
-} from "../../thread/account/get";
-import type { ThreadAccountData } from "../../thread/types";
+} from "../../thread/account/get.js";
+import type { ThreadAccountData } from "../../thread/types.js";
 
 export type ActivityDirection = "from" | "to";
 
@@ -426,7 +426,7 @@ export class ActivityClient {
             return undefined;
         }
 
-        const { InboxClient: IC } = await import("../../inbox/client/inbox");
+        const { InboxClient: IC } = await import("../../inbox/client/inbox.js");
 
         const inboxAddress = Pda.inboxPda(
             params.account.inboxId,

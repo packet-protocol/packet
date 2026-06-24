@@ -1,4 +1,4 @@
-import type { Bytes } from "../types/common";
+import type { Bytes } from "../types/common.js";
 import BN from "bn.js";
 
 export function concatBytes(...arrays: Bytes[]): Bytes {

@@ -2,17 +2,20 @@ import type { Connection, PublicKey } from "@solana/web3.js";
 import { type Rpc } from "@lightprotocol/stateless.js";
 import type BN from "bn.js";
 
-import type { PacketProgram } from "../../../providers/program";
-import type { PacketIxOptions } from "../../transaction/types";
-import type { Bytes } from "../../../types/common";
-import * as Pda from "../../../pda";
-import { toBN } from "../../../utils/bytes";
-import { roomHeaderAddress } from "../utils/address";
-import { getRoomCreateAccountsProof } from "./proofs";
+import type { PacketProgram } from "../../../providers/program.js";
+import type { PacketIxOptions } from "../../transaction/types.js";
+import type { Bytes } from "../../../types/common.js";
+import * as Pda from "../../../pda.js";
+import { toBN } from "../../../utils/bytes.js";
+import { roomHeaderAddress } from "../utils/address.js";
+import { getRoomCreateAccountsProof } from "./proofs.js";
 
 export type RoomPublishHeaderIxParams = {
     /* 32 byte */
     roomId: Bytes;
+
+    /** Room generation (`room.era`). */
+    era: BN | number;
 
     /** Must equal room.currentEpoch + 1. */
     epoch: BN | number;
@@ -55,6 +58,7 @@ export const RoomPublishHeaderIx = async (
 
     const headerAddress = roomHeaderAddress({
         room,
+        era: params.era,
         epoch: params.epoch,
         programId: program.programId,
     });

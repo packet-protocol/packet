@@ -1,14 +1,14 @@
 import * as anchor from "@anchor-lang/core";
-import type { PacketProgram } from "../../../providers/program";
+import type { PacketProgram } from "../../../providers/program.js";
 import { PublicKey } from "@solana/web3.js";
-import type { Inbox, InboxArchive, InboxBody, InboxMetadata } from "../types";
-import type { PacketIDL } from "../../../idl/packet.idl";
-import { NumberToInboxKind } from "../utils/helpers";
-import { ParsePaymentRuleOption } from "../../payment/parse";
+import type { Inbox, InboxArchive, InboxBody, InboxMetadata } from "../types.js";
+import type { PacketIDL } from "../../../idl/packet.idl.js";
+import { NumberToInboxKind } from "../utils/helpers.js";
+import { ParsePaymentRuleOption } from "../../payment/parse.js";
 import { bn, type Rpc } from "@lightprotocol/stateless.js";
-import { parseSegment } from "../../segment/parse";
+import { parseSegment } from "../../segment/parse.js";
 import BN from "bn.js";
-import * as Pda from "../../../pda";
+import * as Pda from "../../../pda.js";
 
 export const GetInboxAccount = async (
     program: PacketProgram,

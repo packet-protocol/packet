@@ -8,18 +8,18 @@ import {
     type Rpc,
 } from "@lightprotocol/stateless.js";
 
-import type { PacketProgram } from "../../../providers/program";
-import * as Pda from "../../../pda";
+import type { PacketProgram } from "../../../providers/program.js";
+import * as Pda from "../../../pda.js";
 
 import {
     ResolveMessageInputAndAccounts,
     type CreateMessageInputAndAccountsParams,
-} from "../../message/instructions/resolve";
+} from "../../message/instructions/resolve.js";
 
 import {
     getCreateThreadAtomicProof,
-} from "../../../providers/light/proof/create-thread";
-import type { PacketIxOptions } from "../../transaction/types";
+} from "../../../providers/light/proof/create-thread.js";
+import type { PacketIxOptions } from "../../transaction/types.js";
 
 export const CreateThreadIx = async (
     connection: Connection,

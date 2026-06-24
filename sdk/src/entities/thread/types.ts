@@ -1,7 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
-import type { Escrow, TokenProgramType } from "../payment/types";
-import type { PacketIDL } from "../../idl/packet.idl";
+import type { Escrow, TokenProgramType } from "../payment/types.js";
+import type { PacketIDL } from "../../idl/packet.idl.js";
 import * as anchor from "@anchor-lang/core";
 export interface Thread {
     address: PublicKey;

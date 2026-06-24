@@ -1,12 +1,12 @@
 import { PublicKey, TransactionInstruction } from "@solana/web3.js";
 import { type Rpc } from "@lightprotocol/stateless.js";
 
-import type { PacketProgram } from "../../../providers/program";
-import * as Pda from "../../../pda";
-import { keyTypeToAnchor } from "../utils";
-import type { CreateUserKeyParams } from "../types";
-import { getCompressedPdaProofFinalized } from "../../../providers/light/proof/helpers";
-import type { PacketIxOptions } from "../../transaction/types";
+import type { PacketProgram } from "../../../providers/program.js";
+import * as Pda from "../../../pda.js";
+import { keyTypeToAnchor } from "../utils.js";
+import type { CreateUserKeyParams } from "../types.js";
+import { getCompressedPdaProofFinalized } from "../../../providers/light/proof/helpers.js";
+import type { PacketIxOptions } from "../../transaction/types.js";
 
 export async function CreateKeyIx(
     rpc: Rpc,

@@ -25,8 +25,8 @@
 import BN from "bn.js";
 import { PublicKey } from "@solana/web3.js";
 import { sha256 } from "@noble/hashes/sha2";
-import { concatBytes, toBN, u32Le, u64Le } from "../../utils/bytes";
-import { utf8 } from "../../utils/encoding";
+import { concatBytes, toBN, u32Le, u64Le } from "../../utils/bytes.js";
+import { utf8 } from "../../utils/encoding.js";
 import {
     RECIPIENT_CHECKPOINT_DOMAIN,
     RECIPIENT_CHECKPOINT_INTERVAL,
@@ -40,8 +40,8 @@ import {
     type RecipientDeltaOpId,
     type RecipientEncodingId,
     type RecipientModeId,
-} from "./constants";
-import { decodeDescriptor, encodeDescriptor, type EncodedRecipientDescriptor } from "./descriptor";
+} from "./constants.js";
+import { decodeDescriptor, encodeDescriptor, type EncodedRecipientDescriptor } from "./descriptor.js";
 
 export type RoomKeyInput = PublicKey | Uint8Array;
 

@@ -1,7 +1,7 @@
 import * as anchor from "@anchor-lang/core";
 import { bn, Rpc } from "@lightprotocol/stateless.js";
 import { PublicKey } from "@solana/web3.js";
-import type { PacketProgram } from "../program";
+import type { PacketProgram } from "../program.js";
 
 export async function fetchCompressedType<T = any>(args: {
     rpc: Rpc;

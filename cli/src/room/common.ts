@@ -26,13 +26,7 @@ export const configureBgwParamsFromConfig = (config: PacketCliConfig): void => {
   } else if (url) {
     configureDefaultBgwParams({ manifestUrl: url });
   } else {
-    throw new Error(
-      "No BGW params configured for room commands. Point the CLI at a params " +
-        "artifact with `packet config init --rpc <url> --bgw-params-dir <path>` " +
-        "(or --bgw-params-url <manifest.json>), or set $PACKET_BGW_PARAMS_DIR / " +
-        "$PACKET_BGW_PARAMS_URL. The artifact's capacity must match the capacity " +
-        "the room was created with (the SDK default is 1,048,576)."
-    );
+    // use defaults
   }
 
   bgwConfigured = true;

@@ -1,6 +1,6 @@
-import { MessageType } from "../types";
+import { MessageType } from "../types.js";
 import * as anchor from "@anchor-lang/core";
-import type { PacketIDL } from "../../../idl/packet.idl";
+import type { PacketIDL } from "../../../idl/packet.idl.js";
 export const MessageTypeToAnchorEnum = (msgType: MessageType): anchor.IdlTypes<PacketIDL>["messageType"] => {
     switch (msgType) {
         case MessageType.Text:
@@ -13,6 +13,8 @@ export const MessageTypeToAnchorEnum = (msgType: MessageType): anchor.IdlTypes<P
             return { irys: {} };
         case MessageType.Arweave:
             return { arweave: {} };
+        case MessageType.PacketChat:
+            return { packetChat: {} };
         default:
             throw new Error("Unsupported message type");
     }
@@ -29,6 +31,8 @@ export const AnchorEnumToMessageType = (anchorEnum: anchor.IdlTypes<PacketIDL>["
         return MessageType.Irys;
     } else if ("arweave" in anchorEnum) {
         return MessageType.Arweave;
+    } else if ("packetChat" in anchorEnum) {
+        return MessageType.PacketChat;
     } else {
         throw new Error("Unsupported message type");
     }

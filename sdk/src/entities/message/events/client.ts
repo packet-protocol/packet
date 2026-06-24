@@ -1,13 +1,13 @@
 import type { PublicKey } from "@solana/web3.js";
 
-import type { PacketClient } from "../../../client";
+import type { PacketClient } from "../../../client.js";
 import type {
     ListenMessagesParams,
     PacketMessageSentEvent,
     PacketMessageSentEventRaw,
-} from "./types";
-import { MessageClient, ThreadClient } from "../..";
-import type { PacketEventSubscription } from "../../events/types";
+} from "./types.js";
+import { MessageClient, ThreadClient } from "../../index.js";
+import type { PacketEventSubscription } from "../../events/types.js";
 
 const pubkeyEq = (a?: PublicKey, b?: PublicKey): boolean => {
     if (!a || !b) return false;

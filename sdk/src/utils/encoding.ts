@@ -1,4 +1,4 @@
-import type { Bytes } from "../types/common";
+import type { Bytes } from "../types/common.js";
 
 export function toBase64(bytes: Bytes): string {
   return Buffer.from(bytes).toString("base64");

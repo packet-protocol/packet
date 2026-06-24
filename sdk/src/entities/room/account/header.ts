@@ -2,13 +2,13 @@ import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
 import * as anchor from "@anchor-lang/core";
 
-import type { PacketClient } from "../../../client";
-import type { PacketProgram } from "../../../providers/program";
-import { getMultipleCompressedAccountsByAddressChunked } from "../../../providers/light/compressed";
-import { toBN } from "../../../utils/bytes";
-import { roomHeaderAddress } from "../utils/address";
-import type { RoomEpochHeaderAccountData, RoomEpochHeaderData } from "../type";
-import { getRoomCompressedAccount } from "../instructions/proofs";
+import type { PacketClient } from "../../../client.js";
+import type { PacketProgram } from "../../../providers/program.js";
+import { getMultipleCompressedAccountsByAddressChunked } from "../../../providers/light/compressed.js";
+import { toBN } from "../../../utils/bytes.js";
+import { roomHeaderAddress } from "../utils/address.js";
+import type { RoomEpochHeaderAccountData, RoomEpochHeaderData } from "../type/index.js";
+import { getRoomCompressedAccount } from "../instructions/proofs.js";
 
 export function DecodeRoomHeaderAccountData(
     program: PacketProgram,
@@ -58,10 +58,12 @@ export const RoomHeaderAccountToRoomEpochHeader = (
 export const GetRoomHeaderAccount = async (
     client: PacketClient,
     room: PublicKey,
+    era: BN | number,
     epoch: BN | number,
 ): Promise<RoomEpochHeaderData | null> => {
     const address = roomHeaderAddress({
         room,
+        era,
         epoch,
         programId: client.program.programId,
     });
@@ -86,6 +88,7 @@ export const GetRoomHeaderAccount = async (
 export const GetRoomHeaderRange = async (
     client: PacketClient,
     room: PublicKey,
+    era: BN | number,
     fromEpoch: BN | number,
     toEpoch: BN | number,
     accountBatchSize?: number,
@@ -104,6 +107,7 @@ export const GetRoomHeaderRange = async (
     for (let i = 0; i < count; i++) {
         addresses.push(roomHeaderAddress({
             room,
+            era,
             epoch: from.add(new BN(i)),
             programId: client.program.programId,
         }));

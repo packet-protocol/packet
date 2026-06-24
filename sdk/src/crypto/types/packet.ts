@@ -1,7 +1,7 @@
-import type { HashValue } from "./common";
-import type { AsymmetricEncryptionAlgorithm, WrappedKey } from "./asymmetric";
-import type { A256GCMEncrypted, Encrypted } from "./symmetric";
-import type { Bytes } from "../../types/common";
+import type { HashValue } from "./common.js";
+import type { AsymmetricEncryptionAlgorithm, WrappedKey } from "./asymmetric.js";
+import type { A256GCMEncrypted, Encrypted } from "./symmetric.js";
+import type { Bytes } from "../../types/common.js";
 
 export type ReaderEntry<
     TWrappedKey extends WrappedKey = WrappedKey,

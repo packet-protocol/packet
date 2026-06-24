@@ -1,7 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import type BN from "bn.js";
 import * as anchor from "@anchor-lang/core";
-import type { PacketIDL } from "../../../idl/packet.idl";
+import type { PacketIDL } from "../../../idl/packet.idl.js";
 
 export interface Room {
     address: PublicKey,
@@ -10,6 +10,14 @@ export interface Room {
     admin: PublicKey,
 
     version: number,
+
+    /**
+     * Room generation. Era 0 is the original room; each `room_reinit_root`
+     * reset bumps it. Folded into every room compressed-account address seed
+     * (header / member / message / page), so a reset room gets a clean,
+     * never-used address namespace while the room PDA / `roomId` stay the same.
+     */
+    era: BN,
 
     currentBucketLen: number,
     currentBucket: number,
@@ -61,7 +69,7 @@ export interface Room {
 
 /** RoomMember compressed account, idiomatic TS shape. */
 export interface RoomMemberData {
-    /** Derived compressed account address (["room-member", room, owner]). */
+    /** Derived compressed account address (["room-member", room, era, owner]). */
     address: PublicKey,
     version: number,
     owner: PublicKey,
@@ -72,6 +80,8 @@ export interface RoomMemberData {
     slot: number,
     /** Member version of the mutation that created / last re-activated this member. */
     joinedMemberVersion: BN,
+    /** Room generation (`room.era`) this membership belongs to. */
+    era: BN,
     /** Encrypted BGW user-secret envelope. */
     secret: Uint8Array,
 }

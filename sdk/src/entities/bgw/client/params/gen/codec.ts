@@ -1,8 +1,8 @@
-import { concatBytes } from "../../../../../utils/bytes";
-import { utf8 } from "../../../../../utils/encoding";
+import { concatBytes } from "../../../../../utils/bytes.js";
+import { utf8 } from "../../../../../utils/encoding.js";
 import { sha256 } from "@noble/hashes/sha2";
-import type { BgwBinaryParamsChunkMeta, BgwBinaryParamsManifest, DecodedBgwBinaryParamsChunk } from "../../../types/params";
-import { hex } from "../../../../../crypto/utils/hash";
+import type { BgwBinaryParamsChunkMeta, BgwBinaryParamsManifest, DecodedBgwBinaryParamsChunk } from "../../../types/params.js";
+import { hex } from "../../../../../crypto/utils/hash.js";
 import BN from "bn.js";
 
 const MAGIC = new Uint8Array([0x58, 0x50, 0x4b, 0x54, 0x42, 0x47, 0x57, 0x31]); // XPKTBGW1

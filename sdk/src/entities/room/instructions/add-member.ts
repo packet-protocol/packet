@@ -1,17 +1,21 @@
 import type { Connection, PublicKey } from "@solana/web3.js";
 import { type Rpc } from "@lightprotocol/stateless.js";
+import type BN from "bn.js";
 
-import type { PacketProgram } from "../../../providers/program";
-import type { PacketIxOptions } from "../../transaction/types";
-import type { Bytes } from "../../../types/common";
-import * as Pda from "../../../pda";
-import { roomMemberAddress } from "../utils/address";
-import type { RoomMemberAccountData } from "../type";
-import { getRoomCreateOrUpdateAccountProof } from "./proofs";
+import type { PacketProgram } from "../../../providers/program.js";
+import type { PacketIxOptions } from "../../transaction/types.js";
+import type { Bytes } from "../../../types/common.js";
+import * as Pda from "../../../pda.js";
+import { roomMemberAddress } from "../utils/address.js";
+import type { RoomMemberAccountData } from "../type/index.js";
+import { getRoomCreateOrUpdateAccountProof } from "./proofs.js";
 
 export type RoomAddMemberIxParams = {
     /* 32 byte */
     roomId: Bytes;
+
+    /** Room generation (`room.era`). */
+    era: BN | number;
 
     /** Wallet of the member to add (RoomMember.owner). */
     member: PublicKey;
@@ -34,6 +38,7 @@ export const RoomAddMemberIx = async (
 
     const memberAddress = roomMemberAddress({
         room,
+        era: params.era,
         owner: params.member,
         programId: program.programId,
     });

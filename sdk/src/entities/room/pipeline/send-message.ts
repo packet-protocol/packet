@@ -1,9 +1,9 @@
 import { Connection, PublicKey } from "@solana/web3.js";
 import { type Rpc } from "@lightprotocol/stateless.js";
-import type { PacketProgram } from "../../../providers/program";
-import { RoomSendMessageIx, type RoomSendMessageIxParams } from "../instructions/send-message";
-import type { PipelineBase } from "../../../types/client";
-import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
+import type { PacketProgram } from "../../../providers/program.js";
+import { RoomSendMessageIx, type RoomSendMessageIxParams } from "../instructions/send-message.js";
+import type { PipelineBase } from "../../../types/client.js";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types.js";
 
 export type RoomSendMessagePipelineResult = {
     pipeline: PipelineBase

@@ -1,16 +1,16 @@
 import { PublicKey } from "@solana/web3.js";
 import { type PackedAccounts, type Rpc } from "@lightprotocol/stateless.js";
 
-import type { PacketProgram } from "../../program";
-import * as Pda from "../../../pda";
-import { getExistingThreadProof } from "./thread";
+import type { PacketProgram } from "../../program.js";
+import * as Pda from "../../../pda.js";
+import { getExistingThreadProof } from "./thread.js";
 import {
     finalizeLightProof,
     type FinalizedLightProof,
     type LightProofBundleWithMeta,
-} from "./helpers";
-import type { CompressedAccountMetaPacket } from "./types";
-import type { ThreadAccountData } from "../../../entities/thread/types";
+} from "./helpers.js";
+import type { CompressedAccountMetaPacket } from "./types.js";
+import type { ThreadAccountData } from "../../../entities/thread/types.js";
 
 export type SendMessageProofResult = LightProofBundleWithMeta<{
     threadAccountMeta: CompressedAccountMetaPacket;

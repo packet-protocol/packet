@@ -1,13 +1,13 @@
-import type { PacketClient } from "../../client";
-import type { Segment } from "./types";
-import { parseSegment } from "./parse";
-import type { ThreadClient } from "../thread/client/thread";
+import type { PacketClient } from "../../client.js";
+import type { Segment } from "./types.js";
+import { parseSegment } from "./parse.js";
+import type { ThreadClient } from "../thread/client/thread.js";
 import * as anchor from "@anchor-lang/core";
-import type { PacketIDL } from "../../idl/packet.idl";
-import type { Inbox } from "../inbox/types";
-import type { InboxClient } from "../inbox/client/inbox";
-import { NO_INBOX } from "../../constants";
-import { GetThreadAccounts } from "../thread/account/get";
+import type { PacketIDL } from "../../idl/packet.idl.js";
+import type { Inbox } from "../inbox/types.js";
+import type { InboxClient } from "../inbox/client/inbox.js";
+import { NO_INBOX } from "../../constants.js";
+import { GetThreadAccounts } from "../thread/account/get.js";
 
 export type LoadThreadsOptions = {
     inbox?: Inbox | InboxClient;

@@ -4,11 +4,11 @@ import {
 } from "@solana/web3.js";
 import type { Rpc } from "@lightprotocol/stateless.js";
 
-import type { PacketProgram } from "../../../providers/program";
-import type { EditUserKeyParams } from "../types";
-import { EditKeyPipeline } from "../pipeline/edit";
-import { HandleTxPipeline } from "../../../utils";
-import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
+import type { PacketProgram } from "../../../providers/program.js";
+import type { EditUserKeyParams } from "../types.js";
+import { EditKeyPipeline } from "../pipeline/edit.js";
+import { HandleTxPipeline } from "../../../utils/index.js";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types.js";
 
 export async function EditKeyTx(
     connection: Connection,

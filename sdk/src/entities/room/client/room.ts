@@ -2,17 +2,17 @@ import { PublicKey } from "@solana/web3.js";
 import BN from "bn.js";
 import { sha256 } from "@noble/hashes/sha2";
 
-import type { PacketClient } from "../../../client";
-import type { Bytes } from "../../../types/common";
-import * as Pda from "../../../pda";
-import { bytesEqual, toBN } from "../../../utils/bytes";
-import { sleep } from "../../../utils/helpers";
-import { ClientCache } from "../../../core/cache";
-import type { Room, RoomEpochHeaderData, RoomMemberData } from "../type";
-import { GetRoomAccount } from "../account/room";
-import { GetRoomHeaderAccount, GetRoomHeaderRange } from "../account/header";
-import { GetRoomMemberAccount } from "../account/member";
-import { GetRoomRecipientPages } from "../account/page";
+import type { PacketClient } from "../../../client.js";
+import type { Bytes } from "../../../types/common.js";
+import * as Pda from "../../../pda.js";
+import { bytesEqual, toBN } from "../../../utils/bytes.js";
+import { sleep } from "../../../utils/helpers.js";
+import { ClientCache } from "../../../core/cache.js";
+import type { Room, RoomEpochHeaderData, RoomMemberData } from "../type/index.js";
+import { GetRoomAccount } from "../account/room.js";
+import { GetRoomHeaderAccount, GetRoomHeaderRange } from "../account/header.js";
+import { GetRoomMemberAccount } from "../account/member.js";
+import { GetRoomRecipientPages } from "../account/page.js";
 import {
     applyDelta,
     initialRecipientState,
@@ -20,22 +20,22 @@ import {
     recipientActiveSlots,
     stateFromCheckpoint,
     type RecipientState,
-} from "../../bgw/recipient";
-import { RecipientDescriptorKind } from "../../bgw/constants";
-import { headerAad, headerBindingRootFromMemberRoot } from "../../bgw/utils/shared";
-import type { BgwParamsClient } from "../../bgw/client/params";
-import { resolveBgwParams } from "../../bgw/client/params/default";
-import type { BgwBls12381EpochHeader, BgwBls12381UserSecret } from "../../wasm/xpkt-bgw-bls12/types";
+} from "../../bgw/recipient.js";
+import { RecipientDescriptorKind } from "../../bgw/constants.js";
+import { headerAad, headerBindingRootFromMemberRoot } from "../../bgw/utils/shared.js";
+import type { BgwParamsClient } from "../../bgw/client/params/index.js";
+import { resolveBgwParams } from "../../bgw/client/params/default.js";
+import type { BgwBls12381EpochHeader, BgwBls12381UserSecret } from "../../wasm/xpkt-bgw-bls12/types.js";
 import {
     decodeRoomHeaderBytesV2,
     decryptBgwMemberSecret,
     deriveOlderChainKey,
     recipientSlotsRoot,
     unwrapRoomChainKey,
-} from "../utils/crypto";
-import { concatBytes } from "../../../utils/bytes";
-import { RoomMessagesClient, type RoomLoadMessagesOptions, type RoomLoadedMessage } from "./messages";
-import type { RoomMessageClient } from "./message";
+} from "../utils/crypto.js";
+import { concatBytes } from "../../../utils/bytes.js";
+import { RoomMessagesClient, type RoomLoadMessagesOptions, type RoomLoadedMessage } from "./messages.js";
+import type { RoomMessageClient } from "./message.js";
 
 /** Recipient root-chain verification failed — fail closed, never guess keys. */
 export class RoomRecipientChainError extends Error {
@@ -125,20 +125,41 @@ export async function reconstructRoomRecipientState(params: {
     epoch: BN | number;
     headerBatchSize?: number;
     retry?: RoomFetchRetryOptions;
+    /**
+     * Optional pre-fetched headers, keyed by `epoch.toString()`. When provided,
+     * the recipient-state walk reads headers from this map INSTEAD of Photon — the
+     * caller (e.g. a server-served reader) must supply every header in the chain
+     * back to a checkpoint (a missing one fails closed). Lets a browser decrypt
+     * without querying compressed accounts. See docs/room-offline-decrypt.md.
+     */
+    headers?: Map<string, RoomEpochHeaderData>;
 }): Promise<{ state: RecipientState; header: RoomEpochHeaderData }> {
-    const { client, room } = params;
+    const { client, room, headers } = params;
     const epoch = toBN(params.epoch);
     if (epoch.lten(0)) {
         throw new Error(`cannot reconstruct recipient state at epoch ${epoch.toString()} (no header)`);
     }
 
+    // Fetch a header window `[from, to]`. From the injected map when provided
+    // (no Photon), else the Photon batched range with indexer-lag retries.
+    const getWindow = async (from: BN, to: BN): Promise<(RoomEpochHeaderData | null)[]> => {
+        if (headers) {
+            const out: (RoomEpochHeaderData | null)[] = [];
+            for (let e = from.clone(); e.lte(to); e = e.addn(1)) {
+                out.push(headers.get(e.toString()) ?? null);
+            }
+            return out;
+        }
+        return retryFetch(
+            () => GetRoomHeaderRange(client, room.address, room.era, from, to),
+            (hs) => hs.every((h) => h !== null),
+            params.retry,
+        );
+    };
+
     // Headers at epochs <= room.currentEpoch are guaranteed to exist on-chain;
     // a null here is Photon indexer lag, so retry before failing closed.
-    const target = await retryFetch(
-        () => GetRoomHeaderAccount(client, room.address, epoch),
-        (header) => header !== null,
-        params.retry,
-    );
+    const target = (await getWindow(epoch, epoch))[0];
     if (!target) {
         throw new RoomRecipientChainError(
             `room header at epoch ${epoch.toString()} not found (after indexer-lag retries)`,
@@ -152,11 +173,7 @@ export async function reconstructRoomRecipientState(params: {
     while (!isCheckpointKind(path[0].descriptorKind) && path[0].epoch.gtn(1)) {
         const to = path[0].epoch.subn(1);
         const from = BN.max(new BN(1), to.subn(batch - 1));
-        const window = await retryFetch(
-            () => GetRoomHeaderRange(client, room.address, from, to),
-            (headers) => headers.every((h) => h !== null),
-            params.retry,
-        );
+        const window = await getWindow(from, to);
 
         for (let i = window.length - 1; i >= 0; i--) {
             const header = window[i];
@@ -186,7 +203,7 @@ export async function reconstructRoomRecipientState(params: {
                 );
             }
             const firstPage = await retryFetch(
-                () => GetRoomRecipientPages(client, room.address, first.epoch, 1),
+                () => GetRoomRecipientPages(client, room.address, room.era, first.epoch, 1),
                 (pages) => pages[0] != null,
                 params.retry,
             );
@@ -196,7 +213,7 @@ export async function reconstructRoomRecipientState(params: {
             const pagesTotal = firstPage[0].pagesTotal;
             const pages = pagesTotal > 1
                 ? [firstPage[0], ...(await retryFetch(
-                    () => GetRoomRecipientPages(client, room.address, first.epoch, pagesTotal),
+                    () => GetRoomRecipientPages(client, room.address, room.era, first.epoch, pagesTotal),
                     (all) => all.every((p) => p != null),
                     params.retry,
                 )).slice(1)]
@@ -288,6 +305,8 @@ export class RoomClient {
 
     private myMemberCache?: RoomMyMember;
     private messagesClient?: RoomMessagesClient;
+    /** Server-injected headers (see primeHeaders) used instead of Photon. */
+    private primedHeaders?: Map<string, RoomEpochHeaderData>;
     private readonly epochKeyCache = new ClientCache<BN, { epoch: BN; chainStartEpoch: BN; key: Uint8Array }>(
         (epoch) => epoch.toString(),
     );
@@ -362,7 +381,7 @@ export class RoomClient {
             return this.myMemberCache;
         }
 
-        const member = await GetRoomMemberAccount(this.client, this.address, this.client.walletPublicKey);
+        const member = await GetRoomMemberAccount(this.client, this.address, this.room.era, this.client.walletPublicKey);
         if (!member) {
             throw new Error(`wallet ${this.client.walletPublicKey.toBase58()} is not a member of room ${this.address.toBase58()}`);
         }
@@ -384,7 +403,34 @@ export class RoomClient {
             room: this.room,
             epoch,
             retry: options?.retry,
+            headers: this.primedHeaders,
         });
+    }
+
+    /**
+     * Seed this reader's epoch headers from a trusted server (instead of querying
+     * Photon). Supply every header in the chain back to a checkpoint for the
+     * epochs you intend to decrypt — a missing one fails closed. Combined with
+     * {@link primeMember}, this lets a browser recover epoch keys + decrypt
+     * messages WITHOUT touching the compression indexer.
+     * See `docs/room-offline-decrypt.md`.
+     */
+    primeHeaders(headers: RoomEpochHeaderData[]): void {
+        this.primedHeaders ??= new Map();
+        for (const h of headers) {
+            this.primedHeaders.set(h.epoch.toString(), h);
+        }
+    }
+
+    /**
+     * Seed this reader's own member record (instead of fetching it from Photon).
+     * The member's BGW user secret is decrypted LOCALLY with the wallet's packet
+     * crypto identity, so the secret material never leaves the client.
+     */
+    async primeMember(member: RoomMemberData): Promise<void> {
+        const identity = this.client.crypto.requireIdentity();
+        const userSecret = await decryptBgwMemberSecret({ secret: member.secret, identity });
+        this.myMemberCache = { member, userSecret };
     }
 
     /**

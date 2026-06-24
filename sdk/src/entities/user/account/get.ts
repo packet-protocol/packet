@@ -1,8 +1,8 @@
 import type { PublicKey } from "@solana/web3.js";
 
-import type { PacketProgram } from "../../../providers/program";
-import * as Pda from "../../../pda";
-import type { PacketUser } from "../types";
+import type { PacketProgram } from "../../../providers/program.js";
+import * as Pda from "../../../pda.js";
+import type { PacketUser } from "../types.js";
 
 export function UserAccountToUser(
     address: PublicKey,

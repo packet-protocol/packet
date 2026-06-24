@@ -1,9 +1,9 @@
 import { type Connection, type PublicKey } from "@solana/web3.js";
-import type { PacketProgram } from "../../../providers/program";
-import {type CreateRoomIxParams } from "../instructions/create";
-import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types";
-import { HandleTxPipeline } from "../../..";
-import { CreateRoomPipeline } from "../pipeline/create";
+import type { PacketProgram } from "../../../providers/program.js";
+import {type CreateRoomIxParams } from "../instructions/create.js";
+import type { PacketIxOptions, PacketTxOptions } from "../../transaction/types.js";
+import { HandleTxPipeline } from "../../../index.js";
+import { CreateRoomPipeline } from "../pipeline/create.js";
 
 export const CreateRoomTx = async (
     connection: Connection,

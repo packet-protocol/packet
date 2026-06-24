@@ -1,2 +1,2 @@
-export * from "./resolve"
-export * from "./send"
+export * from "./resolve.js"
+export * from "./send.js"

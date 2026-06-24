@@ -1,7 +1,7 @@
 import { hkdf } from "@noble/hashes/hkdf";
 import { sha256 } from "@noble/hashes/sha2";
-import { utf8 } from "../../utils/encoding";
-import type { Bytes } from "../../types/common";
+import { utf8 } from "../../utils/encoding.js";
+import type { Bytes } from "../../types/common.js";
 
 export function derive32(seed: Bytes, label: string): Bytes {
   return hkdf(sha256, seed, undefined, utf8(label), 32);
